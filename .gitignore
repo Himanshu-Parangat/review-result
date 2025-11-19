@@ -19,5 +19,16 @@ pnpm-debug.log*
 .env
 .env.*
 
+# ignore Db
+*.db
+
+# only drizzle migration are needed 
+drizzle/meta/*
+
+
+# temprory test
+test/*
+
+
 # testing
 .test
