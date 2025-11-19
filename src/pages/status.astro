@@ -1,0 +1,43 @@
+---
+export const prerender = false;
+import { db, siteSchema } from "@db/index"
+
+const dbData = (
+	await db.select().from(siteSchema.dbIdentity).limit(1)
+)[0];
+
+
+
+import { SeedDefault } from "@utils/SeedUtil"
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = formData.get("action");
+
+  if (action === "reset-db") {
+		await SeedDefault().catch((err) => {
+			console.error("Error seeding default site:", err);
+		});
+  }
+}
+
+
+
+
+---
+<div>
+
+	<h1>Status</h1>
+<p>Db Id : {dbData?.dbId || "Empty"}</p>
+<p>Db Label: {dbData?.dbLabel || "No Lable"}</p>
+<p>Db Title: {dbData?.dbTitle || "No Title"}</p>
+<p>Db Description: {dbData?.dbDescription || "No Description"}</p>
+<p>Db Creation: {dbData?.dbDataCreatedAt || "No Timestamp"}</p>
+
+		<form method="POST">
+      <input type="hidden" name="action" value="reset-db" />
+      <button type="submit" style="background:#c62828;color:white;padding:0.5rem 1rem;border-radius:4px;">
+        Reset DB
+      </button>
+    </form>
+</div>
