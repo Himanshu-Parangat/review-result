@@ -9,7 +9,8 @@
     "paths": {
 			"@layouts/*" : ["src/layouts/*"],
 			"@utils/*" : ["src/utils/*"],
-			"@db/*": ["src/db/*"]
+			"@db/*": ["src/db/*"],
+			"@config" : ["src/config.ts"]
     }
 	}
 }

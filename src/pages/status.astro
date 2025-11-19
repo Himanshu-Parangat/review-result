@@ -1,6 +1,9 @@
 ---
 export const prerender = false;
 import { db, siteSchema } from "@db/index"
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+import { config } from "@config";
 
 const dbData = (
 	await db.select().from(siteSchema.dbIdentity).limit(1)
@@ -25,19 +28,34 @@ if (Astro.request.method === "POST") {
 
 
 ---
-<div>
 
-	<h1>Status</h1>
-<p>Db Id : {dbData?.dbId || "Empty"}</p>
-<p>Db Label: {dbData?.dbLabel || "No Lable"}</p>
-<p>Db Title: {dbData?.dbTitle || "No Title"}</p>
-<p>Db Description: {dbData?.dbDescription || "No Description"}</p>
-<p>Db Creation: {dbData?.dbDataCreatedAt || "No Timestamp"}</p>
+<BaseLayout title="Status Check">
+	<div>
+
+		<h1>Status</h1>
+		<p>Db Id : {dbData?.dbId || "Empty"}</p>
+		<p>Db Label: {dbData?.dbLabel || "No Lable"}</p>
+		<p>Db Title: {dbData?.dbTitle || "No Title"}</p>
+		<p>Db Description: {dbData?.dbDescription || "No Description"}</p>
+		<p>Db Creation: {dbData?.dbDataCreatedAt || "No Timestamp"}</p>
 
 		<form method="POST">
-      <input type="hidden" name="action" value="reset-db" />
-      <button type="submit" style="background:#c62828;color:white;padding:0.5rem 1rem;border-radius:4px;">
-        Reset DB
-      </button>
-    </form>
-</div>
+			<input type="hidden" name="action" value="reset-db" />
+			<button type="submit" style="background:#c62828;color:white;padding:0.5rem 1rem;border-radius:4px;">
+				Reset DB
+			</button>
+		</form>
+	</div>
+
+	<div>
+		<h1>Environment Variable</h1>
+		<p>Env name: {config.name} </p> 
+		<p>Env title: {config.title} </p>
+		<p>Env description: {config.description} </p>
+		<p>Env copyright: {config.copyright} </p>
+		<p>Env url: {config.url} </p> 
+
+
+	</div>
+
+</BaseLayout>

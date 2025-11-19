@@ -1,6 +1,9 @@
 ---
 const { title } = Astro.props
+import { config } from "@config"
 
+
+const pageTitle = title ? `${title} - ${config.title}` : config.title;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +12,7 @@ const { title } = Astro.props
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="icon" type="image/x-icon" href="/favicon/R-favicon.ico">
 
-		<title>{title}</title>
+		<title>{pageTitle}</title>
 </head>
 <body>
 		<slot/>
