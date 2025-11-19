@@ -10,6 +10,14 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.0",
-    "astro": "^5.15.8"
+    "astro": "^5.15.8",
+    "better-sqlite3": "^11.10.0",
+    "drizzle-kit": "^0.31.7",
+    "drizzle-orm": "^0.44.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
