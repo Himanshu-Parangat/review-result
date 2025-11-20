@@ -4,6 +4,7 @@ import { config } from "@config"
 import "@styles/global.css";
 
 import CopyrightNotice from "@components/CopyrightNotice.astro";
+import ThemeSwitcher from "@components/ThemeSwitcher.astro";
 
 const pageTitle = title ? `${title} - ${config.title}` : config.title;
 ---
@@ -18,6 +19,9 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 </head>
 <body class="theme-light">
 		<div class="text-primary bg-primary">
+			<nav>
+				<ThemeSwitcher>
+			</nav>
 			<slot/>
 
 			<CopyrightNotice>
