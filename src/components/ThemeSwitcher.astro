@@ -23,9 +23,14 @@ const themes = ['theme-light', 'theme-dark'];
     select.addEventListener("change", function () {
       const selectedValue = select.value;
 
+      document.body.dataset.themeTransitioning = "true";
+
       document.body.classList.remove(...Array.from(document.body.classList).filter(c => c.startsWith("theme-")));
       document.body.classList.add(selectedValue);
 
+			setTimeout(() => {
+			     delete document.body.dataset.themeTransitioning;
+			}, 500);
 
       localStorage.setItem('theme', selectedValue);
     });

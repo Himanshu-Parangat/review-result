@@ -17,6 +17,19 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 		<link rel="icon" type="image/x-icon" href="/favicon/R-favicon.ico">
 
 		<title>{pageTitle}</title>
+
+		<script is:inline>
+			(function() {
+				let theme = localStorage.getItem('theme');
+				if (!theme) {
+					const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					theme = prefersDark ? 'theme-dark' : 'theme-light';
+				}
+
+				document.documentElement.classList.add(theme);
+			})();
+		</script>
+
 </head>
 <body class="theme-light">
 		<div class="text-primary bg-primary text-base">
