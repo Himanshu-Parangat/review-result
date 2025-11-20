@@ -1,0 +1,12 @@
+---
+import { config } from "@config"
+
+const copyrightHolder = config.copyright;
+const CopyrightYear = new Date().getFullYear();
+
+---
+
+<div class="text-xs text-secondary text-end">
+  <p> Copyright &copy; {CopyrightYear} { copyrightHolder}. All rights reserved.</p>
+</div>
+
