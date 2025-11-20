@@ -81,3 +81,9 @@ body[data-theme-transitioning="true"] * {
 		border-color 0.5s ease;
 }
 
+body[data-text-transitioning="true"] * {
+  transition: 
+    font-size 0.3s ease-in-out,
+    line-height 0.3s ease-in-out, 
+    letter-spacing 0.3s ease-in-out;
+}
