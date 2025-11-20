@@ -1,0 +1,31 @@
+---
+const textSize = ['text-Small', 'text-Medium', 'text-Large', 'text-ExtraLarge', 'text-Maximized'];
+---
+<select id="text-size-dropdown" class="text-base">
+  {textSize.map(size => (
+    <option class="text-base text-primary bg-primary" value={size}>{size.replace('text-', '').replace(/^\w/, c => c.toUpperCase())}</option>
+  ))}
+</select>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const select = document.getElementById('text-size-dropdown') as HTMLSelectElement | null;
+    if (!select) return;
+
+    const savedTextSize = localStorage.getItem('text-size') || 'text-Medium';
+
+    document.body.classList.remove(...Array.from(document.body.classList).filter(c => c.startsWith("text-")));
+    document.body.classList.add(savedTextSize);
+    select.value = savedTextSize;
+
+    select.addEventListener("change", function () {
+      const selectedValue = select.value;
+
+      document.body.classList.remove(...Array.from(document.body.classList).filter(c => c.startsWith("text-")));
+      document.body.classList.add(selectedValue);
+
+      localStorage.setItem('text-size', selectedValue);
+    });
+  });
+</script>
+
