@@ -8,6 +8,7 @@
     "baseUrl": ".",
     "paths": {
 			"@layouts/*" : ["src/layouts/*"],
+			"@styles/*" : ["src/styles/*"],
 			"@utils/*" : ["src/utils/*"],
 			"@db/*": ["src/db/*"],
 			"@config" : ["src/config.ts"]

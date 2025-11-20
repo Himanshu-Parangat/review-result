@@ -1,6 +1,7 @@
 ---
 const { title } = Astro.props
 import { config } from "@config"
+import "@styles/global.css";
 
 
 const pageTitle = title ? `${title} - ${config.title}` : config.title;
@@ -14,7 +15,9 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 
 		<title>{pageTitle}</title>
 </head>
-<body>
-		<slot/>
+<body class="theme-light">
+		<div class="text-primary bg-primary">
+			<slot/>
+		</div>
 </body>
 </html>
