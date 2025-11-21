@@ -39,14 +39,19 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 
 </head>
 <body class="theme-light">
-		<div class="text-primary bg-primary text-base">
-			<nav>
-				<ThemeSwitcher/>
-				<TextSizeSwitcher/>
-			</nav>
-			<slot/>
-
-			<CopyrightNotice/>
-		</div>
+	<div class="text-primary bg-primary text-base w-screen h-screen flex flex-col">
+		<header class="shrink-0">
+				<nav>
+						<ThemeSwitcher/>
+						<TextSizeSwitcher/>
+				</nav>
+		</header>
+		<main class="flex-1 overflow-y-auto min-h-0">
+				<slot/>
+		</main>
+		<footer class="shrink-0">
+				<CopyrightNotice/>
+		</footer>
+	</div>
 </body>
 </html>

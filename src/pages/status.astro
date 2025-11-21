@@ -26,34 +26,121 @@ if (Astro.request.method === "POST") {
 
 
 
+export function formatTimestamp(input: string | Date | null): string {
+  if (!input) return "No Timestamp";
+
+  const date = input instanceof Date ? input : new Date(input);
+
+  const year = date.getFullYear();
+  const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+  const monthName = date.toLocaleDateString("en-US", { month: "long" });
+  const day = date.getDate();
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12 || 12;
+
+	return `${year} ${dayName}, ${day} ${monthName}  ${hours}:${minutes} ${ampm}`;
+}
+
 
 ---
 
 <BaseLayout title="Status Check">
-	<div>
+	<div class="flex justify-center space-x-4">
 
-		<h1>Status</h1>
-		<p>Db Id : {dbData?.dbId || "Empty"}</p>
-		<p>Db Label: {dbData?.dbLabel || "No Lable"}</p>
-		<p>Db Title: {dbData?.dbTitle || "No Title"}</p>
-		<p>Db Description: {dbData?.dbDescription || "No Description"}</p>
-		<p>Db Creation: {dbData?.dbDataCreatedAt || "No Timestamp"}</p>
+		<div class="p-6 border-2 border-primary rounded-lg">
+			<h1 class="text-xl font-bold mb-4 px-4">Environment Variable</h1>
 
-		<form method="POST">
-			<input type="hidden" name="action" value="reset-db" />
-			<button type="submit" style="background:#c62828;color:white;padding:0.5rem 1rem;border-radius:4px;">
-				Reset DB
-			</button>
-		</form>
-	</div>
+			<table class="table-auto w-full border-collapse">
+				<thead>
+					<tr class="hover:hover-primary border-b-2 border-primary">
+						<th class="px-4 py-2 text-left font-semibold">DB Field</th>
+						<th class="px-4 py-2 text-left font-semibold">DB Value</th>
+					</tr>
+				</thead>
 
-	<div>
-		<h1>Environment Variable</h1>
-		<p>Env name: {config.name} </p> 
-		<p>Env title: {config.title} </p>
-		<p>Env description: {config.description} </p>
-		<p>Env copyright: {config.copyright} </p>
-		<p>Env url: {config.url} </p> 
+				<tbody>
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Env Name</td>
+						<td class="px-4 py-2 text-base text-primary">{config.name}</td>
+					</tr>
+					
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Env Title</td>
+						<td class="px-4 py-2 text-base text-primary">{config.title}</td>
+					</tr>
+					
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Env Description</td>
+						<td class="px-4 py-2 text-base text-primary">{config.description}</td>
+					</tr>
+					
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Env Copyright</td>
+						<td class="px-4 py-2 text-base text-primary">{config.copyright}</td>
+					</tr>
+					
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Env Url</td>
+						<td class="px-4 py-2 text-base text-primary">{config.url}</td>
+					</tr>
+
+				</tbody>
+
+			</table>
+		</div>
+
+		<div class="p-6 border-2 border-primary rounded-lg">
+
+			<h1 class="text-xl mb-4 px-4 font-bold">Database Status</h1>
+
+			<table class="table-auto w-full border-collapse">
+				<thead>
+					<tr class="hover:hover-primary border-b-2 border-primary">
+						<th class="px-4 py-2 text-left font-semibold">DB Field</th>
+						<th class="px-4 py-2 text-left font-semibold">DB Value</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Db Id</td>
+						<td class="px-4 py-2">{dbData?.dbId || "Empty"}</td>
+					</tr>
+
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Db Label</td>
+						<td class="px-4 py-2">{dbData?.dbLabel || "No Label"}</td>
+					</tr>
+
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Db Title</td>
+						<td class="px-4 py-2">{dbData?.dbTitle || "No Title"}</td>
+					</tr>
+
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Db Description</td>
+						<td class="px-4 py-2">{dbData?.dbDescription || "No Description"}</td>
+					</tr>
+
+					<tr class="border-b-2 border-primary hover:hover-primary">
+						<td class="px-4 py-2 text-base text-primary">Db Creation</td>
+						<td class="px-4 py-2">{ formatTimestamp(dbData?.dbDataCreatedAt) || "No Timestamp"}</td>
+					</tr>
+				</tbody>
+			</table>
+
+
+
+			<form method="POST">
+				<input type="hidden" name="action" value="reset-db" />
+				<button class="mt-4 bg-red-500 text-white text-base font-bold px-4 py-2 text-center rounded-md hover:bg-red-600" type="submit">
+					Reset DB
+				</button>
+			</form>
+		</div>
 
 
 	</div>
