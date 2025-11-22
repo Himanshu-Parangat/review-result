@@ -1,0 +1,63 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro"
+---
+
+<BaseLayout title="Login">
+	<div class="h-full mx-[5%] flex flex-col items-center">
+		<div class="border-2 border-primary rounded-lg p-10 space-y-6 mt-[5%] min-w-[40%]">
+			<h1 class="text-2xl font-bold text-center mb-1">Login</h1>
+			<h3 class="text-secondary text-sm font-bold text-center mb-8">Please provide the login details.</h3>
+			<div class="space-y-8">
+
+					<div class="flex-2">
+						<h3 class="text-lg font-semibold capitalize mb-2">User Id</h3>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Payroll Number..." />
+
+					</div>
+
+
+					<div class="flex-2">
+						<h3 class="text-lg font-semibold mb-2">Password</h3>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Payroll Number..." />
+
+					</div>
+
+			</div>
+
+			<div class="mt-8">
+				<button
+					class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+				>
+				<a href="/" class="inline-block  rounded ">
+					Submit
+				</a>
+				</button>
+
+			</div>
+								<!-- 		<div> -->
+								<!-- 	<button -->
+								<!-- 		class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition" -->
+								<!-- 	> -->
+								<!-- 	<a href="/" class="inline-block  rounded "> -->
+								<!-- 		Schedule -->
+								<!-- 	</a> -->
+								<!-- 	</button> -->
+								<!-- </div> -->
+		</div>
+
+
+
+	</div>
+
+</BaseLayout>
+
