@@ -1,0 +1,99 @@
+
+---
+export const prerender = false;
+import BaseLayout from "@layouts/BaseLayout.astro"
+const { registerId } = Astro.params;
+---
+
+<BaseLayout title={"Register For "+ registerId}>
+	<div class="h-full mx-[5%] flex flex-col items-center">
+		<div class="border-2 border-primary rounded-lg p-10 space-y-6 mt-[5%] min-w-[50%]">
+			<h1 class="text-2xl font-bold text-center mb-1">Welcome to the event!</h1>
+			<h3 class="text-secondary text-sm font-bold text-center mb-8">Please provide the following details.</h3>
+			<div class="space-y-2">
+
+				<h3 class="text-lg font-semibold mb-2">Enter User Details</h3>
+				<div class="flex flex-row justify-between gap-6">
+					<div class="flex-2">
+						<p class="text-base mb-2 text-secondary ">Payroll Number</p>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Payroll Number..." />
+
+					</div>
+
+					<div class="flex-2">
+						<p class="text-base mb-2 text-secondary ">Your Name</p>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Name..." />
+
+					</div>
+				</div>
+
+				<div class="flex flex-row justify-between gap-6">
+					<div class="flex-2">
+						<p class="text-base mb-2 text-secondary ">Department</p>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Department..." />
+
+					</div>
+
+					<div class="flex-2">
+						<p class="text-base mb-2 text-secondary ">Designation</p>
+
+						<input
+							type="text"
+							name="q3"
+							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Designation..." />
+
+					</div>
+				</div>
+
+			</div>
+
+			<div class="space-y-4">
+				<h3 class="text-lg font-semibold">Enter Event ID</h3>
+				<p class="text-sm mb-4 text-secondary ">Enter your Event ID & Event Link</p>
+
+				<div class="flex flex-row gap-4">
+					<input
+						type="text"
+						name="q3"
+						class="flex-6 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					  value={registerId}
+						placeholder="Type your Payroll here..." />
+
+						<div>
+							<button
+								class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+							>
+							<a href="/" class="inline-block  rounded ">
+								Join Event
+							</a>
+							</button>
+						</div>
+
+
+				</div>
+
+			</div>
+
+		</div>
+
+
+
+	</div>
+
+</BaseLayout>
