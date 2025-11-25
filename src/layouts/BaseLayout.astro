@@ -7,6 +7,8 @@ import CopyrightNotice from "@components/CopyrightNotice.astro";
 import ThemeSwitcher from "@components/ThemeSwitcher.astro";
 import TextSizeSwitcher from "@components/TextSizeSwitcher.astro";
 
+import Status from "@components/Status.astro";
+
 const pageTitle = title ? `${title} - ${config.title}` : config.title;
 ---
 <!DOCTYPE html>
@@ -41,9 +43,12 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 <body class="theme-light">
 	<div class="text-primary bg-primary text-base w-screen h-screen flex flex-col">
 		<header class="shrink-0">
-				<nav class="flex flex-row justify-end p-3 gap-2">
+				<nav class="flex flex-row justify-between p-3 gap-2">
+					<div class="flex flex-row gap-2">
 						<ThemeSwitcher/>
 						<TextSizeSwitcher/>
+					</div>
+						<Status/>
 				</nav>
 		</header>
 		<main class="flex-1 overflow-y-auto min-h-0">

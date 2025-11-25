@@ -1,0 +1,17 @@
+---
+const idCookie = Astro.cookies.get("Id")?.value || "";
+const hash = import.meta.env.HASH_TOKEN
+
+let status = "Visitor";
+
+if (idCookie === hash) {
+  status = "Admin";
+} else if (idCookie !== "") {
+  status = "User";
+}
+
+
+---
+
+<div class="text-primary border-2 border-primary rounded-lg px-3 py-1 text-sm font-bold ">{status || "Visitor"}</div>
+
