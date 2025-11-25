@@ -1,5 +1,63 @@
 ---
+export const prerender = false;
+const url = new URL(Astro.request.url);
+
 import BaseLayout from "@layouts/BaseLayout.astro"
+import bcrypt from "bcrypt";
+
+const env = import.meta.env;
+const ADMIN_USERNAME = env.ADMIN_USERNAME;
+const ADMIN_PASSWORD_HASH = env.ADMIN_HASH;
+const HASH_TOKEN = env.HASH_TOKEN
+
+let loginStatus: "fail" | "pass" | "" = "";
+
+let IncomingPostRequest = Astro.request.method === "POST";
+
+if (IncomingPostRequest) {
+  const formData = await Astro.request.formData();
+  const username = formData.get("username")?.toString();
+  const password = formData.get("password")?.toString();
+
+  if (!username || !password) {
+    console.log("Username or password not provided");
+    return;
+  }
+
+
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH) {
+    throw new Error("Missing ADMIN_USERNAME or ADMIN_HASH");
+  }
+
+  const isUsernameMatch = username === ADMIN_USERNAME;
+  const isPasswordMatch = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+
+  if (isUsernameMatch && isPasswordMatch) {
+    console.log("Login successful!");
+
+		Astro.cookies.set("Id", HASH_TOKEN, {
+      path: "/",
+      maxAge: 60 * 60,
+    });
+
+		loginStatus = "pass";
+
+		// const redirectTo = url.searchParams.get("redirectTo") || "/";
+		// return Astro.redirect(redirectTo);
+
+
+  } else {
+    console.log("Invalid credentials.");
+
+		Astro.cookies.set("Id", "", {
+      path: "/",
+      maxAge: 60 * 60,
+    });
+		loginStatus = "fail";
+  }
+}
+
+
 ---
 
 <BaseLayout title="Login">
@@ -7,57 +65,75 @@ import BaseLayout from "@layouts/BaseLayout.astro"
 		<div class="border-2 border-primary rounded-lg p-10 space-y-6 mt-[5%] min-w-[40%]">
 			<h1 class="text-2xl font-bold text-center mb-1">Login</h1>
 			<h3 class="text-secondary text-sm font-bold text-center mb-8">Please provide the login details.</h3>
-			<div class="space-y-8">
+			<form method="POST">
+				<div class="space-y-8">
 
-					<div class="flex-2">
-						<h3 class="text-lg font-semibold capitalize mb-2">User Id</h3>
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold capitalize mb-2">User Id</h3>
 
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Payroll Number..." />
+							<input
+								type="text"
+								name="username"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Payroll Number..." />
 
-					</div>
+						</div>
 
 
-					<div class="flex-2">
-						<h3 class="text-lg font-semibold mb-2">Password</h3>
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold mb-2">Password</h3>
 
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Payroll Number..." />
+							<input
+								type="text"
+								name="password"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Payroll Number..." />
 
-					</div>
+						</div>
 
-			</div>
+				</div>
 
-			<div class="mt-8">
-				<button
-					class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
-				>
-				<a href="/" class="inline-block  rounded ">
-					Submit
-				</a>
-				</button>
+				<div class="mt-8">
 
-			</div>
-								<!-- 		<div> -->
-								<!-- 	<button -->
-								<!-- 		class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition" -->
-								<!-- 	> -->
-								<!-- 	<a href="/" class="inline-block  rounded "> -->
-								<!-- 		Schedule -->
-								<!-- 	</a> -->
-								<!-- 	</button> -->
-								<!-- </div> -->
+					<button
+						class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+					>
+						Submit
+					</button>
+
+
+					<div id="error-fail" class="text-center mt-4 text-red-500 font-bold" style={loginStatus === "fail" ? "display: block;" : "display: none;"}>&#9888; Invalid Credentials</div>
+					<div id="error-pass" class="text-center mt-4 text-green-400 font-bold" style={loginStatus === "pass" ? "display: block;" : "display: none;"}>&#10003; Authenticated</div>
+
+				</div>
+			</form>
+
 		</div>
 
 
 
 	</div>
+
+
+	<script is:inline>
+		const failDiv = document.getElementById("error-fail");
+		const passDiv = document.getElementById("error-pass");
+
+		if (failDiv && failDiv.style.display === "block") {
+			setTimeout(() => {
+				failDiv.style.display = "none";
+			}, 2000);
+		}
+
+		if (passDiv && passDiv.style.display === "block") {
+			setTimeout(() => {
+				const url = new URL(window.location.href);
+				const redirectTo = url.searchParams.get("redirectTo") || "/";
+				window.location.href = redirectTo;
+			}, 2000);
+		}
+	</script>
+
 
 </BaseLayout>
 

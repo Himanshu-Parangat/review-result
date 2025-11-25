@@ -87,3 +87,10 @@ body[data-text-transitioning="true"] * {
     line-height 0.3s ease-in-out, 
     letter-spacing 0.3s ease-in-out;
 }
+
+input:-webkit-autofill {
+  box-shadow: 0 0 0 1000px var(--color-background-primary) inset !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
