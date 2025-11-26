@@ -1,3 +1,4 @@
+import { checkCookie } from "@utils/CookieUtil";
 import { defineMiddleware, sequence } from "astro:middleware";
 
 export const logMiddleware = defineMiddleware((context, next) => {
@@ -32,7 +33,25 @@ export const logMiddleware = defineMiddleware((context, next) => {
 });
 
 
+export const routeCheckMiddleware = defineMiddleware(async (context, next) => {
+  const { request, url } = context;
 
-export const onRequest = sequence(logMiddleware);
+  if (url.pathname.startsWith("/schedule")) {
+    const Cookie = checkCookie(request);
 
+		const token = import.meta.env.HASH_TOKEN
+    if (Cookie.Id === token) {
+      return next(); 
+    }
+		return Response.redirect(
+      new URL(`/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`, request.url),
+      302
+    );
+
+  }
+
+  return next();
+});
+
+export const onRequest = sequence(logMiddleware, routeCheckMiddleware);
 
