@@ -8,6 +8,9 @@ interface Config {
   /** A short description for SEO and sharing */
   description: string;
 
+  /** A banner image */
+	banner: string;
+
   /** Copyright notice (e.g., site owner or organization) */
   copyright: string;
 
@@ -23,6 +26,7 @@ export const config: Config  = {
 	name : env.PUBLIC_SITE_NAME || "Anonymous",
   title: env.PUBLIC_SITE_TITLE || "Result Review",
   description: env.PUBLIC_SITE_DESCRIPTION || "Simple result reviewing website",
+	banner: env.PUBLIC_SITE_BANNER || "https://placehold.co/600x400?text=Banner",
 	copyright: env.PUBLIC_SITE_COPYRIGHT || "anonymous",
 	url : env.PUBLIC_SITE_URL || "https://www.example.com/",
 }

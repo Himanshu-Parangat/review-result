@@ -32,3 +32,6 @@ test/*
 
 # testing
 .test
+
+# Public Banner
+public/banner/*
