@@ -1,7 +1,9 @@
 ---
 import Timestamp from "@components/Timestamp.astro";
-const { number, title, description, startIn, endIn } = Astro.props
+const { entryId, number, title, description, startIn, endIn } = Astro.props
 import { normalizeDateTime, friendlyDateMessage, friendlyDuration } from "@utils/TimeUtils";
+
+const duration = friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(endIn))
 ---
 <div class="p-4 border-2 border-primary rounded-lg hover:hover-primary hover:scale-[1.02]">
 	<details class="group relative ">
@@ -29,7 +31,7 @@ import { normalizeDateTime, friendlyDateMessage, friendlyDuration } from "@utils
 								</h3>
 
 								<h3 class="text-secondary text-lg whitespace-nowrap">
-									Duration <span class="text-primary font-bold">{friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(endIn))}</span>
+									Duration <span class="text-primary font-bold">{duration}</span>
 								</h3>
 							</div>
 

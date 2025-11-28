@@ -2,6 +2,32 @@
 export const prerender =	false;
 import BaseLayout from "@layouts/BaseLayout.astro"
 import ScheduleEntry from "@components/ScheduleEntry.astro";
+import { db, siteSchema } from "@db/index";
+import { eq } from "drizzle-orm";
+
+
+
+
+const GetAllEvents = function () {
+	const identity = db
+		.select({ dbId: siteSchema.dbIdentity.dbId })
+		.from(siteSchema.dbIdentity)
+		.limit(1)
+		.get();
+
+	if (!identity?.dbId) return [];
+
+	const events = db
+		.select()
+		.from(siteSchema.event)
+		.where(eq(siteSchema.event.dbId, identity.dbId))
+		.all();
+
+	return events;
+};
+
+const Events = GetAllEvents()
+
 ---
 
 <BaseLayout class="Schedule">
@@ -11,7 +37,7 @@ import ScheduleEntry from "@components/ScheduleEntry.astro";
       <!-- Schedule panel: fixed size -->
       <div class="border-2 border-primary rounded-lg min-w-[28%] shrink-0 min-h-0 flex flex-col p-4">
 				<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Schedule Event</h1>
-					<form action="" class=" flex-1 space-y-6 overflow-y-auto p-4">
+					<form method="post" class=" flex-1 space-y-6 overflow-y-auto p-4">
 
 					<div class="">
 						<h3 class="text-lg font-semibold mb-2">Event Title</h3>
@@ -59,6 +85,7 @@ import ScheduleEntry from "@components/ScheduleEntry.astro";
 					</div>
 
 					<button
+						type="submit"
 						class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
 					>
 						Schedule
@@ -70,23 +97,37 @@ import ScheduleEntry from "@components/ScheduleEntry.astro";
 
       <!-- Entry panel: grows and becomes scrollable -->
       <div class="border-2 border-primary rounded-lg flex-1 flex">
-				<div class="flex-1 lg:flex lg:flex-col  min-h-0 w-full  shrink-0 p-4 overflow-y-auto">
+				<div class="flex-1 lg:flex lg:flex-col  min-h-0 w-full  shrink-0 p-4 ">
 					<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Scheduled Entry</h1>
 
           <!-- Scrollable list -->
-          <div class="p-2 space-y-2 ">
+					<div class="overflow-y-auto p-4">
+						<div class="p-2 space-y-2 ">
 
-						<!-- new event -->
+							<!-- new event -->
 
-						<ScheduleEntry
-							number="1"
-							title="Test Event"
-							description="this is a test event, for showing a an entry"
-							startIn="2025-11-27T17:58"
-							endIn="2025-11-27T18:58:44"
-						/>
+							<!-- <ScheduleEntry -->
+							<!-- 	number="1" -->
+							<!-- 	title="Test Event" -->
+							<!-- 	description="this is a test event, for showing a an entry" -->
+							<!-- 	startIn="2025-11-27T17:58" -->
+							<!-- 	endIn="2025-11-27T18:58:44" -->
+							<!-- /> -->
 
-          </div>
+							{Events.map((entry, index) => 
+								<ScheduleEntry
+									entryId={entry.eventId}
+									number={index + 1}
+									title={entry.eventTitle}
+									description={entry.eventDescription}
+									startIn={entry.eventScheduledStartAt}
+									endIn={entry.eventScheduledEndAt}
+								/>
+							)}
+
+						</div>
+
+					</div>
 
         </div>
       </div>
