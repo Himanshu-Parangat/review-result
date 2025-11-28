@@ -1,79 +1,17 @@
 ---
 import { generateId } from '@utils/MainUtils';
-
 interface Props {
   startTime: string;
   endTime: string;
   eventName?: string;
 }
 const { startTime, endTime, eventName = "Event" } = Astro.props;
-const uniqueId = `countdown-${generateId}`;
+const uniqueId = `countdown-${generateId()}`;
 ---
-<div class="countdown-timer">
-  <span id={uniqueId} data-start={startTime} data-end={endTime} data-event={eventName}></span>
-</div>
-<script define:vars={{ uniqueId }}>
-  function initCountdown(id) {
-    const countdownEl = document.getElementById(id);
-    if (!countdownEl) return;
-    
-    const startDate = new Date(countdownEl.dataset.start).getTime();
-    const endDate = new Date(countdownEl.dataset.end).getTime();
-    const eventName = countdownEl.dataset.event || "Event";
-    
-    function formatTimeParts(diff) {
-      const absDiff = Math.abs(diff);
-      const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
-      
-
-      if (days > 0) {
-        return `${days} day${days !== 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
-      } else if (hours > 0) {
-        return `${hours} hour${hours !== 1 ? 's' : ''}, ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-      } else if (minutes > 0) {
-        return `${minutes} minute${minutes !== 1 ? 's' : ''}, ${seconds} second${seconds !== 1 ? 's' : ''}`;
-      } else {
-        return `${seconds} second${seconds !== 1 ? 's' : ''}`;
-      }
-    }
-    
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const diffToStart = startDate - now;
-      const diffToEnd = endDate - now;
-      
-      // when not started
-      if (diffToStart > 60000) {
-        countdownEl.textContent = `${eventName} starts in ${formatTimeParts(diffToStart)}`;
-      }
-      // for about to start (within 1 minute)
-      else if (diffToStart > 0 && diffToStart <= 60000) {
-        countdownEl.textContent = `${eventName} is starting now!`;
-      }
-      // for ongoing
-      else if (diffToEnd > 60000) {
-        countdownEl.textContent = `${eventName} is ongoing (ends in ${formatTimeParts(diffToEnd)})`;
-      }
-      // for about to end (within 1 minute)
-      else if (diffToEnd > 0 && diffToEnd <= 60000) {
-        countdownEl.textContent = `${eventName} is ending now!`;
-      }
-      // for ended
-      else {
-        countdownEl.textContent = `${eventName} ended ${formatTimeParts(diffToEnd)} ago`;
-      }
-    }
-    
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  }
-  
-  // Run on page load with this specific ID
-  initCountdown(uniqueId);
-  
-  // Re-run on view transitions
-  document.addEventListener('astro:page-load', () => initCountdown(uniqueId));
-</script>
+<span 
+  id={uniqueId} 
+  class="countdown-timestamp"
+  data-start={startTime} 
+  data-end={endTime} 
+  data-event={eventName}
+></span>
