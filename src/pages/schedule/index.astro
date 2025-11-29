@@ -4,29 +4,78 @@ import BaseLayout from "@layouts/BaseLayout.astro"
 import ScheduleEntry from "@components/ScheduleEntry.astro";
 import { db, siteSchema } from "@db/index";
 import { eq } from "drizzle-orm";
+import { generateId } from "@utils/MainUtils";
+import { normalizeDateTime } from "@utils/TimeUtils";
 
 
+const GetDbIdentity = function(){
+		const identity = db
+			.select({ dbId: siteSchema.dbIdentity.dbId })
+			.from(siteSchema.dbIdentity)
+			.limit(1)
+			.get();
 
+		if (!identity?.dbId) throw new Error("Missing DB Identity");
+		return identity?.dbId || ""
+
+}
+
+const CurrentdbIdentity = GetDbIdentity()
 
 const GetAllEvents = function () {
-	const identity = db
-		.select({ dbId: siteSchema.dbIdentity.dbId })
-		.from(siteSchema.dbIdentity)
-		.limit(1)
-		.get();
-
-	if (!identity?.dbId) return [];
-
 	const events = db
 		.select()
 		.from(siteSchema.event)
-		.where(eq(siteSchema.event.dbId, identity.dbId))
+		.where(eq(siteSchema.event.dbId, CurrentdbIdentity))
 		.all();
 
 	return events;
 };
 
 const Events = GetAllEvents()
+
+
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+
+	const eventId = formData.get("eventId") as string | null;
+	const eventTitle = formData.get("eventTitle") as string;
+	const eventDescription = formData.get("eventDescription") as string;
+
+	const eventScheduledStartAt = normalizeDateTime(
+		(formData.get("eventScheduledStartAt") as string) || new Date().toISOString()
+	).toISOString();
+
+	const eventScheduledEndAt = normalizeDateTime(
+		(formData.get("eventScheduledEndAt") as string) || 
+		new Date(new Date(eventScheduledStartAt).getTime() + 60 * 60 * 1000).toISOString()
+	).toISOString();
+
+
+	if (!eventId) {
+		
+		console.log("it's a new entry")
+			await db.insert(siteSchema.event).values({
+			eventId: generateId(),
+			eventlabel: "",
+			eventTitle: eventTitle,
+			eventCreatedAt: new Date().toISOString(),
+			eventDescription: eventDescription,
+			eventScheduledStartAt: eventScheduledStartAt ,
+			eventScheduledEndAt: eventScheduledEndAt,
+			eventIsPinned: false,
+			dbId: CurrentdbIdentity,
+			
+
+		}).returning();
+
+		return Astro.redirect(`/schedule?submitted=1`);
+	}
+
+
+}
+
 
 ---
 
@@ -47,7 +96,7 @@ const Events = GetAllEvents()
 							type="text"
 							name="eventTitle"
 							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." />
+							placeholder="Type your title here..." required />
 
 					</div>
 
@@ -58,7 +107,7 @@ const Events = GetAllEvents()
 							name="eventDescription"
 							rows="4"
 							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your answer here..."></textarea>
+							placeholder="Type your answer here..." required></textarea>
 
 					</div>
 
@@ -70,7 +119,7 @@ const Events = GetAllEvents()
 							type="datetime-local"
 							name="eventScheduledStartAt"
 							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." />
+							placeholder="Type your title here..." required />
 
 					</div>
 
@@ -82,7 +131,7 @@ const Events = GetAllEvents()
 							type="datetime-local"
 							name="eventScheduledEndAt"
 							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." />
+							placeholder="Type your title here..." required />
 
 					</div>
 
