@@ -39,6 +39,8 @@ const Events = GetAllEvents()
 				<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Schedule Event</h1>
 					<form method="post" class=" flex-1 space-y-6 overflow-y-auto p-4">
 
+					<input type="hidden" name="eventId" >
+
 					<div class="">
 						<h3 class="text-lg font-semibold mb-2">Event Title</h3>
 						<input
@@ -84,7 +86,28 @@ const Events = GetAllEvents()
 
 					</div>
 
+					<div id="editModeIndicator" class="hidden">
+						<div class="flex flex-row gap-2 items-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+								<circle cx="12" cy="12" r="10"/>
+								<line x1="12" y1="8" x2="12" y2="12"/>
+								<line x1="12" y1="16" x2="12.01" y2="16"/>
+							</svg>
+							<p>Editing an existing Entry</p>
+							<button class="ml-2">
+								<span class="text-primary hover:text-red-400">
+									<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+										<line x1="9" y1="9" x2="15" y2="15"/>
+										<line x1="15" y1="9" x2="9" y2="15"/>
+									</svg>
+								</span>
+							</button>
+						</div>
+
+					</div>
+
 					<button
+						id="doEntry"
 						type="submit"
 						class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
 					>
@@ -134,6 +157,50 @@ const Events = GetAllEvents()
 
     </div>
   </div>
+
+	<script is:inline>
+
+	function toDatetimeLocal(isoString) {
+		const date = new Date(isoString);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		return `${year}-${month}-${day}T${hours}:${minutes}`;
+	}
+
+
+	document.addEventListener('DOMContentLoaded', () => {
+		const editButtons = document.querySelectorAll('.edit-event-btn');
+		
+		editButtons.forEach(button => {
+			button.addEventListener('click', (e) => {
+				e.preventDefault();
+				
+
+				const eventId = button.getAttribute('data-event-id');
+				const eventTitle = button.getAttribute('data-event-title');
+				const eventDescription = button.getAttribute('data-event-description');
+				const eventStart = button.getAttribute('data-event-start');
+				const eventEnd = button.getAttribute('data-event-end');
+				
+
+				document.querySelector('input[name="eventId"]').value = eventId;
+				document.querySelector('input[name="eventTitle"]').value = eventTitle;
+				document.querySelector('textarea[name="eventDescription"]').value = eventDescription;
+				document.querySelector('input[name="eventScheduledStartAt"]').value = toDatetimeLocal(eventStart);
+				document.querySelector('input[name="eventScheduledEndAt"]').value = toDatetimeLocal(eventEnd);
+				
+				document.getElementById('doEntry').textContent = 'Re-Schedule';
+				document.getElementById('editModeIndicator').classList.remove('hidden');
+
+				document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		});
+	});
+
+	</script>
 
 		<script is:inline>
   (function() {
