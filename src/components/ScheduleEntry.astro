@@ -1,6 +1,6 @@
 ---
 import Timestamp from "@components/Timestamp.astro";
-const { entryId, number, title, description, startIn, endIn } = Astro.props
+const { entryId, number, title, description, startIn, endIn, isPined=false } = Astro.props
 import { normalizeDateTime, friendlyDateMessage, friendlyDuration } from "@utils/TimeUtils";
 
 const duration = friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(endIn))
@@ -11,30 +11,63 @@ const duration = friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(e
 			<div class="flex-1">
 				<div class="flex flex-row gap-4"> 
 					<div class="shrink-0 text-primary text-lg  bg-accent flex justify-center items-center rounded-lg w-10 h-10 ">{number}</div>
-					<div class="flex-1 space-y-2">
+					<div class="flex-1 space-y-1">
 						<h1 class="text-2xl">{title}</h1>
 						<h2 class="text-lg text-secondary">{description}</h2>
 
-						<div class=" flex flex-wrap">
-							<div class="flex-1">
-								<h3 class="text-secondary text-lg whitespace-nowrap">
-									Starting In <span class="text-primary font-bold">{friendlyDateMessage(normalizeDateTime(startIn))}</span>
-								</h3>
-
-								<h3 class="text-secondary text-lg whitespace-nowrap">
-									Ending In <span class="text-primary font-bold">{friendlyDateMessage(normalizeDateTime(endIn))}</span>
-								</h3>
-							</div>
+						<div class=" flex flex-wrap mt-4">
 							<div class="flex-1">
 								<h3 class="text-secondary text-lg flex flex-row items-center whitespace-nowrap">
+
+									<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 128 128" stroke="currentColor" role="img" aria-label="countdown icon">
+										<circle cx="64" cy="64" r="36" fill="none"  stroke-width="8"/>
+										<rect x="58" y="20" width="12" height="10" rx="3" />
+										<rect x="88" y="38" width="10" height="6" rx="2" />
+										<line x1="64" y1="64" x2="64" y2="40"  stroke-width="8" stroke-linecap="round"/>
+									</svg>
+
+
 									Status <span class="pl-2 text-primary font-bold"><Timestamp startTime={startIn} endTime={endIn} eventName="Event"/></span>
 								</h3>
 
-								<h3 class="text-secondary text-lg whitespace-nowrap">
-									Duration <span class="text-primary font-bold">{duration}</span>
+								<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row items-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 128 128" role="img" stroke="currentColor" aria-label="duration icon">
+										<circle cx="64" cy="52" r="36" fill="none"  stroke-width="8" />
+										<line x1="64" y1="52" x2="64" y2="32"  stroke-width="8" stroke-linecap="round"/>
+										<line x1="64" y1="52" x2="84" y2="68"  stroke-width="6" stroke-linecap="round"/>
+									</svg>
+
+									Duration <span class="text-primary font-bold ml-2">{duration}</span>
 								</h3>
 							</div>
 
+							<div class="flex-1">
+								<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row">
+
+									<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+										<rect x="4" y="6" width="22" height="20" rx="2" stroke-width="2"/>
+										<line x1="4" y1="11" x2="26" y2="11" stroke-width="2"/>
+										<line x1="9" y1="6" x2="9" y2="3" stroke-width="2" stroke-linecap="round"/>
+										<line x1="21" y1="6" x2="21" y2="3" stroke-width="2" stroke-linecap="round"/>
+										<text x="15" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">S</text>
+									</svg>
+
+									Starting In <span class="text-primary font-bold ml-2">{friendlyDateMessage(normalizeDateTime(startIn))}</span>
+								</h3>
+
+								<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row">
+
+									<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+										<rect x="4" y="6" width="22" height="20" rx="2" stroke-width="2"/>
+										<line x1="4" y1="11" x2="26" y2="11" stroke-width="2"/>
+										<line x1="9" y1="6" x2="9" y2="3" stroke-width="2" stroke-linecap="round"/>
+										<line x1="21" y1="6" x2="21" y2="3" stroke-width="2" stroke-linecap="round"/>
+										<text x="15" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">E</text>
+									</svg>
+
+									Ending In <span class="text-primary font-bold ml-2">{friendlyDateMessage(normalizeDateTime(endIn))}</span>
+								</h3>
+							</div>
 						</div>
 
 					</div>
@@ -70,7 +103,9 @@ const duration = friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(e
 					</span>
 				</button>
 
-				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+				<button class="delete-event-btn text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+					data-event-id={entryId}
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<polyline points="3 6 5 6 21 6"/>
 						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -82,21 +117,30 @@ const duration = friendlyDuration(normalizeDateTime(startIn),normalizeDateTime(e
 					</span>
 				</button>
 
-				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
-					<!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-primary"> -->
-					<!-- 	<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/> -->
-					<!-- </svg> -->
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
-					</svg>
-					<span>
-						Pin
-					</span>
+				<button
+					class="pin-event-btn text-lg font-semibold px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+					data-event-id={entryId}
+				>
+					{isPined? (
+						<>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+								viewBox="0 0 24 24" fill="currentColor" class="text-primary">
+								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+							</svg>
+							<span>Unpin</span>
+						</>
+					) : (
+						<>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+								viewBox="0 0 24 24" fill="none" stroke="currentColor"
+								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+							</svg>
+							<span>Pin</span>
+						</>
+					)}
+
 				</button>
-
-
-
-
 			</div>
 
 

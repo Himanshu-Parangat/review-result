@@ -3,7 +3,7 @@ export const prerender =	false;
 import BaseLayout from "@layouts/BaseLayout.astro"
 import ScheduleEntry from "@components/ScheduleEntry.astro";
 import { db, siteSchema } from "@db/index";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { generateId } from "@utils/MainUtils";
 import { normalizeDateTime } from "@utils/TimeUtils";
 
@@ -39,6 +39,7 @@ const Events = GetAllEvents()
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
 
+	const action = formData.get("action") as string;
 	const eventId = formData.get("eventId") as string | null;
 	const eventTitle = formData.get("eventTitle") as string;
 	const eventDescription = formData.get("eventDescription") as string;
@@ -53,8 +54,9 @@ if (Astro.request.method === "POST") {
 	).toISOString();
 
 
-	if (!eventId) {
-		
+
+	if (action === "create") {
+
 		console.log("it's a new entry")
 			await db.insert(siteSchema.event).values({
 			eventId: generateId(),
@@ -71,6 +73,60 @@ if (Astro.request.method === "POST") {
 		}).returning();
 
 		return Astro.redirect(`/schedule?submitted=1`);
+
+
+	} 
+
+	if (action === "update") {
+
+		if (!eventId) return
+
+		await db.update(siteSchema.event).set({
+			eventTitle: eventTitle,
+			eventlabel: "",
+			eventDescription: eventDescription,
+			eventScheduledStartAt: eventScheduledStartAt ,
+			eventScheduledEndAt: eventScheduledEndAt,
+			dbId: CurrentdbIdentity,
+		}).where(eq(siteSchema.event.eventId, eventId))
+
+		return Astro.redirect(`/schedule?updated=1`);
+
+	}
+
+	if (action === "delete") {
+
+		if (!eventId) return
+
+		await db
+		.delete(siteSchema.event)
+		.where(
+			and(
+				eq(siteSchema.event.eventId, eventId),
+				eq(siteSchema.event.dbId, CurrentdbIdentity)
+			)
+		);
+
+
+		return Astro.redirect(`/schedule?deleted=1`);
+	}
+
+
+	if (action === "togglePin") {
+
+		if (!eventId) return
+
+		await db.update(siteSchema.event)
+		.set({
+			eventIsPinned: sql`NOT ${siteSchema.event.eventIsPinned}`
+		})
+		.where(and(
+			eq(siteSchema.event.eventId, eventId),
+			eq(siteSchema.event.dbId, CurrentdbIdentity)
+			)
+		);
+
+		return Astro.redirect(`/schedule?updated=1`);
 	}
 
 
@@ -86,9 +142,10 @@ if (Astro.request.method === "POST") {
       <!-- Schedule panel: fixed size -->
       <div class="border-2 border-primary rounded-lg min-w-[28%] shrink-0 min-h-0 flex flex-col p-4">
 				<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Schedule Event</h1>
-					<form method="post" class=" flex-1 space-y-6 overflow-y-auto p-4">
+					<form method="post" class=" flex-1 space-y-6 overflow-y-auto p-4 flex flex-col">
 
 					<input type="hidden" name="eventId" >
+					<input type="hidden" name="action" value="create">
 
 					<div class="">
 						<h3 class="text-lg font-semibold mb-2">Event Title</h3>
@@ -135,21 +192,19 @@ if (Astro.request.method === "POST") {
 
 					</div>
 
-					<div id="editModeIndicator" class="hidden">
-						<div class="flex flex-row gap-2 items-center">
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+					<div id="editModeIndicator" class="hidden shrink">
+						<div class="flex flex-row gap-2 items-center justify-center border-2 p-2 border-primary rounded-lg ">
+							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
 								<circle cx="12" cy="12" r="10"/>
 								<line x1="12" y1="8" x2="12" y2="12"/>
 								<line x1="12" y1="16" x2="12.01" y2="16"/>
 							</svg>
 							<p>Editing an existing Entry</p>
-							<button class="ml-2">
-								<span class="text-primary hover:text-red-400">
+							<button class=" border-2 text-primary rounded-full text-primary hover:text-red-400 flex items-center h-6 w-6">
 									<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
 										<line x1="9" y1="9" x2="15" y2="15"/>
 										<line x1="15" y1="9" x2="9" y2="15"/>
 									</svg>
-								</span>
 							</button>
 						</div>
 
@@ -178,15 +233,8 @@ if (Astro.request.method === "POST") {
 
 							<!-- new event -->
 
-							<!-- <ScheduleEntry -->
-							<!-- 	number="1" -->
-							<!-- 	title="Test Event" -->
-							<!-- 	description="this is a test event, for showing a an entry" -->
-							<!-- 	startIn="2025-11-27T17:58" -->
-							<!-- 	endIn="2025-11-27T18:58:44" -->
-							<!-- /> -->
-
-							{Events.map((entry, index) => 
+							{Events  .sort((a, b) => Number(b.eventIsPinned) - Number(a.eventIsPinned))
+							.map((entry, index) => 
 								<ScheduleEntry
 									entryId={entry.eventId}
 									number={index + 1}
@@ -194,6 +242,7 @@ if (Astro.request.method === "POST") {
 									description={entry.eventDescription}
 									startIn={entry.eventScheduledStartAt}
 									endIn={entry.eventScheduledEndAt}
+								  isPined={entry.eventIsPinned}
 								/>
 							)}
 
@@ -236,6 +285,7 @@ if (Astro.request.method === "POST") {
 				
 
 				document.querySelector('input[name="eventId"]').value = eventId;
+				document.querySelector('input[name="action"]').value = "update";
 				document.querySelector('input[name="eventTitle"]').value = eventTitle;
 				document.querySelector('textarea[name="eventDescription"]').value = eventDescription;
 				document.querySelector('input[name="eventScheduledStartAt"]').value = toDatetimeLocal(eventStart);
@@ -329,4 +379,45 @@ if (Astro.request.method === "POST") {
     document.addEventListener('astro:page-load', initTimestamps);
   })();
 </script>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const deleteButtons = document.querySelectorAll('.delete-event-btn');
+		const pinButtons = document.querySelectorAll('.pin-event-btn');
+
+
+    const form = document.querySelector('form');
+    const eventIdInput = form.querySelector('input[name="eventId"]');
+    const actionInput = form.querySelector('input[name="action"]');
+
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const eventId = button.dataset.eventId;
+
+        if (!confirm('Are you sure you want to delete this event?')) return;
+
+        eventIdInput.value = eventId;
+        actionInput.value = "delete";
+
+        form.submit();
+      });
+    });
+
+
+
+
+		pinButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const eventId = button.dataset.eventId;
+
+        eventIdInput.value = eventId;
+        actionInput.value = "togglePin";
+        form.submit();
+      });
+		});
+
+  });
+</script>
+
+
 </BaseLayout>
