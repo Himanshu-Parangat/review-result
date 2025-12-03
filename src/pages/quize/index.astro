@@ -1,6 +1,8 @@
 ---
 export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
+import QuizeEntry from "@components/QuizeEntry.astro";
+import { db  } from "@db/index";
 
 
 if (Astro.request.method === "POST") {
@@ -9,6 +11,9 @@ if (Astro.request.method === "POST") {
 	console.log(formData)
 
 }
+
+const GetAllQuizes = await db.query.question.findMany({with: {options:true}})
+
 
 ---
 
@@ -22,145 +27,21 @@ if (Astro.request.method === "POST") {
 			<div class="w-full p-4 mt-4 flex flex-col gap-4 overflow-y-auto">
 
 				<!-- entry -->
-				<div class="border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
-					<div class="flex-1 flex flex-row gap-4 w-full">
-						<div class="shrink-0 text-primary text-lg  bg-accent flex justify-center items-center rounded-lg w-10 h-10 ">1</div>
-						<details class="group relative w-full">
-							<summary class="list-none cursor-pointer flex items-start justify-between">
-								<h1 class="text-2xl">Sample Quize for Radio</h1>
 
-								<svg xmlns="http://www.w3.org/2000/svg"
-									class="shrink-0 w-5 h-5 text-primary transition-transform duration-200 group-open:rotate-180 mr-2 mt-2"
-									fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M19 9l-7 7-7-7" />
-								</svg>
-							</summary>
+				{(GetAllQuizes ?? []).map((quize, Index) => (
+					<QuizeEntry
+						number={Index + 1}
+						title={quize.questionTitle || ""}
+						description={quize.questionDescription || ""}
+						options={(quize.options ?? []).map(option => ({
+							text: option.optionTitle || "",
+							value: option.optionlabel || ""
+						}))}
+						type={quize.questionType || "checkbox"}
+						hideDescription={true}
+					/>
+				))}
 
-							<h2 class="text-xl text-secondary">This is description</h2>
-						</details>
-
-
-					</div>
-					<div id="optionsfor" class="ml-9 space-y-4 p-6">
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="radio" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 1</span>
-						</label>
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="radio" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 2</span>
-						</label>
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="radio" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 3</span>
-						</label>
-
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="radio" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 4</span>
-						</label>
-
-
-					</div>
-
-
-				</div>
-
-
-				<div class="border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
-					<div class="flex-1 flex flex-row gap-4 w-full">
-						<div class="shrink-0 text-primary text-lg  bg-accent flex justify-center items-center rounded-lg w-10 h-10 ">2</div>
-						<details class="group relative w-full">
-							<summary class="list-none cursor-pointer flex items-start justify-between">
-								<h1 class="text-2xl">Sample Quize for Checkbox</h1>
-
-								<svg xmlns="http://www.w3.org/2000/svg"
-									class="shrink-0 w-5 h-5 text-primary transition-transform duration-200 group-open:rotate-180 mr-2 mt-2"
-									fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M19 9l-7 7-7-7" />
-								</svg>
-							</summary>
-
-							<h2 class="text-xl text-secondary">This is a description</h2>
-						</details>
-
-
-					</div>
-					<div id="optionsfor" class="ml-9 space-y-4 p-6">
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="checkbox" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 1</span>
-						</label>
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="checkbox" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 2</span>
-						</label>
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="checkbox" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 3</span>
-						</label>
-
-						<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
-							<input 
-								type="checkbox" 
-								name="fuu" 
-								value="ra" 
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2"
-							>
-							<span class="ml-3 text-xl text-secondary">Option 4</span>
-						</label>
-
-
-
-
-					</div>
-
-
-				</div>
 
 
 			</div>

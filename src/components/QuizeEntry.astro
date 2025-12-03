@@ -1,0 +1,65 @@
+---
+interface Option {
+  text: string;
+  value?: string;
+}
+
+interface Props {
+  number: number;
+  title: string;
+  description: string;
+  options: Option[];
+  name?: string; // name for input group
+  type?: "radio" | "checkbox";
+	hideDescription : boolean
+}
+
+const {
+  number,
+  title,
+  description,
+  options = [],
+	type,
+	name = "quiz-option",
+	hideDescription = false
+} = Astro.props;
+---
+
+<div class="border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
+  <div class="flex-1 flex flex-row gap-4 w-full">
+    <div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
+      {number}
+    </div>
+
+		<details class="group relative w-full" open={hideDescription}>
+      <summary class="list-none cursor-pointer flex items-start justify-between">
+        <h1 class="text-2xl">{title}</h1>
+
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="shrink-0 w-5 h-5 text-primary transition-transform duration-200 group-open:rotate-180 mr-2 mt-2"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 9l-7 7-7-7" />
+        </svg>
+      </summary>
+
+      <h2 class="text-xl text-secondary mt-1">{description}</h2>
+    </details>
+  </div>
+
+  <!-- Options -->
+  <div class="ml-9 space-y-4 p-6">
+    {options.map((opt, i) => (
+		<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
+        <input 
+          type={type || "checkbox"}
+          name={name}
+          value={opt.value || i}
+				class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
+        >
+        <span class="ml-3 text-xl ">{opt.text}</span>
+      </label>
+    ))}
+  </div>
+</div>
+

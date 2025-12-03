@@ -55,6 +55,19 @@ export const option = sqliteTable("option", {
 })
 
 
+
+export const questionRelations = relations(question, ({ many }) => ({
+  options: many(option),
+}));
+
+export const optionRelations = relations(option, ({ one }) => ({
+  question: one(question, {
+    fields: [option.questionId],
+    references: [question.questionId],
+  }),
+}));
+
+
 export const participant = sqliteTable("participant", {
 	participantId: text("participantId").primaryKey(),
 	participantlabel: text("participantlabel"),
@@ -91,4 +104,3 @@ export const response = sqliteTable("response", {
 export const dbIdentityRelations = relations(dbIdentity, ({ many }) => ({
   events: many(event),
 }));
-//
