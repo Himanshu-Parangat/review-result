@@ -1,0 +1,16 @@
+---
+import BaseLayout from "./BaseLayout.astro"
+
+---
+<BaseLayout>
+  <div class="mx-[5%] lg:h-full flex lg:flex-row lg:justify-center lg:items-start flex-col-reverse   items-center gap-4  ">
+		<div class="lg:flex-1 lg:min-w-[65%] lg:h-full lg:w-auto w-full  flex-1 lg:overflow-y-auto">
+			<slot name="max-slot"/>
+		</div>
+		<div class="lg:shrink-0 lg:min-w-[35%] lg:h-full lg:w-auto w-full lg:min-h-[20%]  shrink-0">
+			<slot name="min-slot"/>
+		</div>
+
+	</div>
+
+</BaseLayout>
