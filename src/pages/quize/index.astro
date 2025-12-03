@@ -3,6 +3,13 @@ export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 
 
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+
+	console.log(formData)
+
+}
+
 ---
 
 <TwoColumnLayout>
@@ -165,8 +172,225 @@ import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 
 
 	
+	<div slot="min-slot" class="h-full">
+		<div class="border-2 border-primary h-full rounded-xl p-4 flex flex-col items-center">
+			<h1 class="text-xl font-bold items-center">Quiz create</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+			<form id="quizForm" method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
+				<input type="hidden" name="optionObject" id="AllOptions">
+
+				<h3 class="text-lg font-semibold mt-2">Question Title</h3>
+				<input
+					type="text"
+					name="questionTitle"
+					class="w-full mt-2 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+				<h3 class="text-lg font-semibold mt-2">Question Description</h3>
+				<textarea 
+					name="questionDescription"
+					rows="4"
+					class="w-full mt-2 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your description here..." required></textarea>
+
+				<h3 class="text-lg font-semibold mt-2">Question Type</h3>
+				<select name="questionType" id="questionTypeField" class="mt-2 w-full border-2 border-primary rounded-lg p-3 text-secondary focus:outline-none focus:ring-2 bg-primary">
+					<option class="" value="default" disabled selected hidden>Select Type</option>
+					<option value="radio">Single Option (Radio)</option>
+					<option value="checkbox">Multiple Option (Checkbox)</option>
+				</select>
+
+				<h3 class="text-lg font-semibold mt-2">Question Options</h3>
+				<div id="optionsContainer" class="flex flex-col w-full mt-2 gap-2">
+					<!-- Options will be added here dynamically -->
+				</div>
+
+				<div class="flex flex-row gap-3 mt-2">
+					<input
+						type="text"
+						id="newOptionInput"
+						class="w-full p-4 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+						placeholder="Type option text here..." />
+
+					<button type="button" id="addOptionBtn" class="border-2 px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover:hover-primary">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="2"/>
+							<line x1="12" y1="5" x2="12" y2="19" />
+							<line x1="5" y1="12" x2="19" y2="12" />
+						</svg>
+						<span class="text-base">Add</span>
+					</button>
+				</div>
 
 
+					<button
+						id="SubmitQuestionEntry"
+						type="submit"
+						class="w-full p-3 mt-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+					>
+						Set Question
+					</button>
 
+
+			</form>
+		</div>
+		
+		<script >
+
+			const addBtn = document.getElementById('addOptionBtn') as HTMLButtonElement;
+			const newOptionInput = document.getElementById('newOptionInput') as HTMLInputElement;
+			const optionsContainer = document.getElementById('optionsContainer')  as HTMLDivElement;
+			const questionTypeField = document.getElementById('questionTypeField') as HTMLSelectElement;
+			const quizForm = document.getElementById('quizForm') as HTMLFormElement;
+
+			if (!addBtn || !newOptionInput || !optionsContainer || !questionTypeField || !quizForm) {
+				console.error('Required elements not found');
+				throw new Error('Required elements not found');
+			}
+
+			interface Option {
+				id: number;
+				text: string;
+				isCorrect: boolean;
+			}
+
+			let optionCounter = 0;
+			let allOptions: Option[] = []; 
+
+			function createOptionElement(text : string, inputType: string) {
+				const optionId = optionCounter++;
+				const optionDiv = document.createElement('div');
+				optionDiv.className = 'flex flex-row w-full';
+				optionDiv.dataset.optionId = String(optionId);
+
+				optionDiv.innerHTML = `
+					<div class="flex flex-row p-3 items-center justify-between w-full border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
+						<label class="flex items-center cursor-pointer">
+							<input 
+								type="${inputType}" 
+								name="correctAnswer" 
+								value="${optionId}"
+								class="w-4 h-4 text-accent text-2xl scale-150 ml-2 cursor-pointer"
+							>
+							<span class="ml-3 text-xl text-secondary">${text}</span>
+						</label>
+
+						<button type="button" class="delete-btn flex flex-row whitespace-normal justify-between hover:text-red-400">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="3 6 5 6 21 6"/>
+								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+								<line x1="10" y1="11" x2="10" y2="17"/>
+								<line x1="14" y1="11" x2="14" y2="17"/>
+							</svg>
+						</button>
+					</div>
+				`;
+
+				const deleteBtn = optionDiv.querySelector('.delete-btn');
+				if (deleteBtn) {
+					deleteBtn.addEventListener('click', () => {
+						allOptions = allOptions.filter(opt => opt.id !== optionId);
+						optionDiv.remove();
+					});
+				}
+
+				return optionDiv;
+			}
+
+			function updateAllOptionTypes() {
+				if (!questionTypeField || !optionsContainer) return;
+				
+				const selectedType = questionTypeField.value;
+				if (selectedType === 'default') return;
+
+				const allInputs = optionsContainer.querySelectorAll('input[name="correctAnswer"]');
+				allInputs.forEach(input => {
+					if (input instanceof HTMLInputElement) {
+						input.type = selectedType;
+						if (selectedType === 'radio') {
+							input.checked = false; 
+						}
+					}
+				});
+			}
+
+			addBtn.addEventListener('click', () => {
+				if (!newOptionInput || !questionTypeField || !optionsContainer) return;
+				
+				const optionText = newOptionInput.value.trim();
+				
+				if (!optionText) {
+					alert('Please enter option text');
+					return;
+				}
+
+				const questionType = questionTypeField.value;
+				if (questionType === 'default') {
+					alert('Please select a question type first');
+					return;
+				}
+
+				const optionId = optionCounter;
+				const newOption = createOptionElement(optionText, questionType);
+				optionsContainer.appendChild(newOption);
+
+				allOptions.push({
+					id: optionId,
+					text: optionText,
+					isCorrect: false
+				});
+
+				newOptionInput.value = '';
+				newOptionInput.focus();
+			});
+
+			newOptionInput.addEventListener('keypress', (e) => {
+				if (e.key === 'Enter' && addBtn) {
+					e.preventDefault();
+					addBtn.click();
+				}
+			});
+
+			questionTypeField.addEventListener('change', updateAllOptionTypes);
+
+			quizForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			if (allOptions.length === 0) {
+					alert('Please add at least one option');
+					return;
+			}
+
+			const checkedInputs = document.querySelectorAll('input[name="correctAnswer"]:checked');
+			if (checkedInputs.length === 0) {
+					alert('Please select at least one correct answer');
+					return;
+			}
+
+
+			const correctAnswerIds = Array.from(checkedInputs).map(input => 
+				parseInt((input as HTMLInputElement).value)
+			);
+
+			allOptions.forEach(option => {
+					option.isCorrect = correctAnswerIds.includes(option.id);
+			});
+
+
+			const allOptionsData = allOptions.map(option => ({
+				text: option.text,
+				isCorrect: option.isCorrect,
+
+			}))
+
+			const allOptionsInput = document.getElementById('AllOptions') as HTMLInputElement;
+			allOptionsInput.value = JSON.stringify(allOptionsData);
+
+			quizForm.submit();
+	});
+
+		</script>
+
+	</div>
 
 </TwoColumnLayout>
