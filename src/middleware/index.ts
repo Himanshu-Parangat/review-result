@@ -36,7 +36,7 @@ export const logMiddleware = defineMiddleware((context, next) => {
 export const routeCheckMiddleware = defineMiddleware(async (context, next) => {
   const { request, url } = context;
 
-  if (url.pathname.startsWith("/schedule")) {
+  if (url.pathname.startsWith("/admin")) {
     const Cookie = checkCookie(request);
 
 		const token = import.meta.env.HASH_TOKEN

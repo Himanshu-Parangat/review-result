@@ -72,7 +72,7 @@ if (Astro.request.method === "POST") {
 
 		}).returning();
 
-		return Astro.redirect(`/schedule?submitted=1`);
+		return Astro.redirect(`/admin/event?submitted=1`);
 
 
 	} 
@@ -90,7 +90,7 @@ if (Astro.request.method === "POST") {
 			dbId: CurrentdbIdentity,
 		}).where(eq(siteSchema.event.eventId, eventId))
 
-		return Astro.redirect(`/schedule?updated=1`);
+		return Astro.redirect(`/admin/event?updated=1`);
 
 	}
 
@@ -108,7 +108,7 @@ if (Astro.request.method === "POST") {
 		);
 
 
-		return Astro.redirect(`/schedule?deleted=1`);
+		return Astro.redirect(`/admin/event?deleted=1`);
 	}
 
 
@@ -126,7 +126,7 @@ if (Astro.request.method === "POST") {
 			)
 		);
 
-		return Astro.redirect(`/schedule?updated=1`);
+		return Astro.redirect(`/admin/event?toggle=1`);
 	}
 
 
