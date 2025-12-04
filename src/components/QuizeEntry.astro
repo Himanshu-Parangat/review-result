@@ -14,6 +14,8 @@ interface Props {
 	hideDescription : boolean
 }
 
+const isPined = true
+
 const {
   number,
   title,
@@ -25,41 +27,155 @@ const {
 } = Astro.props;
 ---
 
-<div class="border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
-  <div class="flex-1 flex flex-row gap-4 w-full">
-    <div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
-      {number}
-    </div>
+<div class="mb-2 border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
+	<details class="group/settings">
+		<summary class="list-none cursor-pointer flex items-start  w-full">
+			<div class="flex flex-col w-full">
 
-		<details class="group relative w-full" open={hideDescription}>
-      <summary class="list-none cursor-pointer flex items-start justify-between">
-        <h1 class="text-2xl">{title}</h1>
+				<div class="flex-1 flex flex-row gap-4 w-full">
+					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
+						{number}
+					</div>
 
-        <svg xmlns="http://www.w3.org/2000/svg"
-          class="shrink-0 w-5 h-5 text-primary transition-transform duration-200 group-open:rotate-180 mr-2 mt-2"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M19 9l-7 7-7-7" />
-        </svg>
-      </summary>
+					<details class="group relative w-full" open={hideDescription}>
+						<summary class="list-none cursor-pointer flex items-start justify-between">
+							<h1 class="text-2xl">{title}</h1>
 
-      <h2 class="text-xl text-secondary mt-1">{description}</h2>
-    </details>
-  </div>
+							<svg xmlns="http://www.w3.org/2000/svg"
+								class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
+								fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M19 9l-7 7-7-7" />
+							</svg>
+						</summary>
 
-  <!-- Options -->
-  <div class="ml-9 space-y-4 p-6">
-    {options.map((opt, i) => (
-		<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
-        <input 
-          type={type || "checkbox"}
-          name={name}
-          value={opt.value || i}
-				class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
-        >
-        <span class="ml-3 text-xl ">{opt.text}</span>
-      </label>
-    ))}
-  </div>
+						<h2 class="text-xl text-secondary mt-1">{description}</h2>
+					</details>
+
+
+				</div>
+
+				<div class="ml-9 space-y-4 pl-3 py-3">
+					{options.map((opt, i) => (
+					<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
+							<input 
+								type={type || "checkbox"}
+								name={name}
+								value={opt.value || i}
+							class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
+							>
+							<span class="ml-3 text-xl ">{opt.text}</span>
+						</label>
+					))}
+
+				</div>
+
+
+			</div>
+
+			<svg xmlns="http://www.w3.org/2000/svg" 
+				class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open/settings:rotate-60" 
+				 fill="none" 
+				 viewBox="0 0 24 24" 
+				 stroke="currentColor">
+			<path stroke-linecap="round" 
+						stroke-linejoin="round" 
+						stroke-width="2" 
+						d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+			<path stroke-linecap="round" 
+						stroke-linejoin="round" 
+						stroke-width="2" 
+						d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+			</svg>
+
+		</summary>
+
+
+		<p class="mt-2 text-sm text-secondary">
+
+		<div class="flex lg:flex-row flex-col gap-3 justify-between ml-12 mr-8 mt-6">
+			<div class="flex flex-row gap-3 ">
+				<button class="edit-event-btn  text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+						<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+					</svg>
+					<span>
+						Edit
+					</span>
+				</button>
+
+				<button class="delete-event-btn text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="3 6 5 6 21 6"/>
+						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+						<line x1="10" y1="11" x2="10" y2="17"/>
+						<line x1="14" y1="11" x2="14" y2="17"/>
+					</svg>
+					<span>
+						Delete
+					</span>
+				</button>
+
+				<button
+					class="pin-event-btn text-lg font-semibold px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				>
+					{isPined? (
+						<>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+								viewBox="0 0 24 24" fill="currentColor" class="text-primary">
+								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+							</svg>
+							<span>Unpin</span>
+						</>
+					) : (
+						<>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+								viewBox="0 0 24 24" fill="none" stroke="currentColor"
+								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+							</svg>
+							<span>Pin</span>
+						</>
+					)}
+
+				</button>
+			</div>
+
+
+
+			<div class="flex flex-row gap-3">
+
+				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+						<rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+					</svg>
+
+					<span>
+						Copy
+					</span>
+				</button>
+
+				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+					</svg>
+					<span>
+						Duplicate
+					</span>
+				</button>
+
+			</div>
+
+		</div>
+		</p>
+
+	</details>
+
 </div>
 
