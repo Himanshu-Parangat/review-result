@@ -2,13 +2,67 @@
 export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import QuizeEntry from "@components/QuizeEntry.astro";
-import { db  } from "@db/index";
+import { db, siteSchema  } from "@db/index";
+import { generateId } from "@utils/MainUtils";
 
 
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
 
-	console.log(formData)
+	const action = formData.get("action") as string;
+	const questionTitle = formData.get("questionTitle") as string;
+	const questionDescription = formData.get("questionDescription") as string;
+	const questionType = formData.get("questionType") as "checkbox" | "radio";
+
+	type OptionInput = {
+		text: string;
+		isCorrect: boolean;
+	};
+
+	const optionObject = JSON.parse(
+		formData.get("optionObject") as string
+	) as OptionInput[];
+
+	if (action === "create") {
+		console.log()
+
+		const questionId : string = generateId();
+		
+		await db.insert(siteSchema.question).values({
+			questionId,
+			questionlabel: "Question label",
+			questionCreatedAt: new Date().toISOString(),
+			questionTitle,
+			questionDescription,
+			questionType,
+			questionIsRequired: true,
+			questionOrder: 1,
+			eventId: "OS77ux5Ff7pjsAVy39fDnpewi",
+		});
+
+		await db.insert(siteSchema.option).values(
+			optionObject.map((option, index) => ({
+				optionId: generateId(),
+				optionCreatedAt: new Date().toISOString(),
+				optionTitle: option.text,
+				optionKey: option.isCorrect,
+				optionlabel: "",
+				optionOrder: index + 1,
+				questionId,
+			}))
+		);
+
+		console.log(action );
+		console.log(questionTitle );
+		console.log(questionDescription );
+		console.log(questionType );
+		console.log(optionObject );
+
+		return Astro.redirect(`/quize?submitted=1`);
+
+	}
+
+
 
 }
 
@@ -59,6 +113,7 @@ const GetAllQuizes = await db.query.question.findMany({with: {options:true}})
 			<div class="border-b-2 border-primary w-full mt-2"></div>
 			<form id="quizForm" method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
 				<input type="hidden" name="optionObject" id="AllOptions">
+				<input type="hidden" name="action" id="action" value="create">
 
 				<h3 class="text-lg font-semibold mt-2">Question Title</h3>
 				<input
