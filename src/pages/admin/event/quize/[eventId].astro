@@ -4,6 +4,33 @@ import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import QuizeEntry from "@components/QuizeEntry.astro";
 import { db, siteSchema  } from "@db/index";
 import { generateId } from "@utils/MainUtils";
+import { eq } from "drizzle-orm";
+
+
+const { eventId } = Astro.params;
+
+if (!eventId) {
+  return Astro.redirect("/admin/event");
+}
+
+const event = await db.select()
+  .from(siteSchema.event)
+  .where(eq(siteSchema.event.eventId, eventId))
+  .then(res => res[0]);
+
+if (!event) {
+  return Astro.redirect("/admin/event");
+}
+
+
+const GetAllQuizes = await db.query.question.findMany({
+  where: eq(siteSchema.question.eventId, eventId),
+  with: {
+    options: true
+  }
+});
+
+
 
 
 if (Astro.request.method === "POST") {
@@ -65,8 +92,6 @@ if (Astro.request.method === "POST") {
 
 
 }
-
-const GetAllQuizes = await db.query.question.findMany({with: {options:true}})
 
 
 ---
