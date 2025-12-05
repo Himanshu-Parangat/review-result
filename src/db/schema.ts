@@ -75,8 +75,8 @@ export const participant = sqliteTable("participant", {
 	participantName: text("participantName"),
 	participantPayrollId: text("participantPayrollId"),
 	participantDepartment: text("participantDepartment"),
-	participantEmail: text("participantEmail"),
-	participantPhone: text("participantPhone"),
+	participantDesignation: text("participantDesignation"),
+	eventId: text("eventId").notNull().references(() => event.eventId)
 })
 
 // user submitting there submission,
