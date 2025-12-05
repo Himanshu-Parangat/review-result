@@ -1,99 +1,241 @@
-
 ---
-export const prerender = false;
+export const prerender = false
 import BaseLayout from "@layouts/BaseLayout.astro"
+import { db, siteSchema  } from "@db/index";
+import { eq } from "drizzle-orm";
+import { generateId } from "@utils/MainUtils";
+
 const { registerId } = Astro.params;
+
+if (!registerId) {
+  return Astro.redirect("/register");
+}
+
+
+const event = await db.select()
+  .from(siteSchema.event)
+  .where(eq(siteSchema.event.eventId, registerId))
+  .then(res => res[0]);
+
+
+if (!event) {
+  return Astro.redirect("/register");
+}
+
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+	const action = formData.get("action") as string;
+
+	const participantName = formData.get("participantName") as string;
+	const participantPayrollId = formData.get("participantPayrollId") as string;
+	const participantDepartment = formData.get("participantDepartment") as string;
+	const participantDesignation = formData.get("participantDesignation") as string;
+
+
+	if (action === "create") {
+
+
+		console.log("eventId is set to", registerId)
+		console.log("participantName is set to", participantName)
+		console.log("participantPayrollId is set to", participantPayrollId)
+		console.log("participantDepartment is set to", participantDepartment)
+		console.log("participantDesignation is set to", participantDesignation)
+
+		if (!registerId || !participantName || !participantPayrollId || !participantDepartment || !participantDesignation) {
+			console.warn("Missing required fields. No DB entry created.")
+		} else {
+
+			await db.insert(siteSchema.participant).values(
+				{
+					eventId: registerId,
+					participantId: generateId(),
+					participantCreatedAt: new Date().toISOString(),
+					participantPayrollId: participantPayrollId,
+					participantName: participantName,
+					participantlabel: "",
+					participantDesignation: participantDesignation,
+					participantDepartment: participantDepartment
+				}
+
+			)
+
+		}
+
+
+
+		
+		console.log(formData)
+
+	}
+}
 ---
 
-<BaseLayout title={"Register For "+ registerId}>
+<BaseLayout title="Register">
 	<div class="h-full mx-[5%] flex flex-col items-center">
-		<div class="border-2 border-primary rounded-lg p-10 space-y-6 mt-[5%] min-w-[50%]">
-			<h1 class="text-2xl font-bold text-center mb-1">Welcome to the event!</h1>
-			<h3 class="text-secondary text-sm font-bold text-center mb-8">Please provide the following details.</h3>
-			<div class="space-y-2">
+		<h1 class="text-2xl font-bold  mb-1">Welcome to the event!</h1>
+		<h3 class="text-secondary text-sm font-bold  mb-2">Please provide the following details.</h3>
 
-				<h3 class="text-lg font-semibold mb-2">Enter User Details</h3>
-				<div class="flex flex-row justify-between gap-6">
-					<div class="flex-2">
-						<p class="text-base mb-2 text-secondary ">Payroll Number</p>
+		<div class="border-2 border-primary rounded-lg p-10 space-y-6 mt-[2%] min-w-[50%]">
 
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Payroll Number..." />
+			<div class="flex flex-col items-center">
 
+				<div class="flex flex-row gap-4 border-2 border-primary px-6 py-4 rounded-lg">
+					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-13 h-13 ">
+						<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+							<rect x="6" y="8" width="22" height="20" rx="2" stroke-width="2"/>
+							<line x1="6" y1="13" x2="28" y2="13" stroke-width="2"/>
+							<line x1="11" y1="8" x2="11" y2="5" stroke-width="2" stroke-linecap="round"/>
+							<line x1="23" y1="8" x2="23" y2="5" stroke-width="2" stroke-linecap="round"/>
+							<text x="17" y="23" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor" stroke="none">S</text>
+						</svg>
+					</div>
+					<div class="flex flex-col text-start">
+						<h1 class="text-2xl text-primary truncate">{event.eventTitle}</h1>
+						<h3 class="text-lg text-secondary truncate">{event.eventDescription}</h3>
 					</div>
 
-					<div class="flex-2">
-						<p class="text-base mb-2 text-secondary ">Your Name</p>
-
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Name..." />
-
-					</div>
 				</div>
-
-				<div class="flex flex-row justify-between gap-6">
-					<div class="flex-2">
-						<p class="text-base mb-2 text-secondary ">Department</p>
-
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Department..." />
-
-					</div>
-
-					<div class="flex-2">
-						<p class="text-base mb-2 text-secondary ">Designation</p>
-
-						<input
-							type="text"
-							name="q3"
-							class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Designation..." />
-
-					</div>
-				</div>
-
 			</div>
 
-			<div class="space-y-4">
-				<h3 class="text-lg font-semibold">Enter Event ID</h3>
-				<p class="text-sm mb-4 text-secondary ">Enter your Event ID & Event Link</p>
 
-				<div class="flex flex-row gap-4">
-					<input
-						type="text"
-						name="q3"
-						class="flex-6 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-					  value={registerId}
-						placeholder="Type your Payroll here..." />
+			<form method="post">
+				<div class="space-y-2 mt-8">
 
-						<div>
-							<button
-								class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
-							>
-							<a href="/" class="inline-block  rounded ">
-								Join Event
-							</a>
-							</button>
+					<h3 class="text-lg font-semibold mb-2">Enter User Details</h3>
+					<div class="flex flex-row justify-between gap-6">
+						<div class="flex-2">
+							<p class="text-base mb-2 text-secondary ">Payroll Number</p>
+
+							<input
+								type="text"
+								id="payroll"
+								name="participantPayrollId"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Payroll Number..." required />
+
 						</div>
 
+						<div class="flex-2">
+							<p class="text-base mb-2 text-secondary ">Your Name</p>
+
+							<input
+								type="text"
+								id="name"
+								name="participantName"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Name..." required />
+
+						</div>
+					</div>
+
+					<div class="flex flex-row justify-between gap-6">
+						<div class="flex-2">
+							<p class="text-base mb-2 text-secondary ">Department</p>
+
+							<input
+								type="text"
+								id="department"
+								name="participantDepartment"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Department..." required />
+
+						</div>
+
+						<div class="flex-2">
+							<p class="text-base mb-2 text-secondary ">Designation</p>
+
+							<input
+								id="designation" 
+								type="text"
+								name="participantDesignation"
+								class="w-full p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Designation..." required />
+
+						</div>
+					</div>
 
 				</div>
 
-			</div>
+				<div class="space-y-4">
+					<h3 class="text-lg font-semibold">Enter Event ID</h3>
+					<p class="text-sm mb-4 text-secondary ">Enter your Event ID & Event Link</p>
 
+					<div class="flex flex-row gap-4">
+						<input
+							type="text"
+							name="eventId"
+							value={registerId}
+							class="flex-6 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+							placeholder="Type your Payroll here..." required/>
+
+						<input type="hidden" name="action" value="create">
+							<div>
+								<button
+									id="doEntry"
+									type="submit"
+									class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+								>
+									Join Event
+								</button>
+							</div>
+
+
+					</div>
+
+				</div>
+
+			</form>
 		</div>
 
 
 
 	</div>
+
+<script>
+
+	type UserRecord = {
+		yourname: string;
+		department: string;
+		designation: string;
+	};
+
+
+	const userData: Record<string, UserRecord> = {
+		"91384943": {
+			yourname: "Jane Dow",
+			department: "L&D",
+			designation: "Manager",
+		},
+		"55522211": {
+			yourname: "John Smith",
+			department: "Finance",
+			designation: "Analyst",
+		},
+	};
+
+
+
+	document.addEventListener("DOMContentLoaded", () => {
+  const payrollInput = document.querySelector<HTMLInputElement>("#payroll");
+  const nameInput = document.querySelector<HTMLInputElement>("#name");
+  const deptInput = document.querySelector<HTMLInputElement>("#department");
+  const desigInput = document.querySelector<HTMLInputElement>("#designation");
+
+  if (!payrollInput || !nameInput || !deptInput || !desigInput) return;
+
+  payrollInput.addEventListener("blur", () => {
+    const key = payrollInput.value.trim();
+
+    const record = userData[key];
+    if (record) {
+      nameInput.value = record.yourname;
+      deptInput.value = record.department;
+      desigInput.value = record.designation;
+    }
+  });
+});
+
+</script>
 
 </BaseLayout>
