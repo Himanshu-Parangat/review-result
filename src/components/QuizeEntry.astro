@@ -2,6 +2,7 @@
 interface Option {
   text: string;
   value?: string;
+	name: string;
 }
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
   title: string;
   description: string;
   options: Option[];
-  name?: string; // name for input group
+  // name?: string; // name for input group
   type?: "radio" | "checkbox";
 	hideDescription : boolean
 }
@@ -22,12 +23,11 @@ const {
   description,
   options = [],
 	type,
-	name = "quiz-option",
 	hideDescription = false
 } = Astro.props;
 ---
 
-<div class="mb-2 border-2 border-primary rounded-lg p-4 hover:hover-primary hover:scale-[1.02]">
+<div class="mb-2 border-2 border-primary bg-tertiary rounded-lg p-4  hover:scale-[1.02]">
 	<details class="group/settings">
 		<summary class="list-none cursor-pointer flex items-start  w-full">
 			<div class="flex flex-col w-full">
@@ -55,12 +55,12 @@ const {
 
 				</div>
 
-				<div class="ml-9 space-y-4 pl-3 py-3">
+				<div class="ml-9 space-y-4 pl-3 py-3 ">
 					{options.map((opt, i) => (
 					<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
 							<input 
 								type={type || "checkbox"}
-								name={name}
+								name={opt.name}
 								value={opt.value || i}
 							class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
 							>
@@ -95,7 +95,7 @@ const {
 
 		<div class="flex lg:flex-row flex-col gap-3 justify-between ml-12 mr-8 mt-6">
 			<div class="flex flex-row gap-3 ">
-				<button class="edit-event-btn  text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				<button class="edit-event-btn  text-lg   px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -106,7 +106,7 @@ const {
 					</span>
 				</button>
 
-				<button class="delete-event-btn text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				<button class="delete-event-btn text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<polyline points="3 6 5 6 21 6"/>
@@ -120,7 +120,7 @@ const {
 				</button>
 
 				<button
-					class="pin-event-btn text-lg font-semibold px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+					class="pin-event-btn text-lg px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
 				>
 					{isPined? (
 						<>
@@ -148,7 +148,7 @@ const {
 
 			<div class="flex flex-row gap-3">
 
-				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
 
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
@@ -160,7 +160,7 @@ const {
 					</span>
 				</button>
 
-				<button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
 						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>

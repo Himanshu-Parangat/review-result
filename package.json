@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.0",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/twinkle-star": "^5.2.8",
     "@tailwindcss/vite": "^4.1.17",
     "astro": "^5.15.8",
     "bcrypt": "^6.0.0",

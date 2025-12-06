@@ -85,7 +85,7 @@ if (Astro.request.method === "POST") {
 		console.log(questionType );
 		console.log(optionObject );
 
-		return Astro.redirect(`/quize?submitted=1`);
+		return Astro.redirect("/admin/event/quize/" + eventId + "?submitted=1");
 
 	}
 
@@ -100,10 +100,10 @@ if (Astro.request.method === "POST") {
 
 	<div slot="max-slot" class="h-full"> 
 
-		<div class="border-2 border-primary h-full rounded-xl p-4  flex flex-col items-center">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4  flex flex-col items-center">
 			<h1 class="text-xl font-bold items-center">All Quie</h1>
 			<div class=" border-b-2 border-primary w-full mt-2"></div>
-			<div class="w-full p-4 mt-4 flex flex-col gap-4 overflow-y-auto">
+			<div class="w-full p-8 mt-4 flex flex-col gap-6 overflow-y-auto">
 
 				<!-- entry -->
 
@@ -114,7 +114,8 @@ if (Astro.request.method === "POST") {
 						description={quize.questionDescription || ""}
 						options={(quize.options ?? []).map(option => ({
 							text: option.optionTitle || "",
-							value: option.optionlabel || ""
+							value: option.optionlabel || "",
+							name: quize.questionId
 						}))}
 						type={quize.questionType || "checkbox"}
 						hideDescription={true}
@@ -133,7 +134,7 @@ if (Astro.request.method === "POST") {
 
 	
 	<div slot="min-slot" class="h-full">
-		<div class="border-2 border-primary h-full rounded-xl p-4 flex flex-col items-center">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4 flex flex-col items-center">
 			<h1 class="text-xl font-bold items-center">Quiz create</h1>
 			<div class="border-b-2 border-primary w-full mt-2"></div>
 			<form id="quizForm" method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
@@ -144,18 +145,18 @@ if (Astro.request.method === "POST") {
 				<input
 					type="text"
 					name="questionTitle"
-					class="w-full mt-2 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 					placeholder="Type your title here..." required />
 
 				<h3 class="text-lg font-semibold mt-2">Question Description</h3>
 				<textarea 
 					name="questionDescription"
 					rows="4"
-					class="w-full mt-2 p-3 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 					placeholder="Type your description here..." required></textarea>
 
 				<h3 class="text-lg font-semibold mt-2">Question Type</h3>
-				<select name="questionType" id="questionTypeField" class="mt-2 w-full border-2 border-primary rounded-lg p-3 text-secondary focus:outline-none focus:ring-2 bg-primary">
+				<select name="questionType" id="questionTypeField" class="mt-2 w-full border-2 border-primary bg-tertiary rounded-lg p-3 text-secondary focus:outline-none focus:ring-2 bg-primary">
 					<option class="" value="default" disabled selected hidden>Select Type</option>
 					<option value="radio">Single Option (Radio)</option>
 					<option value="checkbox">Multiple Option (Checkbox)</option>
@@ -170,10 +171,10 @@ if (Astro.request.method === "POST") {
 					<input
 						type="text"
 						id="newOptionInput"
-						class="w-full p-4 border-2 border-primary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+						class="w-full p-4 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 						placeholder="Type option text here..." />
 
-					<button type="button" id="addOptionBtn" class="border-2 px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover:hover-primary">
+					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover:hover-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="2"/>
 							<line x1="12" y1="5" x2="12" y2="19" />

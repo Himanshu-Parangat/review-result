@@ -1,12 +1,22 @@
 @import "tailwindcss";
 
+@import "@fontsource/inter";
+
+@theme {
+  --font-sans: 'Inter', 'sans-serif';
+  /* --font-sans: 'Open Sans', 'sans-serif'; */
+}
+
+
 @layer utilities{
 	.text-primary { color: var(--color-text-primary); }
 	.text-secondary { color: var(--color-text-secondary); }
 	.text-accent { color: var(--color-text-accent);}
 	
 	.bg-primary { background-color: var(--color-background-primary);}
-	.bg-accent { background-color: var(--color-background-accent); color: #e2eeff;}
+	.bg-secondary { background-color: var(--color-background-secondary);}
+	.bg-tertiary { background-color: var(--color-background-tertiary);}
+	.bg-accent { background-color: var(--color-background-accent); color: hsl(215, 100%, 95%);}
 
 	.border-primary { border-color: var(--color-border-primary);}
 
@@ -30,27 +40,32 @@
 
 
 .theme-light {
-  --color-text-primary: #1f1f1f;
-  --color-text-secondary: #4b4b4b;
-	--color-text-accent:#2d60a8;
+  --color-text-primary: hsl(0, 0%, 6%);
+  --color-text-secondary: hsl(0, 0%, 45%);
+	--color-text-accent: hsl(215, 58%, 42%);
 
-	--color-background-primary: #f2f0f5;
+	--color-background-primary: hsl(0,0%, 90%);
+	--color-background-secondary: hsl(0,0%, 95%);
+	--color-background-tertiary: hsl(0, 0%, 100%);  
+
 	--color-hover-primary: #d8d5df; 
-	--color-background-accent: #2d60a8;
+	--color-background-accent: hsl(215, 58%, 42%);
 
-	--color-border-primary: #d4d2da;
+	--color-border-primary: hsl(255, 10%, 85%);
 }
 
 .theme-dark {
-  --color-text-primary: #f2f0f5;
-  --color-text-secondary: #c7c6cc;
-	--color-text-accent:#134fa1;
+  --color-text-primary: hsl(0, 0%, 98%);
+  --color-text-secondary: hsl(0, 0%, 63%);
+	--color-text-accent: hsl(215, 80%, 35%);
 
-	--color-background-primary: #1f1f1f;
+	--color-background-primary: hsl(0, 0%, 6%);  
+	--color-background-secondary: hsl(0,0%, 9%);
+	--color-background-tertiary: hsl(0, 0%, 13%);  
 	--color-hover-primary: #2e2e2e;
-	--color-background-accent: #134fa1;
+	--color-background-accent: hsl(215, 80%, 35%);
 
-	--color-border-primary: #3a3a3a;
+	--color-border-primary: hsl(0, 0%, 23%);
 }
 
 
@@ -89,8 +104,8 @@ body[data-text-transitioning="true"] * {
 }
 
 input:-webkit-autofill {
-  box-shadow: 0 0 0 1000px var(--color-background-primary) inset !important;
-  -webkit-text-fill-color: var(--color-text-primary) !important;
+  box-shadow: 0 0 0 1000px var(--color-background-tertiary) inset !important;
+  -webkit-text-fill-color: var(--color-text-secondary) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
