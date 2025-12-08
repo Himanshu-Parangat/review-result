@@ -1,8 +1,9 @@
 ---
+const { title } = Astro.props
 import BaseLayout from "./BaseLayout.astro"
 
 ---
-<BaseLayout>
+<BaseLayout title={title}>
   <div class="mx-[5%] lg:h-full flex lg:flex-row lg:justify-center lg:items-start flex-col-reverse   items-center gap-4  ">
 		<div class="lg:flex-1 lg:min-w-[65%] lg:h-full lg:w-auto w-full  flex-1 lg:overflow-y-auto">
 			<slot name="max-slot"/>

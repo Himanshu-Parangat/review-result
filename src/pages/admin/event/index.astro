@@ -1,6 +1,6 @@
 ---
-export const prerender =	false;
-import BaseLayout from "@layouts/BaseLayout.astro"
+export const prerender = false
+import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import ScheduleEntry from "@components/ScheduleEntry.astro";
 import { db, siteSchema } from "@db/index";
 import { eq, and, sql } from "drizzle-orm";
@@ -132,292 +132,285 @@ if (Astro.request.method === "POST") {
 
 }
 
-
 ---
 
-<BaseLayout class="Schedule">
-  <div class="mx-[5%] h-full flex flex-col items-center">
-    <div class="flex lg:flex-row flex-col gap-4 w-full h-full">
+<TwoColumnLayout title="Events ">
 
-      <!-- Schedule panel: fixed size -->
-      <div class="border-2 border-primary bg-secondary rounded-lg min-w-[28%] shrink-0 min-h-0 flex flex-col p-4">
-				<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Schedule Event</h1>
-					<form method="post" class=" flex-1 space-y-6 overflow-y-auto p-8 flex flex-col">
+	<div slot="min-slot" class="h-full">
 
-					<input type="hidden" name="eventId" >
-					<input type="hidden" name="action" value="create">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4 flex flex-col items-center">
+			<h1 class="text-xl font-bold items-center">Quiz create</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+				<form method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
 
-					<div class="">
-						<h3 class="text-lg font-semibold mb-2">Event Title</h3>
-						<input
-							type="text"
-							name="eventTitle"
-							class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." required />
+				<input type="hidden" name="eventId" >
+				<input type="hidden" name="action" value="create">
 
+				<h3 class="text-lg font-semibold mt-2">Event Title</h3>
+				<input
+					type="text"
+					name="eventTitle"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+
+				<h3 class="text-lg font-semibold mt-2">Event Description</h3>
+
+				<textarea 
+					name="eventDescription"
+					rows="4"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your answer here..." required></textarea>
+
+
+
+				<h3 class="text-lg font-semibold mt-2">Event Start</h3>
+
+				<input
+					type="datetime-local"
+					name="eventScheduledStartAt"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+
+
+				<h3 class="text-lg font-semibold mt-2">Event End</h3>
+
+				<input
+					type="datetime-local"
+					name="eventScheduledEndAt"
+					class="w-full mt-2 p-3 border-2 border-primary rounded-lg bg-tertiary focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+
+				<div id="editModeIndicator" class=" hidden w-auto shrink mt-4  justify-center">
+					<div class="flex flex-row gap-2 items-center justify-center border-2 p-2 border-primary rounded-lg ">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+							<circle cx="12" cy="12" r="10"/>
+							<line x1="12" y1="8" x2="12" y2="12"/>
+							<line x1="12" y1="16" x2="12.01" y2="16"/>
+						</svg>
+						<p>Editing an existing Entry</p>
+						<button class=" border-2 text-secondary rounded-full text-primary hover:text-red-400 flex items-center h-6 w-6">
+								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+									<line x1="9" y1="9" x2="15" y2="15"/>
+									<line x1="15" y1="9" x2="9" y2="15"/>
+								</svg>
+						</button>
 					</div>
 
-					<div class="">
-						<h3 class="text-lg font-semibold mb-2">Event Description</h3>
+				</div>
 
-						<textarea 
-							name="eventDescription"
-							rows="4"
-							class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your answer here..." required></textarea>
+				<button
+					id="doEntry"
+					type="submit"
+					class="w-full p-3 mt-4 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+				>
+					Schedule
+				</button>
 
-					</div>
-
-
-					<div class="">
-						<h3 class="text-lg font-semibold mb-2">Event Start</h3>
-
-						<input
-							type="datetime-local"
-							name="eventScheduledStartAt"
-							class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." required />
-
-					</div>
+				</form>
 
 
-					<div class="">
-						<h3 class="text-lg font-semibold mb-2">Event End</h3>
 
-						<input
-							type="datetime-local"
-							name="eventScheduledEndAt"
-							class="w-full p-3 border-2 border-primary rounded-lg bg-tertiary focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your title here..." required />
-
-					</div>
-
-					<div id="editModeIndicator" class="hidden shrink">
-						<div class="flex flex-row gap-2 items-center justify-center border-2 p-2 border-primary rounded-lg ">
-							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
-								<circle cx="12" cy="12" r="10"/>
-								<line x1="12" y1="8" x2="12" y2="12"/>
-								<line x1="12" y1="16" x2="12.01" y2="16"/>
-							</svg>
-							<p>Editing an existing Entry</p>
-							<button class=" border-2 text-secondary rounded-full text-primary hover:text-red-400 flex items-center h-6 w-6">
-									<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
-										<line x1="9" y1="9" x2="15" y2="15"/>
-										<line x1="15" y1="9" x2="9" y2="15"/>
-									</svg>
-							</button>
-						</div>
-
-					</div>
-
-					<button
-						id="doEntry"
-						type="submit"
-						class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
-					>
-						Schedule
-					</button>
-
-					</form>
-
-      </div>
-
-      <!-- Entry panel: grows and becomes scrollable -->
-      <div class="border-2 border-primary bg-secondary rounded-lg flex-1 flex">
-				<div class="flex-1 lg:flex lg:flex-col  min-h-0 w-full  shrink-0 p-4 ">
-					<h1 class="text-xl font-bold text-center pb-3 mb-2 border-b-2 border-primary">Scheduled Entry</h1>
-
-          <!-- Scrollable list -->
-					<div class="overflow-y-auto p-8">
-						<div class="p-2 space-y-6 ">
-
-							<!-- new event -->
-
-							{Events  .sort((a, b) => Number(b.eventIsPinned) - Number(a.eventIsPinned))
-							.map((entry, index) => 
-								<ScheduleEntry
-									entryId={entry.eventId}
-									number={index + 1}
-									title={entry.eventTitle}
-									description={entry.eventDescription}
-									startIn={entry.eventScheduledStartAt}
-									endIn={entry.eventScheduledEndAt}
-								  isPined={entry.eventIsPinned}
-								/>
-							)}
-
-						</div>
-
-					</div>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-	<script is:inline>
-
-	function toDatetimeLocal(isoString) {
-		const date = new Date(isoString);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-		return `${year}-${month}-${day}T${hours}:${minutes}`;
-	}
+		</div>
 
 
-	document.addEventListener('DOMContentLoaded', () => {
-		const editButtons = document.querySelectorAll('.edit-event-btn');
-		
-		editButtons.forEach(button => {
-			button.addEventListener('click', (e) => {
-				e.preventDefault();
+
+	</div>
+
+	<div slot="max-slot" class="h-full">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4  flex flex-col items-center overflow-y-auto">
+			<h1 class="text-xl font-bold items-center">All Quie</h1>
+			<div class=" border-b-2 border-primary w-full mt-2"></div>
+				<div class="min-w-0 w-full mt-4  gap-4 flex flex-col p-4 ">
+
+					{Events  .sort((a, b) => Number(b.eventIsPinned) - Number(a.eventIsPinned))
+					.map((entry, index) => 
+						<ScheduleEntry
+							entryId={entry.eventId}
+							number={index + 1}
+							title={entry.eventTitle}
+							description={entry.eventDescription}
+							startIn={entry.eventScheduledStartAt}
+							endIn={entry.eventScheduledEndAt}
+							isPined={entry.eventIsPinned}
+						/>
+					)}
+
+				</div>
+
+		</div>
+
+		<!-- timestamp update on hover -->
+		<script is:inline>
+			(function() {
+				function formatTimeParts(diff) {
+					const absDiff = Math.abs(diff);
+					const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+					const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+					const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+					const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+					
+					if (days > 0) {
+						return `${days}d ${hours}h`;
+					} else if (hours > 0) {
+						return `${hours}h ${minutes}m`;
+					} else if (minutes > 0) {
+						return `${minutes}m ${seconds}s`;
+					} else {
+						return `${seconds}s`;
+					}
+				}
 				
-
-				const eventId = button.getAttribute('data-event-id');
-				const eventTitle = button.getAttribute('data-event-title');
-				const eventDescription = button.getAttribute('data-event-description');
-				const eventStart = button.getAttribute('data-event-start');
-				const eventEnd = button.getAttribute('data-event-end');
+				function updateTimestamp(element) {
+					const startDate = new Date(element.dataset.start).getTime();
+					const endDate = new Date(element.dataset.end).getTime();
+					const eventName = element.dataset.event || "Event";
+					const now = new Date().getTime();
+					const diffToStart = startDate - now;
+					const diffToEnd = endDate - now;
+					
+					if (diffToStart > 60000) {
+						element.textContent = `Starts in ${formatTimeParts(diffToStart)}`;
+					} else if (diffToStart > 0 && diffToStart <= 60000) {
+						element.textContent = `Starting now!`;
+					} else if (diffToEnd > 60000) {
+						element.textContent = `Ongoing (${formatTimeParts(diffToEnd)} left)`;
+					} else if (diffToEnd > 0 && diffToEnd <= 60000) {
+						element.textContent = `Ending now!`;
+					} else {
+						element.textContent = `Ended ${formatTimeParts(diffToEnd)} ago`;
+					}
+				}
 				
+				function initTimestamps() {
+					const timestamps = document.querySelectorAll('.countdown-timestamp');
+					
+					timestamps.forEach(element => {
+						updateTimestamp(element);
+						
+						const scheduleEntry = element.closest('.p-4.border-2.border-primary');
+						
+						if (scheduleEntry) {
+							let intervalId = null;
+							
 
-				document.querySelector('input[name="eventId"]').value = eventId;
-				document.querySelector('input[name="action"]').value = "update";
-				document.querySelector('input[name="eventTitle"]').value = eventTitle;
-				document.querySelector('textarea[name="eventDescription"]').value = eventDescription;
-				document.querySelector('input[name="eventScheduledStartAt"]').value = toDatetimeLocal(eventStart);
-				document.querySelector('input[name="eventScheduledEndAt"]').value = toDatetimeLocal(eventEnd);
+							scheduleEntry.addEventListener('mouseenter', () => {
+								updateTimestamp(element); // Update immediately
+								intervalId = setInterval(() => updateTimestamp(element), 1000);
+							});
+							
+
+							scheduleEntry.addEventListener('mouseleave', () => {
+								if (intervalId) {
+									clearInterval(intervalId);
+									intervalId = null;
+								}
+							});
+						}
+					});
+				}
 				
-				document.getElementById('doEntry').textContent = 'Re-Schedule';
-				document.getElementById('editModeIndicator').classList.remove('hidden');
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', initTimestamps);
+				} else {
+					initTimestamps();
+				}
+				
+				document.addEventListener('astro:page-load', initTimestamps);
+			})();
+		</script>
 
-				document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-			});
-		});
-	});
-
-	</script>
+		<!-- action buttons Edit  -->
 
 		<script is:inline>
-  (function() {
-    function formatTimeParts(diff) {
-      const absDiff = Math.abs(diff);
-      const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
-      
-      if (days > 0) {
-        return `${days}d ${hours}h`;
-      } else if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    }
-    
-    function updateTimestamp(element) {
-      const startDate = new Date(element.dataset.start).getTime();
-      const endDate = new Date(element.dataset.end).getTime();
-      const eventName = element.dataset.event || "Event";
-      const now = new Date().getTime();
-      const diffToStart = startDate - now;
-      const diffToEnd = endDate - now;
-      
-      if (diffToStart > 60000) {
-        element.textContent = `Starts in ${formatTimeParts(diffToStart)}`;
-      } else if (diffToStart > 0 && diffToStart <= 60000) {
-        element.textContent = `Starting now!`;
-      } else if (diffToEnd > 60000) {
-        element.textContent = `Ongoing (${formatTimeParts(diffToEnd)} left)`;
-      } else if (diffToEnd > 0 && diffToEnd <= 60000) {
-        element.textContent = `Ending now!`;
-      } else {
-        element.textContent = `Ended ${formatTimeParts(diffToEnd)} ago`;
-      }
-    }
-    
-    function initTimestamps() {
-      const timestamps = document.querySelectorAll('.countdown-timestamp');
-      
-      timestamps.forEach(element => {
-        updateTimestamp(element);
-        
-        const scheduleEntry = element.closest('.p-4.border-2.border-primary');
-        
-        if (scheduleEntry) {
-          let intervalId = null;
-          
 
-          scheduleEntry.addEventListener('mouseenter', () => {
-            updateTimestamp(element); // Update immediately
-            intervalId = setInterval(() => updateTimestamp(element), 1000);
-          });
-          
-
-          scheduleEntry.addEventListener('mouseleave', () => {
-            if (intervalId) {
-              clearInterval(intervalId);
-              intervalId = null;
-            }
-          });
-        }
-      });
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initTimestamps);
-    } else {
-      initTimestamps();
-    }
-    
-    document.addEventListener('astro:page-load', initTimestamps);
-  })();
-</script>
-
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    const deleteButtons = document.querySelectorAll('.delete-event-btn');
-		const pinButtons = document.querySelectorAll('.pin-event-btn');
+			function toDatetimeLocal(isoString) {
+				const date = new Date(isoString);
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				const hours = String(date.getHours()).padStart(2, '0');
+				const minutes = String(date.getMinutes()).padStart(2, '0');
+				return `${year}-${month}-${day}T${hours}:${minutes}`;
+			}
 
 
-    const form = document.querySelector('form');
-    const eventIdInput = form.querySelector('input[name="eventId"]');
-    const actionInput = form.querySelector('input[name="action"]');
+			document.addEventListener('DOMContentLoaded', () => {
+				const editButtons = document.querySelectorAll('.edit-event-btn');
+				
+				editButtons.forEach(button => {
+					button.addEventListener('click', (e) => {
+						e.preventDefault();
+						
 
-    deleteButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const eventId = button.dataset.eventId;
+						const eventId = button.getAttribute('data-event-id');
+						const eventTitle = button.getAttribute('data-event-title');
+						const eventDescription = button.getAttribute('data-event-description');
+						const eventStart = button.getAttribute('data-event-start');
+						const eventEnd = button.getAttribute('data-event-end');
+						
 
-        if (!confirm('Are you sure you want to delete this event?')) return;
+						document.querySelector('input[name="eventId"]').value = eventId;
+						document.querySelector('input[name="action"]').value = "update";
+						document.querySelector('input[name="eventTitle"]').value = eventTitle;
+						document.querySelector('textarea[name="eventDescription"]').value = eventDescription;
+						document.querySelector('input[name="eventScheduledStartAt"]').value = toDatetimeLocal(eventStart);
+						document.querySelector('input[name="eventScheduledEndAt"]').value = toDatetimeLocal(eventEnd);
+						
+						document.getElementById('doEntry').textContent = 'Re-Schedule';
+						document.getElementById('editModeIndicator').classList.remove('hidden');
 
-        eventIdInput.value = eventId;
-        actionInput.value = "delete";
+						document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+					});
+				});
+			});
 
-        form.submit();
-      });
-    });
+		</script>
+
+
+		<!-- action buttons delete / pin  -->
+		<script is:inline>
+			document.addEventListener('DOMContentLoaded', () => {
+				const deleteButtons = document.querySelectorAll('.delete-event-btn');
+				const pinButtons = document.querySelectorAll('.pin-event-btn');
+
+
+				const form = document.querySelector('form');
+				const eventIdInput = form.querySelector('input[name="eventId"]');
+				const actionInput = form.querySelector('input[name="action"]');
+
+				deleteButtons.forEach(button => {
+					button.addEventListener('click', () => {
+						const eventId = button.dataset.eventId;
+
+						if (!confirm('Are you sure you want to delete this event?')) return;
+
+						eventIdInput.value = eventId;
+						actionInput.value = "delete";
+
+						form.submit();
+					});
+				});
 
 
 
 
-		pinButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const eventId = button.dataset.eventId;
+				pinButtons.forEach(button => {
+					button.addEventListener('click', () => {
+						const eventId = button.dataset.eventId;
 
-        eventIdInput.value = eventId;
-        actionInput.value = "togglePin";
-        form.submit();
-      });
-		});
+						eventIdInput.value = eventId;
+						actionInput.value = "togglePin";
+						form.submit();
+					});
+				});
 
-  });
-</script>
+			});
+		</script>
+	</div>
 
 
-</BaseLayout>
+</TwoColumnLayout>
+

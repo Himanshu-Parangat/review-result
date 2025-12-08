@@ -64,7 +64,7 @@ if (Astro.request.method === "POST") {
 			questionType,
 			questionIsRequired: true,
 			questionOrder: 1,
-			eventId: "OS77ux5Ff7pjsAVy39fDnpewi",
+			eventId: eventId,
 		});
 
 		await db.insert(siteSchema.option).values(
@@ -96,7 +96,7 @@ if (Astro.request.method === "POST") {
 
 ---
 
-<TwoColumnLayout>
+<TwoColumnLayout title={"quize | " + event.eventTitle}>
 
 	<div slot="max-slot" class="h-full"> 
 
