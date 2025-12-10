@@ -37,8 +37,9 @@ CREATE TABLE `participant` (
 	`participantName` text,
 	`participantPayrollId` text,
 	`participantDepartment` text,
-	`participantEmail` text,
-	`participantPhone` text
+	`participantDesignation` text,
+	`eventId` text NOT NULL,
+	FOREIGN KEY (`eventId`) REFERENCES `event`(`eventId`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `question` (
