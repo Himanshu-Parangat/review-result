@@ -16,6 +16,13 @@ interface Config {
 
   /** Base site URL (must end with a slash) */
   url: string;
+
+  /** Base db path (./store.db) */
+	dbPath : string;
+
+  /** Base db migration path (./drizzle) */
+	dbMigration: string;
+
 }
 
 
@@ -29,6 +36,9 @@ export const config: Config  = {
 	banner: env.PUBLIC_SITE_BANNER || "https://placehold.co/600x400?text=Banner",
 	copyright: env.PUBLIC_SITE_COPYRIGHT || "anonymous",
 	url : env.PUBLIC_SITE_URL || "https://www.example.com/",
+
+	dbPath : env.PUBLIC_SITE_DB_PATH || "store.db",
+	dbMigration: env.PUBLIC_SITE_DB_MIGRATION_PATH || "drizzle"
 }
 
 
