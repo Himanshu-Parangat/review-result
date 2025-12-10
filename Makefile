@@ -100,11 +100,27 @@ clean:
 ##############################
 db-generate:
 	@printf "${Cyan}[db-generate] Generating migrations...${Reset}\n"
-	${DRIZZLE} generate --config=${CONFIG}
+	@if [ -z "${name}" ]; then \
+		printf "\n${Red}✖ Missing migration name!${Reset}\n"; \
+		printf "${Yellow}Usage:${Reset} make db-generate name=<migration_name>\n\n"; \
+		exit 1; \
+	fi
+	@printf "\n${Cyan}[db-generate]${Reset} Creating migration: ${Green}${name}${Reset}\n"
+	${DRIZZLE} generate --config=${CONFIG} --name="${name}"
+	@printf "${Green}✔ Migration generated successfully!${Reset}\n"
+
 
 db-migrate:
 	@printf "${Cyan}[db-migrate] Applying migrations...${Reset}\n"
 	${DRIZZLE} migrate --config=${CONFIG}
+	@printf "\n${Cyan}[db-migrate]${Reset} Applying migrations...\n"
+	@if ${DRIZZLE} migrate --config=${CONFIG}; then \
+		printf "${Green}✔ All migrations applied successfully!${Reset}\n"; \
+	else \
+		printf "${Red}✖ Migration failed!${Reset}\n"; \
+		exit 1; \
+	fi
+
 
 db-studio:
 	@printf "${Cyan}[db-studio] Opening Drizzle Studio...${Reset}\n"
