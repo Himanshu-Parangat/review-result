@@ -21,7 +21,9 @@ if (IncomingPostRequest) {
 
   if (!username || !password) {
     console.log("Username or password not provided");
-    return;
+
+		const redirectTo = url.searchParams.get("redirectTo") || "/login";
+		return Astro.redirect(redirectTo);
   }
 
 
@@ -41,10 +43,6 @@ if (IncomingPostRequest) {
     });
 
 		loginStatus = "pass";
-
-		// const redirectTo = url.searchParams.get("redirectTo") || "/";
-		// return Astro.redirect(redirectTo);
-
 
   } else {
     console.log("Invalid credentials.");
@@ -130,7 +128,7 @@ if (IncomingPostRequest) {
 				const url = new URL(window.location.href);
 				const redirectTo = url.searchParams.get("redirectTo") || "/";
 				window.location.href = redirectTo;
-			}, 2000);
+			}, 1000);
 		}
 	</script>
 

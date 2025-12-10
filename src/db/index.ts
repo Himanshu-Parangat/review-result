@@ -6,4 +6,8 @@ const sqlite = new Database("src/db/store.db");
 
 export const db = drizzle(sqlite, { schema: siteSchema });
 
+export function isDbInitialized() {
+	return true
+} 
+
 export { siteSchema };

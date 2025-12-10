@@ -1,5 +1,24 @@
 import { checkCookie } from "@utils/CookieUtil";
 import { defineMiddleware, sequence } from "astro:middleware";
+import { isDbInitialized } from "@db/index";
+
+export const dbCheckMiddleware = defineMiddleware(async (context, next) => {
+  const {  url } = context;
+
+  if (url.pathname === "/admin/status" || url.pathname === "/login") {
+    return next();
+  }
+
+
+	if (!isDbInitialized()) {
+		console.log("Database not initialized, redirecting to /admin/status");
+		return context.redirect("/admin/status?dbInit=now");
+	}
+	
+	return next();
+
+});
+
 
 export const logMiddleware = defineMiddleware((context, next) => {
   const { request, url } = context;
@@ -53,5 +72,4 @@ export const routeCheckMiddleware = defineMiddleware(async (context, next) => {
   return next();
 });
 
-export const onRequest = sequence(logMiddleware, routeCheckMiddleware);
-
+export const onRequest = sequence(logMiddleware, dbCheckMiddleware, routeCheckMiddleware);
