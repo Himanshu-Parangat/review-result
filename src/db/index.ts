@@ -7,7 +7,6 @@ import * as siteSchema from "@db/schema";
 let db: ReturnType<typeof drizzle> | null = null;
 
 export function isDbInitialized() {
-	console.log(db)
 	return db !== null;
 }
 
@@ -25,7 +24,10 @@ export function initDb() {
 	}
 }
 
-initDb()
+export function getDb() {
+	if (!db) throw new Error("DB not initialized!");
+	// if (!db) console.log("DB not initialized!");
+	return db;
+} 
 
-
-export { siteSchema };
+export { siteSchema, db };

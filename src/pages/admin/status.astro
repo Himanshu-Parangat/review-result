@@ -1,67 +1,88 @@
 ---
-export const prerender = false;
-import { db, siteSchema } from "@db/index"
+export const prerender = false
 import BaseLayout from "@layouts/BaseLayout.astro";
-
 import { config } from "@config";
+import { friendlyDateMessage } from "@utils/TimeUtils";
+import { initDb, getDb, siteSchema, isDbInitialized } from "@db/index";
+import { eq } from "drizzle-orm";
+import { generateId } from "@utils/MainUtils";
 
-// const dbData = (
-// 	await db.select().from(siteSchema.dbIdentity).limit(1)
-// )[0];
-
-const dbData = ""
+const InatalizeNow = Astro.url.searchParams.get('dbInit') === 'now';
 
 
-import { SeedDefault } from "@utils/SeedUtil"
 
 if (Astro.request.method === "POST") {
-  const formData = await Astro.request.formData();
-  const action = formData.get("action");
+	const formData = await Astro.request.formData();
+	const action = formData.get('action');
+	const dbTitle = formData.get("dbTitle") as string | null;
+	const dbDescription = formData.get("dbDescription") as string | null;
+	
+	if (action === "initialize") {
 
-  if (action === "reset-db") {
-		await SeedDefault().catch((err) => {
-			console.error("Error seeding default site:", err);
-		});
-  }
+		console.log("Database initalize requested")
+		initDb()
+		const db = getDb()
+
+		await db.insert(siteSchema.dbIdentity).values({
+			dbId: generateId(),
+			dbTitle: dbTitle,
+			dbDescription: dbDescription,
+			dbDataCreatedAt: new Date().toISOString(),
+			dbLabel: ""
+
+		}).returning();
+
+		console.log("Inatalizeing dbIdentity with title: ", dbTitle, " | description: ", dbDescription)
+
+		return Astro.redirect(`/?initialize=done`);
+
+	} else if (action === "update") {
+
+		const db = getDb();
+		const firstRow = db.select().from(siteSchema.dbIdentity).get();
+
+		if (firstRow) {
+			await db
+				.update(siteSchema.dbIdentity)
+				.set({
+					dbTitle: dbTitle ?? firstRow.dbTitle,
+					dbDescription: dbDescription ?? firstRow.dbDescription,
+				})
+				.where(eq(siteSchema.dbIdentity.dbId, firstRow.dbId));
+		}
+	}
 }
 
 
+let db = null;
+let dbData = null;
 
-export function formatTimestamp(input: string | Date | null): string {
-  if (!input) return "No Timestamp";
+if (isDbInitialized()) {
+  db = getDb();
 
-  const date = input instanceof Date ? input : new Date(input);
+  dbData = db
+    .select()
+    .from(siteSchema.dbIdentity)
+    .orderBy(siteSchema.dbIdentity.dbDataCreatedAt)
+    .get();
 
-  const year = date.getFullYear();
-  const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
-  const monthName = date.toLocaleDateString("en-US", { month: "long" });
-  const day = date.getDate();
-
-  let hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const ampm = hours >= 12 ? "pm" : "am";
-  hours = hours % 12 || 12;
-
-	return `${year} ${dayName}, ${day} ${monthName}  ${hours}:${minutes} ${ampm}`;
+} else {
+  dbData = null;
 }
 
 
 ---
-
-<BaseLayout title="Status Check">
-	<div class="flex justify-center space-x-4">
-
+<BaseLayout title="Status">
+	<div class="flex flex-row flex-wrap justify-center gap-4">
 		<div class="p-6 border-2 border-primary bg-secondary rounded-lg">
 			<h1 class="text-xl font-bold mb-4 px-4">Environment Variable</h1>
-
 			<table class="table-auto w-full border-collapse">
 				<thead>
 					<tr class="hover:hover-primary border-b-2 border-primary">
-						<th class="px-4 py-2 text-left font-semibold">DB Field</th>
-						<th class="px-4 py-2 text-left font-semibold">DB Value</th>
+						<th class="px-4 py-2 text-left font-semibold">EV Field</th>
+						<th class="px-4 py-2 text-left font-semibold">EV Value</th>
 					</tr>
 				</thead>
-
 				<tbody>
 					<tr class="border-b-2 border-primary hover:hover-primary">
 						<td class="px-4 py-2 text-base text-primary">Env Name</td>
@@ -82,7 +103,6 @@ export function formatTimestamp(input: string | Date | null): string {
 						<td class="px-4 py-2 text-base text-primary">Env Banner</td>
 						<td class="px-4 py-2 text-base text-primary">{config.banner}</td>
 					</tr>
-
 					<tr class="border-b-2 border-primary hover:hover-primary">
 						<td class="px-4 py-2 text-base text-primary">Env Copyright</td>
 						<td class="px-4 py-2 text-base text-primary">{config.copyright}</td>
@@ -92,63 +112,172 @@ export function formatTimestamp(input: string | Date | null): string {
 						<td class="px-4 py-2 text-base text-primary">Env Url</td>
 						<td class="px-4 py-2 text-base text-primary">{config.url}</td>
 					</tr>
-
 				</tbody>
-
 			</table>
 		</div>
-
 		<div class="p-6 border-2 border-primary bg-secondary rounded-lg">
-
 			<h1 class="text-xl mb-4 px-4 font-bold">Database Status</h1>
+					<form method="POST">
 
-			<table class="table-auto w-full border-collapse">
-				<thead>
-					<tr class="hover:hover-primary border-b-2 border-primary">
-						<th class="px-4 py-2 text-left font-semibold">DB Field</th>
-						<th class="px-4 py-2 text-left font-semibold">DB Value</th>
-					</tr>
-				</thead>
+						{InatalizeNow? (
 
-				<tbody>
-					<tr class="border-b-2 border-primary hover:hover-primary">
-						<td class="px-4 py-2 text-base text-primary">Db Id</td>
-						<td class="px-4 py-2">{dbData?.dbId || "Empty"}</td>
-					</tr>
+							<div class="border-b-2 border-primary w-full mt-2"></div>
 
-					<tr class="border-b-2 border-primary hover:hover-primary">
-						<td class="px-4 py-2 text-base text-primary">Db Label</td>
-						<td class="px-4 py-2">{dbData?.dbLabel || "No Label"}</td>
-					</tr>
+							<div class="p-4">
+								<h3 class="text-lg font-semibold mt-2">Database Title <span class="text-red-400 text-xl ">&#x2022;</span></h3>
+								<input
+									type="text"
+									name="dbTitle"
+									class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+									placeholder="Type your db title here..." required autofocus />
 
-					<tr class="border-b-2 border-primary hover:hover-primary">
-						<td class="px-4 py-2 text-base text-primary">Db Title</td>
-						<td class="px-4 py-2">{dbData?.dbTitle || "No Title"}</td>
-					</tr>
+								<h3 class="text-lg font-semibold mt-2">Database Description <span class="text-red-400 text-xl ">&#x2022;</span></h3>
+								<input
+									type="text"
+									name="dbDescription"
+									class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+									placeholder="Type your db description here..." required autofocus />
 
-					<tr class="border-b-2 border-primary hover:hover-primary">
-						<td class="px-4 py-2 text-base text-primary">Db Description</td>
-						<td class="px-4 py-2">{dbData?.dbDescription || "No Description"}</td>
-					</tr>
+								<input type="hidden" name="action" value="initialize" />
+								<button  class="mt-4 bg-green-600 text-white text-base font-bold px-4 py-2 text-center rounded-md hover:bg-green-500" type="submit">
+									initialize DB
+								</button>
+							</div>
 
-					<tr class="border-b-2 border-primary hover:hover-primary">
-						<td class="px-4 py-2 text-base text-primary">Db Creation</td>
-						<td class="px-4 py-2">{ formatTimestamp(dbData?.dbDataCreatedAt) || "No Timestamp"}</td>
-					</tr>
-				</tbody>
-			</table>
+						) : (
 
 
 
+
+
+
+						<table class="table-auto w-full border-collapse">
+
+						<thead>
+							<tr class="hover:hover-primary border-b-2 border-primary">
+								<th class="px-4 py-2 text-left font-semibold">DB Field</th>
+								<th class="px-4 py-2 text-left font-semibold">DB Value</th>
+							</tr>
+						</thead>
+
+						<tbody>
+								<tr class="border-b-2 border-primary hover:hover-primary">
+									<td class="px-4 py-2 text-base text-primary">Db Id</td>
+									<td class="px-4 py-2">{dbData?.dbId || "Empty"}</td>
+								</tr>
+
+								<tr class="border-b-2 border-primary hover:hover-primary">
+									<td class="px-4 py-2 text-base text-primary">Db Label</td>
+									<td class="px-4 py-2">{dbData?.dbLabel || "Empty"}</td>
+								</tr>
+
+								<tr class="border-b-2 border-primary hover:hover-primary">
+									<td class="px-4 py-2 text-base text-primary">Db Title</td>
+									<td class="px-4 py-2 flex flex-row justify-between">
+
+										<span id="dbtitleInput">
+											{dbData?.dbTitle || "Set Db Title"}
+										</span>
+										<button type="button" id="dbTitleButton">
+											<svg class="edit-icon w-6 h-6 ml-2 cursor-pointer text-primary hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+											</svg>
+										</button>
+
+									</td>
+								</tr>
+
+
+								<tr class="border-b-2 border-primary hover:hover-primary">
+									<td class="px-4 py-2 text-base text-primary">Db Description</td>
+									<td class="px-4 py-2 flex flex-row justify-between">
+
+										<span id="dbDescriptionInput">
+											{dbData?.dbDescription || "Set Db Description"}
+										</span>
+										<button type="button" id="dbDescriptionButton">
+											<svg class="edit-icon w-6 h-6 ml-2 cursor-pointer text-primary hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+											</svg>
+										</button>
+
+									</td>
+								</tr>
+
+								<tr class="border-b-2 border-primary hover:hover-primary">
+									<td class="px-4 py-2 text-base text-primary">Db Creation</td>
+									<td class="px-4 py-2">{ friendlyDateMessage(dbData?.dbDataCreatedAt as string) || "No Timestamp"}</td>
+								</tr>
+							</tbody>
+						</table>
+							<input type="hidden" name="action" value="update" />
+							<button id="dbDataSubmit"  class="hidden mt-4 bg-red-500 text-white text-base font-bold px-4 py-2 text-center rounded-md hover:bg-red-600" type="submit">
+								Update DB
+							</button>
+
+						)}
+					
+				</form>
 			<form method="POST">
-				<input type="hidden" name="action" value="reset-db" />
-				<button class="mt-4 bg-red-500 text-white text-base font-bold px-4 py-2 text-center rounded-md hover:bg-red-600" type="submit">
-					Reset DB
-				</button>
 			</form>
 		</div>
-
-
 	</div>
+
+	<script>
+		const crossButton = `
+			<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+				viewBox="0 0 24 24" fill="none" stroke="currentColor"
+				stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<line x1="9" y1="9" x2="15" y2="15"/>
+				<line x1="15" y1="9" x2="9" y2="15"/>
+			</svg>
+		`;
+
+		const editTitleButton = document.getElementById("dbTitleButton");
+		const titleSpan = document.getElementById("dbtitleInput");
+
+		const editDescriptionButton = document.getElementById("dbDescriptionButton");
+		const descriptionSpan = document.getElementById("dbDescriptionInput");
+
+		const submitButton = document.getElementById("dbDataSubmit");
+
+
+		function convertToInput(spanEl: HTMLElement, name: string, placeholder: string) {
+			const input = document.createElement("input");
+			input.type = "text";
+			input.className = "p-1 border-2 border-white rounded-lg";
+			input.placeholder = placeholder;
+			input.required = true;
+			input.name = name;
+			input.value = spanEl.textContent.trim() !== "No Data Exist" 
+				? spanEl.textContent.trim() 
+				: "";
+			spanEl.replaceWith(input);
+			input.focus();
+			return input;
+		}
+
+		function makeCancelButton(btn: HTMLElement) {
+			btn.innerHTML = crossButton;
+			btn.className = "hover:text-red-400"
+			btn.onclick = () => window.location.reload();
+		}
+
+		if (editTitleButton && titleSpan) {
+			editTitleButton.addEventListener("click", () => {
+				submitButton!.classList.remove("hidden");
+				convertToInput(titleSpan, "dbTitle", "Enter db name");
+				makeCancelButton(editTitleButton);
+			});
+		}
+
+		if (editDescriptionButton && descriptionSpan) {
+			editDescriptionButton.addEventListener("click", () => {
+				submitButton!.classList.remove("hidden");
+				convertToInput(descriptionSpan, "dbDescription", "Enter db description");
+				makeCancelButton(editDescriptionButton);
+			});
+		}
+	</script>
 
 </BaseLayout>
