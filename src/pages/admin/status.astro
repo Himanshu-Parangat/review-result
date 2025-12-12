@@ -19,8 +19,11 @@ if (Astro.request.method === "POST") {
 	
 	if (action === "initialize") {
 
-		console.log("Database initalize requested")
-		initDb()
+		if (!isDbInitialized()) {
+			console.log("Database initalize requested")
+			initDb()
+		}
+
 		const db = getDb()
 
 		await db.insert(siteSchema.dbIdentity).values({
