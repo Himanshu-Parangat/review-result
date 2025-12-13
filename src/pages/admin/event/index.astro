@@ -2,11 +2,13 @@
 export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import ScheduleEntry from "@components/ScheduleEntry.astro";
-import { db, siteSchema } from "@db/index";
+import { getDb, siteSchema } from "@db/index";
 import { eq, and, sql } from "drizzle-orm";
 import { generateId } from "@utils/MainUtils";
 import { normalizeDateTime } from "@utils/TimeUtils";
 
+
+const db = getDb()
 
 const GetDbIdentity = function(){
 		const identity = db

@@ -1,11 +1,10 @@
 import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { config } from "@config";
 import * as siteSchema from "@db/schema";
 import { existsSync } from "fs";
 
-let db: ReturnType<typeof drizzle> | null = null;
 let dbInitialized: boolean | null = null;
 
 export function isDbInitialized() {
@@ -52,34 +51,51 @@ export function isDbInitialized() {
 		return false;
 	} finally {
 		if (sqlite) {
-			db = drizzle(sqlite, { schema: siteSchema });
+			sqlite.close();
 		}
 	}
 }
 
-// for check reset
+
 export function resetDbInitCheck() {
 	dbInitialized = null;
 }
 
 
 export function initDb() {
-	if (!db) {
+	if (!isDbInitialized()) {
+
 		const sqlite = new Database(config.dbPath);
-		db = drizzle(sqlite, { schema: siteSchema });
+		const db = drizzle(sqlite, { schema: siteSchema });
 
 		migrate(db, {
 			migrationsFolder: config.dbMigration, 
 		});
 
+		sqlite.close();
 		console.log('✅ Database initialized successfully!');
 		resetDbInitCheck()
 	}
 }
 
-export function getDb() {
-	if (!db) throw new Error("DB not initialized!");
-	return db;
-} 
 
-export { siteSchema, db };
+let db: BetterSQLite3Database<typeof siteSchema> | null = null;
+let sqlite: Database.Database | null = null;
+
+export function getDb():  BetterSQLite3Database<typeof siteSchema> {
+	if (!isDbInitialized()) {
+		throw new Error(
+			"Database not initialized. Call initDb() first or check database file exists."
+		);
+	}
+
+	if (db === null) {
+		console.log("Opening database connection");
+		sqlite = new Database(config.dbPath);
+		db = drizzle(sqlite, { schema: siteSchema });
+	}
+
+	return db;
+}
+
+export { siteSchema };

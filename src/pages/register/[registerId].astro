@@ -1,7 +1,7 @@
 ---
 export const prerender = false
 import BaseLayout from "@layouts/BaseLayout.astro"
-import { db, siteSchema  } from "@db/index";
+import { getDb, siteSchema  } from "@db/index";
 import { eq } from "drizzle-orm";
 import { generateId } from "@utils/MainUtils";
 
@@ -11,6 +11,8 @@ if (!registerId) {
   return Astro.redirect("/register");
 }
 
+
+const db = getDb()
 
 const event = await db.select()
   .from(siteSchema.event)

@@ -2,10 +2,11 @@
 export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import QuizeEntry from "@components/QuizeEntry.astro";
-import { db, siteSchema  } from "@db/index";
+import { getDb, siteSchema  } from "@db/index";
 import { generateId } from "@utils/MainUtils";
 import { eq } from "drizzle-orm";
 
+const db = getDb()
 
 const { eventId } = Astro.params;
 
