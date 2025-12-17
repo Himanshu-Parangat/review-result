@@ -1,0 +1,130 @@
+---
+export const prerender = false
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const url = new URL(Astro.request.url);
+const inviteParam = url.searchParams.get('Invite');
+const isInvalid = inviteParam === 'invalid';
+---
+<BaseLayout title="Register">
+	<div class="h-full mx-[5%] flex flex-col items-center">
+		<h1 class="text-2xl font-bold mb-1">Welcome to the event!</h1>
+		<h3 class="text-secondary text-sm font-bold mb-2">
+			Please provide the following details.
+		</h3>
+		<div class="border-2 border-primary bg-secondary rounded-lg p-10 space-y-6 mt-[2%] min-w-[50%]">
+			<div class="flex flex-col items-center">
+				<div class="flex flex-row gap-4 border-2 bg-tertiary border-primary px-6 py-4 rounded-lg">
+					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-13 h-13">
+						<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+							<rect x="6" y="8" width="22" height="20" rx="2" stroke-width="2"/>
+							<line x1="6" y1="13" x2="28" y2="13" stroke-width="2"/>
+							<line x1="11" y1="8" x2="11" y2="5" stroke-width="2" stroke-linecap="round"/>
+							<line x1="23" y1="8" x2="23" y2="5" stroke-width="2" stroke-linecap="round"/>
+							<text x="17" y="23" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor" stroke="none">
+								S
+							</text>
+						</svg>
+					</div>
+					<div class="flex flex-col text-start">
+						<h1 class="text-2xl text-primary truncate">Enter Event Invite</h1>
+						<h3 class="text-lg text-secondary truncate">Contact Organizer for Invite</h3>
+					</div>
+				</div>
+			</div>
+			<form id="registrationForm" class="space-y-4">
+				<h3 class="text-lg font-semibold">Event Invite</h3>
+				<p class="text-sm mb-4 text-secondary">
+					Paste an invite link or enter the invite ID
+				</p>
+				<div class="flex flex-row gap-4">
+					<input
+						id="inviteInput"
+						type="text"
+						class="flex-6 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted transition-all duration-300"
+						placeholder="Invite link or ID..."
+						required
+					/>
+					<button
+						type="submit"
+						class="p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+					>
+						Accept Invite
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<script is:inline define:vars={{ isInvalid }}>
+		const form = document.getElementById("registrationForm");
+		const input = document.getElementById("inviteInput");
+		
+		function showInvalidFeedback() {
+			if (!input) return;
+			
+			input.value = '';
+			
+			input.classList.add('border-red-500', 'animate-shake');
+			input.style.borderColor = '#ef4444';
+			
+			setTimeout(() => {
+				input.classList.remove('border-red-500', 'animate-shake');
+				input.style.borderColor = '';
+			}, 1000);
+		}
+		
+		if (isInvalid) {
+			showInvalidFeedback();
+			
+			const cleanUrl = window.location.pathname;
+			window.history.replaceState({}, '', cleanUrl);
+		}
+		
+		if (form && input) {
+			form.addEventListener("submit", (event) => {
+				event.preventDefault();
+				const rawValue = input.value.trim().split(/\s+/).join("");
+				let inviteId = null;
+				let url = null;
+
+				if (!rawValue.includes("/")){
+					inviteId = rawValue
+				} else {
+					const part = rawValue
+						.replace("http://","")
+						.replace("https://","")
+						.split("/")
+
+					url = part.slice(0, -1).join("/");
+					if ( url !== window.location.host + window.location.pathname){
+						showInvalidFeedback();
+						return;
+					}
+
+					inviteId = part.at(-1);
+				}
+				
+				const isValidId = /^[A-Za-z0-9]{10,}$/.test(inviteId);
+
+				if (!isValidId) {
+					showInvalidFeedback();
+					return;
+				}
+				
+				window.location.assign(`/register/${inviteId}`);
+			});
+		}
+	</script>
+	
+	<style>
+		@keyframes shake {
+			0%, 100% { transform: translateX(0); }
+			10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+			20%, 40%, 60%, 80% { transform: translateX(5px); }
+		}
+		
+		.animate-shake {
+			animation: shake 0.5s ease-in-out;
+		}
+	</style>
+</BaseLayout>
