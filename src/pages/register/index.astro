@@ -5,6 +5,29 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 const url = new URL(Astro.request.url);
 const inviteParam = url.searchParams.get('Invite');
 const isInvalid = inviteParam === 'invalid';
+
+
+interface Registration {
+	eventId: string
+	participantId: string
+}
+
+const cookie = Astro.cookies.get("registeredForEvent")?.value
+
+try {
+	if (cookie){
+		const Id = JSON.parse(cookie) as Partial<Registration>;
+
+		if(Id.eventId && Id.participantId){
+			return Astro.redirect("/event/"+ Id.eventId)
+		}
+
+	}
+
+} catch {
+	// Do nothing proceed to page
+}
+
 ---
 <BaseLayout title="Register">
 	<div class="h-full mx-[5%] flex flex-col items-center">

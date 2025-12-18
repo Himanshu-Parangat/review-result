@@ -4,25 +4,49 @@ import BaseLayout from "@layouts/BaseLayout.astro"
 import { getDb, siteSchema  } from "@db/index";
 import { eq } from "drizzle-orm";
 import { generateId } from "@utils/MainUtils";
+import { friendlyDateMessage, normalizeDateTime } from "@utils/TimeUtils";
+
 
 const { registerId } = Astro.params;
-
 if (!registerId) {
-  return Astro.redirect("/register");
+	return Astro.redirect("/register");
 }
-
 
 const db = getDb()
-
-const event = await db.select()
-  .from(siteSchema.event)
-  .where(eq(siteSchema.event.eventId, registerId))
-  .then(res => res[0]);
-
+const event = await db
+	.select()
+	.from(siteSchema.event)
+	.where(eq(siteSchema.event.eventId, registerId))
+	.then(res => res[0]);
 
 if (!event) {
-  return Astro.redirect("/register");
+	return Astro.redirect("/register?Invite=invalid");
 }
+
+interface Registration {
+	eventId: string
+	participantId: string
+}
+
+const cookie = Astro.cookies.get("registeredForEvent")?.value
+
+try {
+	if (cookie){
+		const Id = JSON.parse(cookie) as Partial<Registration>;
+
+		if(Id.eventId && Id.participantId){
+			return Astro.redirect("/event/"+ Id.eventId)
+		}
+
+	}
+
+} catch {
+	// Do nothing proceed to page
+}
+
+
+let registerStatus: "idle" | "pass" | "fail" = "idle";
+
 
 
 if (Astro.request.method === "POST") {
@@ -45,32 +69,53 @@ if (Astro.request.method === "POST") {
 		console.log("participantDesignation is set to", participantDesignation)
 
 		if (!registerId || !participantName || !participantPayrollId || !participantDepartment || !participantDesignation) {
+			registerStatus = "fail"
 			console.warn("Missing required fields. No DB entry created.")
 		} else {
 
-			await db.insert(siteSchema.participant).values(
-				{
-					eventId: registerId,
-					participantId: generateId(),
-					participantCreatedAt: new Date().toISOString(),
-					participantPayrollId: participantPayrollId,
-					participantName: participantName,
-					participantlabel: "",
-					participantDesignation: participantDesignation,
-					participantDepartment: participantDepartment
-				}
+			try {
 
-			)
+				const participantId = generateId()
+				await db.insert(siteSchema.participant).values(
+					{
+						eventId: registerId,
+						participantId: participantId,
+						participantCreatedAt: new Date().toISOString(),
+						participantPayrollId: participantPayrollId,
+						participantName: participantName,
+						participantlabel: "",
+						participantDesignation: participantDesignation,
+						participantDepartment: participantDepartment
+					}
 
+				)
+
+				const cookieExpiryDate = new Date(event.eventScheduledEndAt!)
+				cookieExpiryDate.setMonth(cookieExpiryDate.getMonth() + 3)
+
+				const registerData : Registration = { eventId: registerId, participantId: participantId }
+
+				Astro.cookies.set("registeredForEvent", JSON.stringify(registerData), {
+					path: "/",
+					expires: cookieExpiryDate,
+					httpOnly: true,
+					sameSite: "lax",
+				});
+
+				registerStatus = "pass";
+			} catch (err){
+				console.log(err)
+				registerStatus = "fail";
+
+			}
+
+			// return Astro.redirect(`/event/${registerId}`);
 		}
-
-
-
-		
-		console.log(formData)
 
 	}
 }
+
+
 ---
 
 <BaseLayout title="Register">
@@ -81,7 +126,6 @@ if (Astro.request.method === "POST") {
 		<div class="border-2 border-primary bg-secondary rounded-lg p-10 space-y-6 mt-[2%] min-w-[50%]">
 
 			<div class="flex flex-col items-center">
-
 				<div class="flex flex-row gap-4 border-2 bg-tertiary border-primary px-6 py-4 rounded-lg">
 					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-13 h-13 ">
 						<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
@@ -93,15 +137,18 @@ if (Astro.request.method === "POST") {
 						</svg>
 					</div>
 					<div class="flex flex-col text-start">
-						<h1 class="text-2xl text-primary truncate">{event.eventTitle}</h1>
-						<h3 class="text-lg text-secondary truncate">{event.eventDescription}</h3>
+						<h1 class="text-2xl text-primary truncate">{event.eventTitle || "Enter Event Invite"}</h1>
+						<h3 class="text-lg text-secondary truncate">{event.eventDescription || "Contact Organizer for Invite"}</h3>
+						<h3 class="text-lg text-secondary truncate">{friendlyDateMessage(normalizeDateTime(event.eventScheduledStartAt!)) || ""}</h3>
 					</div>
-
 				</div>
 			</div>
 
 
-			<form method="post">
+
+
+
+			<form method="post" id="registrationForm">
 				<div class="space-y-2 mt-8">
 
 					<h3 class="text-lg font-semibold mb-2">Enter User Details</h3>
@@ -159,28 +206,44 @@ if (Astro.request.method === "POST") {
 
 				</div>
 
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold">Enter Event ID</h3>
-					<p class="text-sm mb-4 text-secondary ">Enter your Event ID & Event Link</p>
+				<div class="space-y-4 mt-8">
+					<input type="hidden" name="action" value="create">
+					<input type="hidden" name="eventId" value={registerId}>
 
-					<div class="flex flex-row gap-4">
-						<input
-							type="text"
-							name="eventId"
-							value={registerId}
-							class="flex-6 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-							placeholder="Type your Payroll here..." required/>
+					<div
+						id="register-fail"
+						class="text-center mt-4 text-red-500 font-bold"
+						style={registerStatus === "fail" ? "display:block" : "display:none"}
+					>
+						&#9888; Registration failed. Please try again.
+					</div>
 
-						<input type="hidden" name="action" value="create">
-							<div>
-								<button
-									id="doEntry"
-									type="submit"
-									class="w-full p-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
-								>
+					<div
+						id="register-pass"
+						class="text-center mt-4 text-green-400 font-bold"
+						style={registerStatus === "pass" ? "display:block" : "display:none"}
+					>
+						&#10003; Registration successful!
+					</div>
+
+					<div class="flex flex-col items-center justify-center gap-4">
+						<button
+							id="doEntry"
+							type="submit"
+							class="w-full text-xl px-6 py-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+						>
+							<div class="flex flex-row justify-center items-center">
+								<span class="mr-2">
 									Join Event
-								</button>
+								</span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+									<path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+									<path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+									<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+								</svg>
 							</div>
+						</button>
 
 
 					</div>
@@ -194,16 +257,29 @@ if (Astro.request.method === "POST") {
 
 	</div>
 
-<script>
+	<script
+	is:inline
+	define:vars={{ registerId, registerStatus }}
+>
+	if (registerStatus === "pass") {
+		setTimeout(() => {
+			window.location.href = `/event/${registerId}`;
+		}, 1200);
+	}
 
-	type UserRecord = {
-		yourname: string;
-		department: string;
-		designation: string;
-	};
+	if (registerStatus === "fail") {
+		setTimeout(() => {
+			const el = document.getElementById("register-fail");
+			if (el) el.style.display = "none";
+		}, 2500);
+	}
+</script>
 
 
-	const userData: Record<string, UserRecord> = {
+
+<script is:inline>
+
+	const userData = {
 		"91384943": {
 			yourname: "Jane Dow",
 			department: "L&D",
@@ -216,27 +292,26 @@ if (Astro.request.method === "POST") {
 		},
 	};
 
-
-
 	document.addEventListener("DOMContentLoaded", () => {
-  const payrollInput = document.querySelector<HTMLInputElement>("#payroll");
-  const nameInput = document.querySelector<HTMLInputElement>("#name");
-  const deptInput = document.querySelector<HTMLInputElement>("#department");
-  const desigInput = document.querySelector<HTMLInputElement>("#designation");
+		const payrollInput = document.querySelector("#payroll");
+		const nameInput = document.querySelector("#name");
+		const deptInput = document.querySelector("#department");
+		const desigInput = document.querySelector("#designation");
+		const form = document.querySelector("#registrationForm");
 
-  if (!payrollInput || !nameInput || !deptInput || !desigInput) return;
+		if (!payrollInput || !nameInput || !deptInput || !desigInput || !form) return;
 
-  payrollInput.addEventListener("blur", () => {
-    const key = payrollInput.value.trim();
+		payrollInput.addEventListener("blur", () => {
+			const key = payrollInput.value.trim();
 
-    const record = userData[key];
-    if (record) {
-      nameInput.value = record.yourname;
-      deptInput.value = record.department;
-      desigInput.value = record.designation;
-    }
-  });
-});
+			const record = userData[key];
+			if (record) {
+				nameInput.value = record.yourname;
+				deptInput.value = record.department;
+				desigInput.value = record.designation;
+			}
+		});
+	});
 
 </script>
 
