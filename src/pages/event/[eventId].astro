@@ -1,0 +1,53 @@
+---
+export const prerender = false
+
+import TwoColumnLayout from "@layouts/TwoColumnLayout.astro";
+import { getDb, siteSchema } from "@db/index";
+import { eq } from "drizzle-orm";
+import WaitRoom from "@components/WaitRoom.astro";
+
+const db = getDb()
+const { eventId } = Astro.params;
+
+let event = null;
+
+if (!eventId) {
+	return Astro.redirect("/");
+}
+
+try {
+	event = db
+		.select()
+		.from(siteSchema.event)
+		.where(eq(siteSchema.event.eventId, eventId))
+		.get();
+	
+	if (!event) {
+		return Astro.redirect("/");
+	}
+} catch (error) {
+	console.error("Database error:", error);
+	return Astro.redirect("/");
+}
+
+const now = new Date();
+const scheduledStart = new Date(event.eventScheduledStartAt!);
+const waitRoom = now < scheduledStart;
+---
+
+{waitRoom ? (
+	<WaitRoom 
+		Id={event.eventId}
+		Title={event.eventTitle}
+		Description={event.eventDescription}
+		StartAt={event.eventScheduledStartAt}
+		EndAt={event.eventScheduledEndAt}
+	/>
+) : (
+	<TwoColumnLayout title="Quiz Live">
+		<div slot="max-slot">
+			<p class="text-2xl font-bold">Quiz with ID {eventId} is now LIVE!</p>
+			<p>{event.eventTitle}</p>
+		</div>
+	</TwoColumnLayout>
+)}
