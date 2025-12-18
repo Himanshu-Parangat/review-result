@@ -1,10 +1,10 @@
 ---
 export const prerender = false
-
-import TwoColumnLayout from "@layouts/TwoColumnLayout.astro";
 import { getDb, siteSchema } from "@db/index";
 import { eq } from "drizzle-orm";
-import WaitRoom from "@components/WaitRoom.astro";
+import EventWaitRoom from "@components/EventWaitRoom.astro";
+import EventLiveRoom from "@components/EventLiveRoom.astro";
+import EventClosedRoom from "@components/EventClosedRoom.astro";
 
 const db = getDb()
 const { eventId } = Astro.params;
@@ -30,24 +30,48 @@ try {
 	return Astro.redirect("/");
 }
 
+type EventState = "WAITING" | "LIVE" | "ENDED";
+
+let eventState: EventState;
+
 const now = new Date();
 const scheduledStart = new Date(event.eventScheduledStartAt!);
-const waitRoom = now < scheduledStart;
+const scheduledEnd = new Date(event.eventScheduledEndAt!);
+
+if (now < scheduledStart) {
+	eventState = "WAITING";
+} else if (now >= scheduledStart && now < scheduledEnd) {
+	eventState = "LIVE";
+} else {
+	eventState = "ENDED";
+}
+
 ---
 
-{waitRoom ? (
-	<WaitRoom 
+{eventState === "WAITING" && (
+	<EventWaitRoom
 		Id={event.eventId}
 		Title={event.eventTitle}
 		Description={event.eventDescription}
 		StartAt={event.eventScheduledStartAt}
 		EndAt={event.eventScheduledEndAt}
 	/>
-) : (
-	<TwoColumnLayout title="Quiz Live">
-		<div slot="max-slot">
-			<p class="text-2xl font-bold">Quiz with ID {eventId} is now LIVE!</p>
-			<p>{event.eventTitle}</p>
-		</div>
-	</TwoColumnLayout>
+)}
+
+
+{eventState === "LIVE" && (
+	<EventLiveRoom
+		StartAt={event.eventScheduledStartAt}
+		EndAt={event.eventScheduledEndAt}
+	/>
+)}
+
+
+{eventState === "ENDED" && (
+	<EventClosedRoom
+		Title={event.eventTitle}
+		Description={event.eventDescription}
+		StartAt={event.eventScheduledStartAt}
+		EndAt={event.eventScheduledEndAt}
+	/>
 )}

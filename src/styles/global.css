@@ -40,7 +40,7 @@
 
 
 .theme-light {
-  --color-text-primary: hsl(0, 0%, 6%);
+  --color-text-primary: hsl(0, 0%, 20%);
   --color-text-secondary: hsl(0, 0%, 45%);
 	--color-text-accent: hsl(215, 58%, 42%);
 
@@ -141,4 +141,69 @@ input:-webkit-autofill {
 .scrollbar-primary {
   scrollbar-width: auto;
 	scrollbar-color: var(--color-text-accent) var(--color-background-primary);
+}
+
+
+progress {
+  pointer-events: auto;
+}
+.progress-time {
+  pointer-events: auto;
+}
+.progress-questions {
+  pointer-events: none;
+}
+.progress-questions::-webkit-progress-bar {
+  pointer-events: none;
+}
+.progress-questions::-webkit-progress-value {
+  pointer-events: auto;
+}
+
+/* progress bar */
+
+progress {
+	appearance: none;
+	background: transparent;
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+progress::-webkit-progress-bar {
+	background: transparent;
+}
+
+
+/* Time (bottom color) */
+.progress-time::-webkit-progress-value {
+	background-color: var(--color-background-tertiary);
+	border-radius: 999px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: var(--color-border-primary);
+}
+
+/* Questions (top color) */
+.progress-questions::-webkit-progress-value {
+	background-color: var(--color-text-accent);
+	border-radius: 999px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: var(--color-border-primary);
+}
+
+/* Firefox */
+.progress-time::-moz-progress-bar {
+	background-color: var(--color-background-tertiary);
+	border-radius: 999px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: var(--color-border-primary);
+}
+.progress-questions::-moz-progress-bar {
+	background-color: var(--color-text-accent);
+	border-radius: 999px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: var(--color-border-primary);
 }
