@@ -161,49 +161,29 @@ progress {
 }
 
 /* progress bar */
+@layer utilities {
+  .quiz-jump-target {
+    @apply relative;
+  }
 
-progress {
-	appearance: none;
-	background: transparent;
-	border-radius: 999px;
-	overflow: hidden;
-}
+  .quiz-jump-target::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0 rounded-lg
+           ring-2 ring-(--color-background-accent)
+           opacity-0;
+  }
 
-progress::-webkit-progress-bar {
-	background: transparent;
-}
+  .quiz-jump-target:target::after {
+    animation: target-fade 1.2s ease-out forwards;
+  }
 
-
-/* Time (bottom color) */
-.progress-time::-webkit-progress-value {
-	background-color: var(--color-background-tertiary);
-	border-radius: 999px;
-	border-width: 2px;
-	border-style: solid;
-	border-color: var(--color-border-primary);
-}
-
-/* Questions (top color) */
-.progress-questions::-webkit-progress-value {
-	background-color: var(--color-text-accent);
-	border-radius: 999px;
-	border-width: 2px;
-	border-style: solid;
-	border-color: var(--color-border-primary);
-}
-
-/* Firefox */
-.progress-time::-moz-progress-bar {
-	background-color: var(--color-background-tertiary);
-	border-radius: 999px;
-	border-width: 2px;
-	border-style: solid;
-	border-color: var(--color-border-primary);
-}
-.progress-questions::-moz-progress-bar {
-	background-color: var(--color-text-accent);
-	border-radius: 999px;
-	border-width: 2px;
-	border-style: solid;
-	border-color: var(--color-border-primary);
+	@keyframes target-fade {
+		0% {
+      opacity: 1;
+		}
+		
+		100% {
+      opacity: 0;
+		}
+	}
 }

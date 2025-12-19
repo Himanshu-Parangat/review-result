@@ -15,6 +15,14 @@ if (!eventId) {
 	return Astro.redirect("/");
 }
 
+const GetAllQuizes = await db.query.question.findMany({
+  where: eq(siteSchema.question.eventId, eventId),
+  with: {
+    options: true
+  }
+});
+
+
 try {
 	event = db
 		.select()
@@ -61,8 +69,12 @@ if (now < scheduledStart) {
 
 {eventState === "LIVE" && (
 	<EventLiveRoom
-		StartAt={event.eventScheduledStartAt}
-		EndAt={event.eventScheduledEndAt}
+		id={event.eventId}
+		title={event.eventTitle}
+		description={event.eventDescription}
+		startAt={event.eventScheduledStartAt}
+		endAt={event.eventScheduledEndAt}
+		Quie={GetAllQuizes}
 	/>
 )}
 

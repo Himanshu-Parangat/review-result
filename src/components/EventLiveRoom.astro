@@ -1,29 +1,81 @@
 ---
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import Timestamp from "@components/Timestamp.astro"
-const { Id, Title, Description, StartAt, EndAt} = Astro.props
+import { siteSchema } from "@db/index";
+import type { InferSelectModel } from "drizzle-orm";
+
+type Question = InferSelectModel<typeof siteSchema.question>;
+type Option = InferSelectModel<typeof siteSchema.option>;
+
+type QuestionWithOptions = Question & {
+	options: Option[];
+};
+
+interface Props {
+	id: string | null
+	title: string | null
+	description: string | null
+	startAt: string | null
+	endAt: string | null
+	Quie:  QuestionWithOptions[];
+}
+
+const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
+
 
 ---
 <TwoColumnLayout title="event">
 
 	<div slot="max-slot" class="h-full">
 		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4  flex flex-col items-center overflow-y-auto">
-			<h1 class="text-xl font-bold items-center">All Quie</h1>
+			<h1 class="text-xl font-bold items-center">{title}</h1>
 			<div class=" border-b-2 border-primary w-full mt-2"></div>
 
-				<form method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
+				<form method="post" class="flex flex-col w-full mt-4 px-8 py-4 h-full lg:overflow-y-auto">
 
-				<div class="flex-1">
-					g
-				</div>
+				{Quie.map((question,index) =>
+					// question.questionTitle
+				<div id={"question-" + question.questionId} class="mb-8 border-2 border-primary bg-tertiary rounded-lg p-4 scroll-mt-24 quiz-jump-target hover:scale-[1.02]">
+						<div class=" flex flex-row justify-start gap-4">
+							<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
+								{index + 1}
+							</div>
 
-				<div>
-					p
-				</div>
+							<details class="group w-full" open="true">
+								<summary class="list-none cursor-pointer flex justify-between  w-full">
+									<h1 class="text-2xl">{question.questionTitle}</h1>
+
+									<svg xmlns="http://www.w3.org/2000/svg"
+										class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
+										fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M19 9l-7 7-7-7" />
+									</svg>
+								</summary>
+								<h2 class="text-xl text-secondary mt-1">{question.questionDescription}</h2>
+							</details>
+
+						</div>
 
 
+						<div class="ml-9 mr-4 mt-4 space-y-4 pl-3 py-3 ">
 
+						{question.options.map(option => 
 
+							<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
+								<input 
+								type={question.questionType}
+								name={question.questionId}
+								value={option.questionId}
+								class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
+								>
+							<span class="ml-3 text-xl ">{option.optionlabel}</span>
+							</label>
+
+						)}
+						</div>
+					</div>
+				)}
 				</form>
 
 		</div>
@@ -38,51 +90,42 @@ const { Id, Title, Description, StartAt, EndAt} = Astro.props
 			<div class="flex flex-col w-full h-full pt-2 px-4">
 
 
-				<!-- check -->
-
-
-
-
-
-				<!-- check -->
-
-
 				<div class="w-full flex flex-row justify-between">
 					<h3 class="text-lg font-semibold mt-2">Time Remaining</h3>
 
 					<!-- <span id="countdown-timestamp" class="mt-2 text-lg text-secondary">5 Mins 12 sec </span> -->
 					<div class="mt-2 text-lg text-secondary">
-						<Timestamp startTime={StartAt} endTime={EndAt} eventName="Event"/>
+						<Timestamp startTime={startAt!} endTime={endAt!} eventName="Event"/>
 					</div>
 
 				</div>
 
 
 
-				<div class="relative mt-2 h-5 w-full rounded-xl border-2 border-primary overflow-visible group">
+				<div class="progress-container relative mt-2 h-5 w-full rounded-xl border-2 border-primary ">
 					<div
 						class="absolute hidden -top-11 left-0
 									 rounded bg-tertiary px-2 py-1 text-primary border-2 border-primary text-base whitespace-nowrap pointer-events-none z-50
 									 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
-									 after:border-7 after:border-transparent after:border-t-(--color-border-primary)"
+									 after:border-8 after:border-transparent after:border-t-primary"
 						id="tooltip">
 					</div>
-
+					
 					<!-- Time progress (bottom layer) -->
-					<progress
-						class="absolute inset-0 w-full h-full progress-time rounded-xl"
-						value="70"
-						max="100"
-						data-text="Time Remaining">
-					</progress>
+					<div class="absolute inset-0 w-full h-full bar-time rounded-xl pointer-events-none"
+							 data-value="20"
+							 data-start={startAt}
+							 data-end={endAt}
+							 data-text="Time Remaining">
+						<div class="fill h-full bg-tertiary border-2 border-primary hover:hover-primary rounded-xl transition-all duration-300 pointer-events-auto" style="width: 70%"></div>
+					</div>
+					
 					<!-- Questions progress (top layer) -->
-					<progress
-						class="absolute inset-0 w-full h-full progress-questions rounded-xl"
-						value="40"
-						max="100"
-						data-text="Questions Attempted">
-					</progress>
-
+					<div class="absolute inset-0 w-full h-full bar-questions rounded-xl pointer-events-none"
+							 data-value="30"
+							 data-text="Questions Attempted">
+						<div class="fill h-full bg-accent border-2 border-primary rounded-xl transition-all duration-300 pointer-events-auto" style="width: 30%"></div>
+					</div>
 				</div>
 
 
@@ -92,54 +135,13 @@ const { Id, Title, Description, StartAt, EndAt} = Astro.props
 
 					<div class="border-2 border-primary rounded-lg p-4 mt-2  grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]    gap-2">
 
-					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10 border border-primary hover:scale-[110%]">
-						11
-					</div>
-
-
-					<div class="shrink-0 text-primary text-lg bg-tertiary flex justify-center items-center rounded-lg w-10 h-10 border border-primary ">
-							12
-					</div>
-
-
-					<div class="shrink-0 text-primary text-lg bg-secondary hover:hover-primary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
-
-					<div class="shrink-0 text-primary text-lg bg-secondary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
-						13
-					</div>
+						{Quie.map((question,index) => 
+						<a href={"#question-"+question.questionId}>
+								<div class="shrink-0 text-primary text-lg bg-secondary hover:hover-primary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
+									{index +1 }
+								</div>
+							</a>
+						)}
 
 					</div>
 				</div>
@@ -161,141 +163,148 @@ const { Id, Title, Description, StartAt, EndAt} = Astro.props
 
 
 				</div>
+			</div>
+		</div>
 
-		<script is:inline>
-		(function () {
-			let refreshScheduled = false;
-			function formatTimeParts(diff) {
-				const absDiff = Math.max(0, Math.abs(diff));
+			<script is:inline>
+				(function () {
+					function formatTimeParts(diff) {
+						const absDiff = Math.max(0, Math.abs(diff));
 
-				const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
-				const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-				const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
-				const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+						const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+						const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+						const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+						const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
 
-
-				if (days > 0) {
-					return `${days}d ${hours}h`;
-				} else if (hours > 0) {
-					return `${hours}h ${minutes}m`;
-				} else if (minutes > 0) {
-					return `${minutes}m ${seconds}s`;
-				} else {
-					return `${seconds}s`;
-				}
-			}
-
-			function updateTimestamp(element) {
-				const startDate = new Date(element.dataset.start).getTime();
-				const endDate = new Date(element.dataset.end).getTime();
-				const now = Date.now();
-
-				const diffToStart = startDate - now;
-				const diffToEnd = endDate - now;
-
-				if (diffToStart > 1000) {
-					element.textContent = `Starts in ${formatTimeParts(diffToStart)}`;
-				} else if (diffToStart >= 0) {
-					element.textContent = `Starts in 0s`;
-				} else if (diffToEnd > 1000) {
-					element.textContent = `Ongoing (${formatTimeParts(diffToEnd)} left)`;
-				} else if (diffToEnd >= 0) {
-					element.textContent = `Ending in 0s`;
-				} else {
-					element.textContent = `Ended ${formatTimeParts(diffToEnd)} ago`;
-					// if (!refreshScheduled) {
-					// 	refreshScheduled = true;
-					// 	setTimeout(() => {
-					// 		window.location.reload();
-					// 	}, 2000);
-					// }
-				}
-			}
-
-			function initTimestamps() {
-				const timestamps = document.querySelectorAll('.countdown-timestamp');
-
-				if (!timestamps.length) return;
-
-				const tick = () => {
-					timestamps.forEach(updateTimestamp);
-				};
-
-				tick();
-				setInterval(tick, 1000);
-			}
-
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', initTimestamps);
-			} else {
-				initTimestamps();
-			}
-
-			document.addEventListener('astro:page-load', initTimestamps);
-		})();
-		</script>
-
-				<script>
-					const tooltip = document.getElementById('tooltip');
-					const timeProgress = document.querySelector<HTMLProgressElement>('.progress-time');
-					const questionsProgress = document.querySelector<HTMLProgressElement>('.progress-questions');
-
-					if (!tooltip || !timeProgress || !questionsProgress) {
-						console.error('Required elements not found');
-					} else {
-						function showTooltip(
-							bar: HTMLProgressElement,
-							tooltip: HTMLElement,
-							event: MouseEvent
-						) {
-							const rect = bar.getBoundingClientRect();
-							const parent = bar.parentElement;
-							if (!parent) return;
-
-							const containerRect = parent.getBoundingClientRect();
-							const mouseX = event.clientX - rect.left;
-							const barWidth = rect.width;
-							const percentage = (bar.value / bar.max) * 100;
-							const filledWidth = (barWidth * percentage) / 100;
-
-							if (mouseX <= filledWidth) {
-								tooltip.textContent = bar.dataset.text ?? '';
-								tooltip.classList.remove('hidden');
-
-								const relativeX = event.clientX - containerRect.left;
-								tooltip.style.left = `${relativeX}px`;
-								tooltip.style.transform = 'translateX(-50%)';
-							} else {
-								tooltip.classList.add('hidden');
-							}
-						}
-
-						questionsProgress.addEventListener('mousemove', e =>
-							showTooltip(questionsProgress, tooltip, e)
-						);
-						questionsProgress.addEventListener('mouseleave', () =>
-							tooltip.classList.add('hidden')
-						);
-
-						timeProgress.addEventListener('mousemove', e =>
-							showTooltip(timeProgress, tooltip, e)
-						);
-						timeProgress.addEventListener('mouseleave', () =>
-							tooltip.classList.add('hidden')
-						);
+						if (days > 0) return `${days}d ${hours}h`;
+						if (hours > 0) return `${hours}h ${minutes}m`;
+						if (minutes > 0) return `${minutes}m ${seconds}s`;
+						return `${seconds}s`;
 					}
 
-				</script>
+					function updateTimestamp(element) {
+						const startDate = new Date(element.dataset.start).getTime();
+						const endDate = new Date(element.dataset.end).getTime();
+						const now = Date.now();
+
+						const diffToStart = startDate - now;
+						const diffToEnd = endDate - now;
+
+						if (diffToStart > 1000) {
+							element.textContent = `Starts in ${formatTimeParts(diffToStart)}`;
+						} else if (diffToStart >= 0) {
+							element.textContent = `Starts in 0s`;
+						} else if (diffToEnd > 1000) {
+							element.textContent = `Ongoing (${formatTimeParts(diffToEnd)} left)`;
+						} else if (diffToEnd >= 0) {
+							element.textContent = `Ending in 0s`;
+						} else {
+							element.textContent = `Ended ${formatTimeParts(diffToEnd)} ago`;
+						}
+					}
+
+					function updateTimeProgress() {
+						const timeBar = document.querySelector('.bar-time');
+						if (!timeBar) return;
+
+						const fill = timeBar.querySelector('.fill');
+						if (!fill) return;
+
+						const start = new Date(timeBar.dataset.start).getTime();
+						const end = new Date(timeBar.dataset.end).getTime();
+						const now = Date.now();
+
+						if (!start || !end || end <= start) return;
+
+						const total = end - start;
+						const elapsed = now - start;
+
+						let percent = (elapsed / total) * 100;
+						percent = Math.min(100, Math.max(0, percent));
+
+						fill.style.width = `${percent}%`;
+						timeBar.dataset.value = percent.toFixed(1);
+					}
+
+					function initTimestamps() {
+						const timestamps = document.querySelectorAll('.countdown-timestamp');
+						if (!timestamps.length) return;
+
+						const tick = () => {
+							timestamps.forEach(updateTimestamp);
+							updateTimeProgress();
+						};
+
+						tick();
+						setInterval(tick, 1000);
+					}
+
+					if (document.readyState === 'loading') {
+						document.addEventListener('DOMContentLoaded', initTimestamps);
+					} else {
+						initTimestamps();
+					}
+
+					document.addEventListener('astro:page-load', initTimestamps);
+				})();
+			</script>
 
 
+			<script is:inline>
+				const tooltip = document.getElementById('tooltip');
+				const timeBar = document.querySelector('.bar-time');
+				const questionsBar = document.querySelector('.bar-questions');
+				
+				if (!tooltip || !timeBar || !questionsBar) {
+					console.error('Required elements not found');
+				} else {
+					function showTooltip(bar, tooltip, event ) {
+						const rect = bar.getBoundingClientRect();
+						const parent = bar.closest('.progress-container');
+						if (!parent) return;
+						
+						const containerRect = parent.getBoundingClientRect();
+						const mouseX = event.clientX - rect.left;
+						const barWidth = rect.width;
+						
+						const percentage = parseFloat(bar.dataset.value || '0');
+						const filledWidth = (barWidth * percentage) / 100;
+						
+						if (mouseX <= filledWidth) {
+							tooltip.textContent = bar.dataset.text ?? '';
+							tooltip.classList.remove('hidden');
+							
+							const relativeX = event.clientX - containerRect.left;
+							tooltip.style.left = `${relativeX}px`;
+							tooltip.style.transform = 'translateX(-50%)';
+						} else {
+							tooltip.classList.add('hidden');
+						}
+					}
+					
+					const timeFill = timeBar.querySelector('.fill');
+					const questionsFill = questionsBar.querySelector('.fill');
 
+					if (timeFill instanceof HTMLElement && questionsFill instanceof HTMLElement) {
+						timeFill.addEventListener('mousemove', (e) => {
+							showTooltip(timeBar, tooltip, e);
+						});
 
-			</div>
+						timeFill.addEventListener('mouseleave', () => {
+							tooltip.classList.add('hidden');
+						});
 
-		</div>
+						questionsFill.addEventListener('mousemove', (e) => {
+							showTooltip(questionsBar, tooltip, e);
+						});
+
+						questionsFill.addEventListener('mouseleave', () => {
+							tooltip.classList.add('hidden');
+						});
+					}
+				}
+			</script>
+
 	</div>
-
-
-
 </TwoColumnLayout>
 
