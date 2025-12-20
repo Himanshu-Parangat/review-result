@@ -46,6 +46,7 @@ if (Astro.request.method === "POST") {
 
 	const action = formData.get("action") as string;
 	const questionTitle = formData.get("questionTitle") as string;
+	const questionId = formData.get("questionId") as string;
 	const questionDescription = formData.get("questionDescription") as string;
 	const questionType = formData.get("questionType") as "checkbox" | "radio";
 
@@ -59,7 +60,6 @@ if (Astro.request.method === "POST") {
 	) as OptionInput[];
 
 	if (action === "create") {
-		console.log()
 
 		const questionId : string = generateId();
 		
@@ -87,14 +87,55 @@ if (Astro.request.method === "POST") {
 			}))
 		);
 
-		console.log(action );
-		console.log(questionTitle );
-		console.log(questionDescription );
-		console.log(questionType );
-		console.log(optionObject );
-
 		return Astro.redirect("/admin/event/quize/" + eventId + "?submitted=1");
 
+	} 
+
+	if (action === "update"){
+
+		await db.update(siteSchema.question).set({
+			questionUpdatedAt: new Date().toISOString(),
+			questionTitle: questionTitle,
+			questionDescription: questionDescription,
+			questionType: questionType
+		}).where(
+			and(
+				eq(siteSchema.question.questionId,questionId),
+				isNull(siteSchema.question.questionDeletedAt)
+			)
+		)
+	  await db.delete(siteSchema.option).where(
+			eq(siteSchema.option.questionId, questionId)
+    );
+		await db.insert(siteSchema.option).values(
+			optionObject.map((option, index) => ({
+				optionId: generateId(),
+				optionUpdatedAt: new Date().toISOString(),
+				optionTitle: option.text,
+				optionKey: option.isCorrect,
+				optionlabel: "",
+				optionOrder: index + 1,
+				questionId,
+			}))
+    );
+
+		return Astro.redirect("/admin/event/quize/" + eventId + "?updated=1");
+		
+
+	}
+
+
+	if (action == "delete"){
+
+		await db.update(siteSchema.question).set({
+			questionDeletedAt: new Date().toISOString(),
+		}).where(
+			and(
+				eq(siteSchema.question.questionId,questionId),
+				isNull(siteSchema.question.questionDeletedAt)
+			)
+		)
+		return Astro.redirect("/admin/event/quize/" + eventId + "?deleted=1");
 	}
 
 
@@ -117,13 +158,15 @@ if (Astro.request.method === "POST") {
 
 				{(GetAllQuizes ?? []).map((quize, Index) => (
 					<QuizeEntry
+						Id={quize.questionId || ""}
 						number={Index + 1}
 						title={quize.questionTitle || ""}
 						description={quize.questionDescription || ""}
 						options={(quize.options ?? []).map(option => ({
 							text: option.optionTitle || "",
 							value: option.optionlabel || "",
-							name: quize.questionId
+							name: quize.questionId,
+							key: option.optionKey
 						}))}
 						type={quize.questionType || "checkbox"}
 						hideDescription={true}
@@ -148,6 +191,7 @@ if (Astro.request.method === "POST") {
 			<form id="quizForm" method="post" class="flex flex-col w-full mt-2 px-4 h-full lg:overflow-y-auto">
 				<input type="hidden" name="optionObject" id="AllOptions">
 				<input type="hidden" name="action" id="action" value="create">
+				<input type="hidden" name="questionId" id="questionId" value="">
 
 				<h3 class="text-lg font-semibold mt-2">Question Title</h3>
 				<input
@@ -180,7 +224,7 @@ if (Astro.request.method === "POST") {
 						type="text"
 						id="newOptionInput"
 						class="w-full p-4 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-						placeholder="Type option text here..." />
+						placeholder="Type text or paste options here..." />
 
 					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover:hover-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -320,6 +364,42 @@ if (Astro.request.method === "POST") {
 					addBtn.click();
 				}
 			});
+			newOptionInput.addEventListener('paste', (e: ClipboardEvent) => {
+				e.preventDefault();
+
+				if (!questionTypeField || !optionsContainer) return;
+
+				const questionType = questionTypeField.value;
+				if (questionType === 'default') {
+					alert('Please select a question type first');
+					return;
+				}
+
+				const clipboardText = e.clipboardData?.getData('text');
+				if (!clipboardText) return;
+
+				const lines = clipboardText
+					.split(/\r?\n/)
+					.filter(Boolean);
+
+				if (lines.length === 0) return;
+
+				lines.forEach(text => {
+					const optionId = optionCounter;
+					const optionElement = createOptionElement(text, questionType);
+					optionsContainer.appendChild(optionElement);
+
+					allOptions.push({
+						id: optionId,
+						text,
+						isCorrect: false
+					});
+				});
+
+				newOptionInput.value = '';
+				newOptionInput.focus();
+			});
+
 
 			questionTypeField.addEventListener('change', updateAllOptionTypes);
 
@@ -357,6 +437,82 @@ if (Astro.request.method === "POST") {
 			allOptionsInput.value = JSON.stringify(allOptionsData);
 
 			quizForm.submit();
+	});
+
+	document.addEventListener('DOMContentLoaded', () => {
+		const editButtons = document.querySelectorAll('[data-title]');
+		
+		editButtons.forEach(button => {
+			button.addEventListener('click', (e) => {
+				const target = e.currentTarget as HTMLElement;
+				
+				const title = target.dataset.title || '';
+				const description = target.dataset.description || '';
+				const type = target.dataset.type || 'radio';
+				const optionsJson = target.dataset.options || '[]';
+				const questionId = target.dataset.id || '';
+				
+				let options: Array<{text: string, key: boolean}> = [];
+				try {
+						options = JSON.parse(optionsJson);
+				} catch (error) {
+						console.error('Error parsing options:', error);
+						return;
+				}
+				
+				const questionTitleInput = document.querySelector('input[name="questionTitle"]') as HTMLInputElement;
+				const questionDescInput = document.querySelector('textarea[name="questionDescription"]') as HTMLTextAreaElement;
+				const questionTypeSelect = document.getElementById('questionTypeField') as HTMLSelectElement;
+				const questionIdInput = document.getElementById('questionId') as HTMLInputElement;
+				
+				if (questionTitleInput) questionTitleInput.value = title;
+				if (questionDescInput) questionDescInput.value = description;
+				if (questionTypeSelect) questionTypeSelect.value = type;
+				if (questionIdInput) questionIdInput.value = questionId;
+				
+				if (optionsContainer) {
+						optionsContainer.innerHTML = '';
+				}
+				allOptions = [];
+				optionCounter = 0;
+				
+				options.forEach(option => {
+						const optionId = optionCounter;
+						
+						const optionElement = createOptionElement(option.text, type);
+						
+						if (optionsContainer) {
+								optionsContainer.appendChild(optionElement);
+						}
+						
+						allOptions.push({
+								id: optionId,
+								text: option.text,
+								isCorrect: option.key
+						});
+						
+						if (option.key) {
+								setTimeout(() => {
+										const input = optionsContainer?.querySelector(`input[value="${optionId}"]`) as HTMLInputElement;
+										if (input) {
+												input.checked = true;
+										}
+								}, 10);
+						}
+				});
+				
+				const actionInput = document.getElementById('action') as HTMLInputElement;
+				const submitButton = document.getElementById('SubmitQuestionEntry') as HTMLButtonElement;
+				
+				if (actionInput) actionInput.value = 'update';
+				if (submitButton) submitButton.textContent = 'Update Question';
+				
+				const formContainer = document.querySelector('[slot="min-slot"]');
+				if (formContainer) {
+						formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			});
+		});
 	});
 
 		</script>
