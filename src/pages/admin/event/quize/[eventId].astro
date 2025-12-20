@@ -4,7 +4,7 @@ import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import QuizeEntry from "@components/QuizeEntry.astro";
 import { getDb, siteSchema  } from "@db/index";
 import { generateId } from "@utils/MainUtils";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 const db = getDb()
 
@@ -16,7 +16,11 @@ if (!eventId) {
 
 const event = await db.select()
   .from(siteSchema.event)
-  .where(eq(siteSchema.event.eventId, eventId))
+	.where(
+		and(
+			eq(siteSchema.event.eventId, eventId),
+			isNull(siteSchema.event.eventDeletedAt)
+		))
   .then(res => res[0]);
 
 if (!event) {
@@ -25,7 +29,10 @@ if (!event) {
 
 
 const GetAllQuizes = await db.query.question.findMany({
-  where: eq(siteSchema.question.eventId, eventId),
+	where:(and(
+		eq(siteSchema.question.eventId, eventId),
+		isNull(siteSchema.question.questionDeletedAt)
+	)),
   with: {
     options: true
   }
@@ -64,7 +71,7 @@ if (Astro.request.method === "POST") {
 			questionDescription,
 			questionType,
 			questionIsRequired: true,
-			questionOrder: 1,
+			questionIsCollapsed: false,
 			eventId: eventId,
 		});
 
@@ -153,7 +160,7 @@ if (Astro.request.method === "POST") {
 				<textarea 
 					name="questionDescription"
 					rows="4"
-					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+					class="w-full min-h-[12%] mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 					placeholder="Type your description here..." required></textarea>
 
 				<h3 class="text-lg font-semibold mt-2">Question Type</h3>

@@ -1,17 +1,21 @@
 CREATE TABLE `dbIdentity` (
 	`dbId` text PRIMARY KEY NOT NULL,
 	`dbLabel` text,
-	`dbDataCreatedAt` text,
 	`dbTitle` text,
-	`dbDescription` text
+	`dbDescription` text,
+	`dbDataCreatedAt` text,
+	`dbDataUpdatedAt` text,
+	`dbDataDeletedAt` text
 );
 --> statement-breakpoint
 CREATE TABLE `event` (
 	`eventId` text PRIMARY KEY NOT NULL,
 	`eventlabel` text,
 	`eventTitle` text,
-	`eventCreatedAt` text,
 	`eventDescription` text,
+	`eventCreatedAt` text,
+	`eventUpdatedAt` text,
+	`eventDeletedAt` text,
 	`eventScheduledStartAt` text,
 	`eventScheduledEndAt` text,
 	`eventIsPinned` integer DEFAULT false NOT NULL,
@@ -22,9 +26,10 @@ CREATE TABLE `event` (
 CREATE TABLE `option` (
 	`optionId` text PRIMARY KEY NOT NULL,
 	`optionlabel` text,
-	`optionCreatedAt` text,
 	`optionTitle` text,
-	`optionOrder` integer,
+	`optionCreatedAt` text,
+	`optionUpdatedAt` text,
+	`optionDeletedAt` text,
 	`optionKey` integer DEFAULT false NOT NULL,
 	`questionId` text NOT NULL,
 	FOREIGN KEY (`questionId`) REFERENCES `question`(`questionId`) ON UPDATE no action ON DELETE no action
@@ -33,11 +38,13 @@ CREATE TABLE `option` (
 CREATE TABLE `participant` (
 	`participantId` text PRIMARY KEY NOT NULL,
 	`participantlabel` text,
-	`participantCreatedAt` text,
 	`participantName` text,
 	`participantPayrollId` text,
 	`participantDepartment` text,
 	`participantDesignation` text,
+	`participantCreatedAt` text,
+	`participantUpdatedAt` text,
+	`participantDeletedAt` text,
 	`eventId` text NOT NULL,
 	FOREIGN KEY (`eventId`) REFERENCES `event`(`eventId`) ON UPDATE no action ON DELETE no action
 );
@@ -45,12 +52,14 @@ CREATE TABLE `participant` (
 CREATE TABLE `question` (
 	`questionId` text PRIMARY KEY NOT NULL,
 	`questionlabel` text,
-	`questionCreatedAt` text,
 	`questionTitle` text,
 	`questionDescription` text,
+	`questionCreatedAt` text,
+	`questionUpdatedAt` text,
+	`questionDeletedAt` text,
+	`questionIsCollapsed` integer DEFAULT false NOT NULL,
 	`questionType` text,
 	`questionIsRequired` integer,
-	`questionOrder` integer,
 	`eventId` text NOT NULL,
 	FOREIGN KEY (`eventId`) REFERENCES `event`(`eventId`) ON UPDATE no action ON DELETE no action
 );
@@ -58,6 +67,8 @@ CREATE TABLE `question` (
 CREATE TABLE `response` (
 	`responseId` text PRIMARY KEY NOT NULL,
 	`responseCreatedAt` text,
+	`responseUpdatedAt` text,
+	`responseDeletedAt` text,
 	`questionId` text NOT NULL,
 	`optionId` text NOT NULL,
 	`submissionId` text NOT NULL,
@@ -69,6 +80,8 @@ CREATE TABLE `response` (
 CREATE TABLE `submission` (
 	`submissionId` text PRIMARY KEY NOT NULL,
 	`submissionCreatedAt` text,
+	`submissionUpdatedAt` text,
+	`submissionDeletedAt` text,
 	`eventId` text NOT NULL,
 	`participantId` text NOT NULL,
 	FOREIGN KEY (`eventId`) REFERENCES `event`(`eventId`) ON UPDATE no action ON DELETE no action,

@@ -50,9 +50,15 @@ if (Astro.request.method === "POST") {
 				.set({
 					dbTitle: dbTitle ?? firstRow.dbTitle,
 					dbDescription: dbDescription ?? firstRow.dbDescription,
+					dbDataUpdatedAt: new Date().toISOString()
 				})
 				.where(eq(siteSchema.dbIdentity.dbId, firstRow.dbId));
 		}
+
+
+		console.log("Updateed dbIdentity with title: ", dbTitle, " | description: ", dbDescription)
+
+		return Astro.redirect(`/admin/status?Updateed=1`);
 	}
 }
 
@@ -211,8 +217,19 @@ if (isDbInitialized()) {
 									<td class="px-4 py-2 text-base text-primary">Db Creation</td>
 									<td class="px-4 py-2">{ friendlyDateMessage(dbData?.dbDataCreatedAt as string) || "No Timestamp"}</td>
 								</tr>
+
+								{dbData?.dbDataUpdatedAt && (
+
+										<tr class="border-b-2 border-primary hover:hover-primary">
+											<td class="px-4 py-2 text-base text-primary">Db Update</td>
+											<td class="px-4 py-2">{ friendlyDateMessage(dbData?.dbDataUpdatedAt) || "No Timestamp"}</td>
+										</tr>
+
+								)}
+
 							</tbody>
 						</table>
+
 							<input type="hidden" name="action" value="update" />
 							<button id="dbDataSubmit"  class="hidden mt-4 bg-red-500 text-white text-base font-bold px-4 py-2 text-center rounded-md hover:bg-red-600" type="submit">
 								Update DB
@@ -221,8 +238,6 @@ if (isDbInitialized()) {
 						)}
 					
 				</form>
-			<form method="POST">
-			</form>
 		</div>
 	</div>
 

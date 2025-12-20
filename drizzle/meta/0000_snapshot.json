@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b9716e51-d325-486b-8784-722342254f7d",
+  "id": "fcf42b92-e0d0-4e60-8289-f62df7fe9979",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "dbIdentity": {
@@ -21,13 +21,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "dbDataCreatedAt": {
-          "name": "dbDataCreatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "dbTitle": {
           "name": "dbTitle",
           "type": "text",
@@ -37,6 +30,27 @@
         },
         "dbDescription": {
           "name": "dbDescription",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dbDataCreatedAt": {
+          "name": "dbDataCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dbDataUpdatedAt": {
+          "name": "dbDataUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dbDataDeletedAt": {
+          "name": "dbDataDeletedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -73,6 +87,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "eventDescription": {
+          "name": "eventDescription",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "eventCreatedAt": {
           "name": "eventCreatedAt",
           "type": "text",
@@ -80,8 +101,15 @@
           "notNull": false,
           "autoincrement": false
         },
-        "eventDescription": {
-          "name": "eventDescription",
+        "eventUpdatedAt": {
+          "name": "eventUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "eventDeletedAt": {
+          "name": "eventDeletedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -154,13 +182,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "optionCreatedAt": {
-          "name": "optionCreatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "optionTitle": {
           "name": "optionTitle",
           "type": "text",
@@ -168,9 +189,23 @@
           "notNull": false,
           "autoincrement": false
         },
-        "optionOrder": {
-          "name": "optionOrder",
-          "type": "integer",
+        "optionCreatedAt": {
+          "name": "optionCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optionUpdatedAt": {
+          "name": "optionUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optionDeletedAt": {
+          "name": "optionDeletedAt",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -228,13 +263,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "participantCreatedAt": {
-          "name": "participantCreatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "participantName": {
           "name": "participantName",
           "type": "text",
@@ -258,6 +286,27 @@
         },
         "participantDesignation": {
           "name": "participantDesignation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "participantCreatedAt": {
+          "name": "participantCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "participantUpdatedAt": {
+          "name": "participantUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "participantDeletedAt": {
+          "name": "participantDeletedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -308,13 +357,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "questionCreatedAt": {
-          "name": "questionCreatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "questionTitle": {
           "name": "questionTitle",
           "type": "text",
@@ -329,6 +371,35 @@
           "notNull": false,
           "autoincrement": false
         },
+        "questionCreatedAt": {
+          "name": "questionCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "questionUpdatedAt": {
+          "name": "questionUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "questionDeletedAt": {
+          "name": "questionDeletedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "questionIsCollapsed": {
+          "name": "questionIsCollapsed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "questionType": {
           "name": "questionType",
           "type": "text",
@@ -338,13 +409,6 @@
         },
         "questionIsRequired": {
           "name": "questionIsRequired",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "questionOrder": {
-          "name": "questionOrder",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -390,6 +454,20 @@
         },
         "responseCreatedAt": {
           "name": "responseCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "responseUpdatedAt": {
+          "name": "responseUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "responseDeletedAt": {
+          "name": "responseDeletedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -475,6 +553,20 @@
         },
         "submissionCreatedAt": {
           "name": "submissionCreatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "submissionUpdatedAt": {
+          "name": "submissionUpdatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "submissionDeletedAt": {
+          "name": "submissionDeletedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

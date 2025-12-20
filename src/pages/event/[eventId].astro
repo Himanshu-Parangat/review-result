@@ -1,7 +1,7 @@
 ---
 export const prerender = false
 import { getDb, siteSchema } from "@db/index";
-import { eq } from "drizzle-orm";
+import { eq, isNull, and } from "drizzle-orm";
 import EventWaitRoom from "@components/EventWaitRoom.astro";
 import EventLiveRoom from "@components/EventLiveRoom.astro";
 import EventClosedRoom from "@components/EventClosedRoom.astro";
@@ -16,7 +16,10 @@ if (!eventId) {
 }
 
 const GetAllQuizes = await db.query.question.findMany({
-  where: eq(siteSchema.question.eventId, eventId),
+	where:(and(
+		eq(siteSchema.question.eventId, eventId),
+		isNull(siteSchema.question.questionDeletedAt)
+	)),
   with: {
     options: true
   }
@@ -27,7 +30,10 @@ try {
 	event = db
 		.select()
 		.from(siteSchema.event)
-		.where(eq(siteSchema.event.eventId, eventId))
+		.where(and(
+			eq(siteSchema.event.eventId, eventId),
+			isNull(siteSchema.event.eventDeletedAt)
+		))
 		.get();
 	
 	if (!event) {

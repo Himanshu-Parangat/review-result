@@ -111,8 +111,6 @@ db-generate:
 
 
 db-migrate:
-	@printf "${Cyan}[db-migrate] Applying migrations...${Reset}\n"
-	${DRIZZLE} migrate --config=${CONFIG}
 	@printf "\n${Cyan}[db-migrate]${Reset} Applying migrations...\n"
 	@if ${DRIZZLE} migrate --config=${CONFIG}; then \
 		printf "${Green}✔ All migrations applied successfully!${Reset}\n"; \

@@ -5,18 +5,28 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 export const dbIdentity = sqliteTable("dbIdentity", {
   dbId: text("dbId").primaryKey().$default(() => "singleton"),
   dbLabel: text("dbLabel"),
-  dbDataCreatedAt: text("dbDataCreatedAt"),
+
   dbTitle: text("dbTitle"),
   dbDescription: text("dbDescription"),
+
+  dbDataCreatedAt: text("dbDataCreatedAt"),
+  dbDataUpdatedAt: text("dbDataUpdatedAt"),
+  dbDataDeletedAt: text("dbDataDeletedAt"),
 });
 
 
 export const event = sqliteTable("event", {
 	eventId: text("eventId").primaryKey(),
 	eventlabel: text("eventlabel"),
+
 	eventTitle: text("eventTitle"),
-	eventCreatedAt: text("eventCreatedAt"),
 	eventDescription: text("eventDescription"),
+
+
+	eventCreatedAt: text("eventCreatedAt"),
+	eventUpdatedAt : text("eventUpdatedAt"),
+	eventDeletedAt: text("eventDeletedAt"),
+
 	eventScheduledStartAt: text("eventScheduledStartAt"),
 	eventScheduledEndAt: text("eventScheduledEndAt"),
 	eventIsPinned: integer("eventIsPinned", {mode: "boolean"}).notNull().default(false),
@@ -30,12 +40,17 @@ export const event = sqliteTable("event", {
 export const question = sqliteTable("question", {
 	questionId: text("questionId").primaryKey(),
 	questionlabel: text("questionlabel"),
-	questionCreatedAt: text("questionCreatedAt"),
+
 	questionTitle: text("questionTitle"),
 	questionDescription: text("questionDescription"),
+
+	questionCreatedAt: text("questionCreatedAt"),
+	questionUpdatedAt: text("questionUpdatedAt"),
+	questionDeletedAt: text("questionDeletedAt"),
+
+	questionIsCollapsed: integer("questionIsCollapsed", {mode: "boolean"}).notNull().default(false), 
 	questionType: text("questionType", {enum: ["checkbox","radio"]}),
 	questionIsRequired: integer("questionIsRequired", {mode: "boolean"}),
-	questionOrder: integer("questionOrder"),
 
 	eventId: text("eventId").notNull().references(() => event.eventId)
 })
@@ -44,9 +59,13 @@ export const question = sqliteTable("question", {
 export const option = sqliteTable("option", {
 	optionId: text("optionId").primaryKey(),
 	optionlabel: text("optionlabel"),
-	optionCreatedAt: text("optionCreatedAt"),
+
 	optionTitle: text("optionTitle"),
-	optionOrder: integer("optionOrder"),
+
+	optionCreatedAt: text("optionCreatedAt"),
+	optionUpdatedAt: text("optionUpdatedAt"),
+	optionDeletedAt: text("optionDeletedAt"),
+
 	optionKey: integer("optionKey", { mode: "boolean" })
   .notNull()
   .default(false),
@@ -71,18 +90,26 @@ export const optionRelations = relations(option, ({ one }) => ({
 export const participant = sqliteTable("participant", {
 	participantId: text("participantId").primaryKey(),
 	participantlabel: text("participantlabel"),
-	participantCreatedAt: text("participantCreatedAt"),
+
 	participantName: text("participantName"),
 	participantPayrollId: text("participantPayrollId"),
 	participantDepartment: text("participantDepartment"),
 	participantDesignation: text("participantDesignation"),
+
+	participantCreatedAt: text("participantCreatedAt"),
+	participantUpdatedAt: text("participantUpdatedAt"),
+	participantDeletedAt: text("participantDeletedAt"),
+
 	eventId: text("eventId").notNull().references(() => event.eventId)
 })
 
 // user submitting there submission,
 export const submission = sqliteTable("submission", {
 	submissionId: text("submissionId").primaryKey(),
+
 	submissionCreatedAt: text("submissionCreatedAt"),
+	submissionUpdatedAt: text("submissionUpdatedAt"),
+	submissionDeletedAt: text("submissionDeletedAt"),
 
 	eventId: text("eventId").notNull().references(() => event.eventId),
 	participantId: text("participantId").notNull().references(() => participant.participantId),
@@ -91,7 +118,10 @@ export const submission = sqliteTable("submission", {
 
 export const response = sqliteTable("response", {
 	responseId: text("responseId").primaryKey(),
+
 	responseCreatedAt: text("responseCreatedAt"),
+	responseUpdatedAt: text("responseUpdatedAt"),
+	responseDeletedAt: text("responseDeletedAt"),
 
 	questionId: text("questionId").notNull().references(() => question.questionId),
 	optionId: text("optionId").notNull().references(() => option.optionId),
