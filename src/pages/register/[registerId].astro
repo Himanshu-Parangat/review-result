@@ -126,7 +126,7 @@ if (Astro.request.method === "POST") {
 		<div class="border-2 border-primary bg-secondary rounded-lg p-10 space-y-6 mt-[2%] min-w-[50%]">
 
 			<div class="flex flex-col items-center">
-				<div class="flex flex-row gap-4 border-2 bg-tertiary border-primary px-6 py-4 rounded-lg">
+				<div class="flex flex-row gap-4 border-2 bg-tertiary border-primary px-6 py-4 rounded-lg  max-w-[70%]">
 					<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-13 h-13 ">
 						<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
 							<rect x="6" y="8" width="22" height="20" rx="2" stroke-width="2"/>
@@ -136,10 +136,10 @@ if (Astro.request.method === "POST") {
 							<text x="17" y="23" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor" stroke="none">S</text>
 						</svg>
 					</div>
-					<div class="flex flex-col text-start">
-						<h1 class="text-2xl text-primary truncate">{event.eventTitle || "Enter Event Invite"}</h1>
-						<h3 class="text-lg text-secondary truncate">{event.eventDescription || "Contact Organizer for Invite"}</h3>
-						<h3 class="text-lg text-secondary truncate">{friendlyDateMessage(normalizeDateTime(event.eventScheduledStartAt!)) || ""}</h3>
+					<div class="flex flex-col text-start ">
+						<h1 class="text-2xl text-primary ">{event.eventTitle || "Enter Event Invite"}</h1>
+						<h3 class="text-lg text-secondary ">{event.eventDescription || "Contact Organizer for Invite"}</h3>
+						<h3 class="text-lg text-secondary ">{friendlyDateMessage(normalizeDateTime(event.eventScheduledStartAt!)) || ""}</h3>
 					</div>
 				</div>
 			</div>
@@ -212,7 +212,7 @@ if (Astro.request.method === "POST") {
 
 					<div
 						id="register-fail"
-						class="text-center mt-4 text-red-500 font-bold"
+						class="text-center mt-4 py-2 px-2 status-indicator-error border-2 rounded-lg font-bold"
 						style={registerStatus === "fail" ? "display:block" : "display:none"}
 					>
 						&#9888; Registration failed. Please try again.
@@ -220,7 +220,7 @@ if (Astro.request.method === "POST") {
 
 					<div
 						id="register-pass"
-						class="text-center mt-4 text-green-400 font-bold"
+						class="text-center mt-4 py-2 px-6 status-indicator-success border-2 rounded-lg font-bold"
 						style={registerStatus === "pass" ? "display:block" : "display:none"}
 					>
 						&#10003; Registration successful!

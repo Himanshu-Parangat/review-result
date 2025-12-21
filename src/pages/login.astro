@@ -100,8 +100,8 @@ if (IncomingPostRequest) {
 					</button>
 
 
-					<div id="error-fail" class="text-center mt-4 text-red-500 font-bold" style={loginStatus === "fail" ? "display: block;" : "display: none;"}>&#9888; Invalid Credentials</div>
-					<div id="error-pass" class="text-center mt-4 text-green-400 font-bold" style={loginStatus === "pass" ? "display: block;" : "display: none;"}>&#10003; Authenticated</div>
+					<div id="error-fail" class="text-center mt-4 px-4 py-2 status-indicator-error border-2 rounded-lg  font-bold" style={loginStatus === "fail" ? "display: block;" : "display: none;"}>&#9888; Invalid Credentials</div>
+					<div id="error-pass" class="text-center mt-4 px-4 py-2 status-indicator-success  border-2 rounded-lg font-bold" style={loginStatus === "pass" ? "display: block;" : "display: none;"}>&#10003; Authenticated</div>
 
 				</div>
 			</form>

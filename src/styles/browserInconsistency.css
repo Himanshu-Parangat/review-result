@@ -1,0 +1,47 @@
+
+/* for scrollbar consistency */
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-primary::-webkit-scrollbar {
+  height: 8px; /* Adjust size as needed */
+	width: 8px;
+}
+
+.scrollbar-primary::-webkit-scrollbar-track {
+  background: var(--color-background-primary);
+  border-radius: 10px;
+}
+
+.scrollbar-primary::-webkit-scrollbar-thumb {
+  background: var(--color-text-accent);
+  border-radius: 10px;
+}
+
+.scrollbar-primary::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.scrollbar-primary::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* For Firefox */
+.scrollbar-primary {
+  scrollbar-width: auto;
+	scrollbar-color: var(--color-text-accent) var(--color-background-primary);
+}
+
+
+/* auto fill */
+input:-webkit-autofill {
+  box-shadow: 0 0 0 1000px var(--color-background-tertiary) inset !important;
+  -webkit-text-fill-color: var(--color-text-secondary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
+}
+

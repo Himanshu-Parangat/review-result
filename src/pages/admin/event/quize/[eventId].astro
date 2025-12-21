@@ -226,7 +226,7 @@ if (Astro.request.method === "POST") {
 						class="w-full p-4 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 						placeholder="Type text or paste options here..." />
 
-					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover:hover-primary">
+					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-4 py-3 border-primary text-base rounded-lg whitespace-nowrap flex flex-row gap-2 items-center hover-overlay">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="2"/>
 							<line x1="12" y1="5" x2="12" y2="19" />
@@ -278,7 +278,7 @@ if (Astro.request.method === "POST") {
 				optionDiv.dataset.optionId = String(optionId);
 
 				optionDiv.innerHTML = `
-					<div class="flex flex-row p-3 items-center justify-between w-full border-2 border-primary rounded-lg cursor-pointer hover:hover-primary">
+					<div class="flex flex-row p-3 items-center justify-between w-full border-2 border-primary rounded-lg cursor-pointer hover-overlay">
 						<label class="flex items-center cursor-pointer">
 							<input 
 								type="${inputType}" 
@@ -289,7 +289,7 @@ if (Astro.request.method === "POST") {
 							<span class="ml-3 text-xl text-secondary">${text}</span>
 						</label>
 
-						<button type="button" class="delete-btn flex flex-row whitespace-normal justify-between hover:text-red-400">
+						<button type="button" class="delete-btn flex flex-row whitespace-normal justify-between hover:text-(--color-text-error)">
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<polyline points="3 6 5 6 21 6"/>
 								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>

@@ -1,0 +1,74 @@
+
+.theme-light {
+  --color-text-primary: hsl(0, 0%, 20%);
+  --color-text-secondary: hsl(0, 0%, 45%);
+	--color-text-accent: hsl(215, 58%, 42%);
+
+	--color-background-primary: hsl(0,0%, 90%);
+	--color-background-secondary: hsl(0,0%, 95%);
+	--color-background-tertiary: hsl(0, 0%, 100%);  
+	--color-background-accent: hsl(215, 58%, 42%);
+
+
+	--hover-overlay: hsla(0, 0%, 0%, 0.08);
+	--color-border-primary: hsl(255, 10%, 85%);
+
+	--color-text-info: hsl(265,75%,55%);
+	--color-text-success: hsl(145,65%,42%);
+	--color-text-error: hsl(0,85%,70%); 
+	--color-text-warning: hsl(38,90%,55%);
+
+
+	--color-background-info: hsla(265,75%,45%,0.12);
+	--color-background-success: hsla(145,65%,35%,0.12);
+	--color-background-error: hsla(0,85%,45%,0.12);
+	--color-background-warning: hsla(38,90%,45%,0.14);
+
+	--color-border-info: hsla(265, 75%, 45%, 0.4);
+	--color-border-success: hsla(145, 65%, 35%, 0.4);
+	--color-border-error: hsla(0, 85%, 45%, 0.4); 
+	--color-border-warning: hsla(38, 90%, 45%, 0.4);
+
+	/* --color-text-accent: hsl(215 80% 45%); */
+	/* --color-background-accent: hsl(215 80% 35% / 0.12); */
+	/* --color-border-accent: hsl(215 80% 35% / 0.4); */
+
+}
+
+
+
+
+.theme-dark {
+  --color-text-primary: hsl(0, 0%, 98%);
+  --color-text-secondary: hsl(0, 0%, 63%);
+	--color-text-accent: hsl(215, 80%, 35%);
+
+	--color-background-primary: hsl(0, 0%, 6%);  
+	--color-background-secondary: hsl(0,0%, 9%);
+	--color-background-tertiary: hsl(0, 0%, 13%);  
+	--color-background-accent: hsl(215, 80%, 35%);
+
+	--hover-overlay: hsla(0, 0%, 100%, 0.08);
+	--color-border-primary: hsl(0, 0%, 23%);
+
+	--color-text-info:hsl(265,75%,70%);
+	--color-text-success:hsl(145,65%,65%);
+	--color-text-error:hsl(0,85%,70%);
+	--color-text-warning:hsl(38,90%,70%);
+
+
+	--color-background-info:hsla(265,75%,65%,0.18);
+	--color-background-success:hsla(145,65%,55%,0.18);
+	--color-background-error:hsla(0,85%,65%,0.18);
+	--color-background-warning:hsla(38,90%,65%,0.18);
+
+
+	--color-border-info:hsla(265,75%,65%,0.45);
+	--color-border-success:hsla(145,65%,55%,0.45);
+	--color-border-error:hsla(0,85%,65%,0.45);
+	--color-border-warning:hsla(38,90%,65%,0.45);
+
+	/* --color-text-accent: hsl(215 80% 70%); */
+	/* --color-background-accent: hsl(215 80% 55% / 0.18); */
+	/* --color-border-accent: hsl(215 80% 55% / 0.45); */
+}

@@ -62,7 +62,7 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 
 						{question.options.map(option => 
 
-							<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover:hover-primary  text-secondary ">
+							<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover-overlay  text-secondary ">
 								<input 
 								type={question.questionType}
 								name={question.questionId}
@@ -117,7 +117,7 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 							 data-start={startAt}
 							 data-end={endAt}
 							 data-text="Time Remaining">
-						<div class="fill h-full bg-tertiary border-2 border-primary hover:hover-primary rounded-xl transition-all duration-300 pointer-events-auto" style="width: 70%"></div>
+						<div class="fill h-full bg-tertiary border-2 border-primary hover-overlay rounded-xl transition-all duration-300 pointer-events-auto" style="width: 70%"></div>
 					</div>
 					
 					<!-- Questions progress (top layer) -->
@@ -137,7 +137,7 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 
 						{Quie.map((question,index) => 
 						<a href={"#question-"+question.questionId}>
-								<div class="shrink-0 text-primary text-lg bg-secondary hover:hover-primary flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
+								<div class="shrink-0 text-primary text-lg bg-secondary hover-overlay flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
 									{index +1 }
 								</div>
 							</a>

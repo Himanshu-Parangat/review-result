@@ -1,0 +1,38 @@
+@theme {
+  --font-sans: 'Inter', 'sans-serif';
+  /* --font-sans: 'Open Sans', 'sans-serif'; */
+}
+
+@layer utilities{
+	.text-xs { font-size: calc(0.75rem * var(--font-scale)); }
+	.text-sm { font-size: calc(0.875rem * var(--font-scale)); }
+	.text-base { font-size: calc(1rem * var(--font-scale)); }
+	.text-lg { font-size: calc(1.25rem * var(--font-scale)); }
+	.text-xl   { font-size: calc(1.5rem * var(--font-scale)); }
+	.text-2xl  { font-size: calc(1.875rem * var(--font-scale)); }
+	.text-3xl  { font-size: calc(2.25rem * var(--font-scale)); }
+	.text-4xl  { font-size: calc(2.875rem * var(--font-scale)); }
+	.text-5xl  { font-size: calc(3rem * var(--font-scale)); }
+}
+
+
+.text-Small {
+	--font-scale: 0.85; /* ~15% smaller */
+}
+
+.text-Medium {
+	--font-scale: 1;    /* default */
+}
+
+.text-Large {
+	--font-scale: 1.15; /* ~15% bigger */
+}
+
+.text-ExtraLarge {
+	--font-scale: 1.3;  /* ~30% bigger */
+}
+
+.text-Maximized {
+	--font-scale: 1.5;  /* ~50% bigger */
+}
+
