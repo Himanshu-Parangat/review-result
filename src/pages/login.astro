@@ -3,6 +3,7 @@ export const prerender = false;
 const url = new URL(Astro.request.url);
 
 import BaseLayout from "@layouts/BaseLayout.astro"
+import { genrateLog } from "@utils/loggingUtils";
 import bcrypt from "bcrypt";
 
 const env = import.meta.env;
@@ -20,7 +21,12 @@ if (IncomingPostRequest) {
   const password = formData.get("password")?.toString();
 
   if (!username || !password) {
-    console.log("Username or password not provided");
+
+		genrateLog()
+			.time()
+			.blue("[login]")
+			.yellow("username or password not provided")
+			.print()
 
 		const redirectTo = url.searchParams.get("redirectTo") || "/login";
 		return Astro.redirect(redirectTo);
@@ -35,7 +41,13 @@ if (IncomingPostRequest) {
   const isPasswordMatch = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
 
   if (isUsernameMatch && isPasswordMatch) {
-    console.log("Login successful!");
+
+		genrateLog()
+			.time()
+			.blue("[login]")
+			.green("Login successful for protected Route")
+			.magenta(url.searchParams.get("redirectTo") || "/login")
+			.print()
 
 		Astro.cookies.set("Id", HASH_TOKEN, {
       path: "/",
@@ -45,7 +57,12 @@ if (IncomingPostRequest) {
 		loginStatus = "pass";
 
   } else {
-    console.log("Invalid credentials.");
+		genrateLog()
+			.time()
+			.blue("[login]")
+			.red("Invalid Credentials for protected Route")
+			.magenta(url.searchParams.get("redirectTo") || "/login")
+			.print()
 
 		Astro.cookies.set("Id", "", {
       path: "/",
@@ -73,7 +90,7 @@ if (IncomingPostRequest) {
 								type="text"
 								name="username"
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-								placeholder="Type your Payroll Number..." />
+								placeholder="Type your Payroll Number..." required />
 
 						</div>
 
@@ -85,7 +102,7 @@ if (IncomingPostRequest) {
 								type="text"
 								name="password"
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
-								placeholder="Type your Payroll Number..." />
+								placeholder="Type your Payroll Number..." required />
 
 						</div>
 

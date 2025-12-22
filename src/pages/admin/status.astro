@@ -6,6 +6,7 @@ import { friendlyDateMessage } from "@utils/TimeUtils";
 import { initDb, getDb, siteSchema, isDbInitialized } from "@db/index";
 import { eq } from "drizzle-orm";
 import { generateId } from "@utils/MainUtils";
+import { genrateLog } from "@utils/loggingUtils";
 
 const InatalizeNow = Astro.url.searchParams.get('dbInit') === 'now';
 
@@ -20,7 +21,12 @@ if (Astro.request.method === "POST") {
 	if (action === "initialize") {
 
 		if (!isDbInitialized()) {
-			console.log("Database initalize requested")
+			genrateLog()
+				.time()
+				.blue("[DB]")
+				.yellow("Database Initialize requested")
+				.print()
+
 			initDb()
 		}
 
@@ -35,7 +41,15 @@ if (Astro.request.method === "POST") {
 
 		}).returning();
 
-		console.log("Inatalizeing dbIdentity with title: ", dbTitle, " | description: ", dbDescription)
+
+		genrateLog()
+			.time()
+			.blue("[DB]")
+			.cyan("Inatalizeing dbIdentity with title")
+			.green(dbTitle || "no title")
+			.cyan(" | description")
+			.green(dbDescription || "no description")
+			.print()
 
 		return Astro.redirect(`/?initialize=done`);
 
@@ -56,7 +70,14 @@ if (Astro.request.method === "POST") {
 		}
 
 
-		console.log("Updateed dbIdentity with title: ", dbTitle, " | description: ", dbDescription)
+		genrateLog()
+			.time()
+			.blue("[DB]")
+			.cyan("Updateed dbIdentity with title")
+			.green(dbTitle || "No Change")
+			.cyan(" | description")
+			.green(dbDescription || "No Change")
+			.print()
 
 		return Astro.redirect(`/admin/status?Updateed=1`);
 	}

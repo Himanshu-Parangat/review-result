@@ -4,6 +4,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { config } from "@config";
 import * as siteSchema from "@db/schema";
 import { existsSync } from "fs";
+import { genrateLog } from "@utils/loggingUtils";
 
 let dbInitialized: boolean | null = null;
 
@@ -13,7 +14,14 @@ export function isDbInitialized() {
 	}
 
 	if (!existsSync(config.dbPath)) {
-		console.log("Database file does not exist");
+
+		genrateLog()
+			.time()
+			.blue("[DB]")
+			.red("Database does not exist at")
+			.magenta(config.dbPath)
+			.print()
+
 		dbInitialized = false;
 		return false;
 	}
@@ -38,7 +46,21 @@ export function isDbInitialized() {
 		);
 
 		if (!allTablesExist) {
-			console.log("Missing required tables. Found:", tableNames);
+
+			const missingTables = requiredTables.filter(
+				t => !tableNames.includes(t)
+			);
+
+			genrateLog()
+				.time()
+				.blue("[DB]")
+				.red("Database schema invalid")
+				.yellow("Missing tables:")
+				.magenta(missingTables.join(", "))
+				.cyan("Found:")
+				.green(tableNames.join(", "))
+				.print();
+
 			dbInitialized = false;
 			return false;
 		}
@@ -46,7 +68,13 @@ export function isDbInitialized() {
 		dbInitialized = true;
 		return true;
 	} catch (error) {
-		console.log("Error checking database schema:", error);
+		genrateLog()
+			.time()
+			.red("Error checking database schema:")
+			.print()
+
+		console.log(error)
+
 		dbInitialized = false;
 		return false;
 	} finally {
@@ -73,7 +101,17 @@ export function initDb() {
 		});
 
 		sqlite.close();
-		console.log('✅ Database initialized successfully!');
+
+		genrateLog()
+			.time()
+			.blue("[DB]")
+			.cyan("initialized new")
+			.green("Database")
+			.cyan("from ")
+			.magenta(config.dbPath)
+			.cyan("successfully")
+			.print()
+
 		resetDbInitCheck()
 	}
 }
@@ -90,7 +128,15 @@ export function getDb():  BetterSQLite3Database<typeof siteSchema> {
 	}
 
 	if (db === null) {
-		console.log("Opening database connection");
+		genrateLog()
+			.time()
+			.yellow("[DB]")
+			.cyan("Opening")
+			.green("Database connection")
+			.cyan("from ")
+			.magenta(config.dbPath)
+			.print()
+
 		sqlite = new Database(config.dbPath);
 		db = drizzle(sqlite, { schema: siteSchema });
 	}

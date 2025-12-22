@@ -62,7 +62,6 @@ if (Astro.request.method === "POST") {
 
 	if (action === "create") {
 
-		console.log("it's a new entry")
 			await db.insert(siteSchema.event).values({
 			eventId: generateId(),
 			eventlabel: "",

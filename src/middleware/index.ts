@@ -1,6 +1,7 @@
 import { checkCookie } from "@utils/CookieUtil";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { isDbInitialized } from "@db/index";
+import { genrateLog } from "@utils/loggingUtils";
 
 export const dbCheckMiddleware = defineMiddleware(async (context, next) => {
   const {  url } = context;
@@ -11,7 +12,14 @@ export const dbCheckMiddleware = defineMiddleware(async (context, next) => {
 
 
 	if (!isDbInitialized()) {
-		console.log("Database not initialized, redirecting to /admin/status");
+
+		genrateLog()
+			.time()
+			.blue("[DB]")
+			.yellow("Database not initialized")
+			.cyan("redirecting to")
+			.green("/admin/status")
+			.print()
 		return context.redirect("/admin/status?dbInit=now");
 	}
 	
@@ -23,30 +31,14 @@ export const dbCheckMiddleware = defineMiddleware(async (context, next) => {
 export const logMiddleware = defineMiddleware((context, next) => {
   const { request, url } = context;
 
-	const now = new Date();
-  const timestamp = now.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
-
-  const log = {
-    method: request.method,
-    path: url.pathname,
-    search: url.search,
-    host: url.host,
-    userAgent: request.headers.get("user-agent") ?? null,
-    ip: request.headers.get("x-forwarded-for") ?? null,
-    timestamp
-  };
-
-	const LogMessage = `${log.timestamp} [Incoming ${log.method} Request] At "${log.path}" From ${log.host}`
-
-	console.log(LogMessage);
+	genrateLog()
+		.time()
+		.blue(`[Incoming ${request.method} Request]`)
+		.cyan("At")
+		.green(url.pathname)
+		.cyan("From")
+		.magenta(url.host)
+		.print();
 
   return next();
 });
