@@ -25,6 +25,7 @@ const GetAllQuizes = await db.query.question.findMany({
   }
 });
 
+// console.log(JSON.stringify(GetAllQuizes))
 
 try {
 	event = db
@@ -60,6 +61,30 @@ if (now < scheduledStart) {
 	eventState = "ENDED";
 }
 
+
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+	for (const [key, value] of formData.entries()) {
+		console.log("for quizeId",key, "answer is", value);
+	}
+
+}
+
+
+
+const cookie = Astro.cookies.get("registeredForEvent");
+
+let participationId: string | null = null;
+
+if (cookie) {
+  const data = JSON.parse(cookie.value);
+  participationId = data.participantId;
+}
+
+
+
+
 ---
 
 {eventState === "WAITING" && (
@@ -76,6 +101,7 @@ if (now < scheduledStart) {
 {eventState === "LIVE" && (
 	<EventLiveRoom
 		id={event.eventId}
+		participant={participationId!}
 		title={event.eventTitle}
 		description={event.eventDescription}
 		startAt={event.eventScheduledStartAt}

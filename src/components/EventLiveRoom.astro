@@ -1,4 +1,5 @@
 ---
+export const prerender = false
 import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import Timestamp from "@components/Timestamp.astro"
 import { siteSchema } from "@db/index";
@@ -13,6 +14,7 @@ type QuestionWithOptions = Question & {
 
 interface Props {
 	id: string | null
+	participant: string
 	title: string | null
 	description: string | null
 	startAt: string | null
@@ -20,7 +22,7 @@ interface Props {
 	Quie:  QuestionWithOptions[];
 }
 
-const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
+const { id, title, description, startAt, endAt, Quie, participant} = Astro.props as Props
 
 
 ---
@@ -31,7 +33,8 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 			<h1 class="text-xl font-bold items-center">{title}</h1>
 			<div class=" border-b-2 border-primary w-full mt-2"></div>
 
-				<form method="post" class="flex flex-col w-full mt-4 px-8 py-4 h-full lg:overflow-y-auto">
+				<form method="post" id="submitforum"  class="flex flex-col w-full mt-4 px-8 py-4 h-full lg:overflow-y-auto">
+				<input type="hidden" name="participantId" value={participant}>
 
 				{Quie.map((question,index) =>
 					// question.questionTitle
@@ -46,31 +49,35 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 									<h1 class="text-2xl">{question.questionTitle}</h1>
 
 									<svg xmlns="http://www.w3.org/2000/svg"
-										class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
+										class="shrink-0 ml-16 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
 										fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 											d="M19 9l-7 7-7-7" />
 									</svg>
 								</summary>
-								<h2 class="text-xl text-secondary mt-1">{question.questionDescription}</h2>
+								<h2 class="text-xl text-secondary mt-2">{question.questionDescription}</h2>
 							</details>
 
 						</div>
 
 
-						<div class="ml-9 mr-4 mt-4 space-y-4 pl-3 py-3 ">
+						<div class="ml-9 mr-4 mt-6 space-y-4 pl-3 py-3 ">
 
-						{question.options.map(option => 
+						{question.options.map((option,i) => {
 
-							<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover-overlay  text-secondary ">
+							const letter = String.fromCharCode(65 + i)
+							return (<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover-overlay  text-secondary ">
 								<input 
 								type={question.questionType}
 								name={question.questionId}
-								value={option.questionId}
+								value={option.optionId}
 								class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
 								>
-							<span class="ml-3 text-xl ">{option.optionlabel}</span>
-							</label>
+							<span class="ml-4 text-xl ">{letter}. {option.optionTitle}</span>
+							</label>)
+
+						} 
+
 
 						)}
 						</div>
@@ -93,7 +100,6 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 				<div class="w-full flex flex-row justify-between">
 					<h3 class="text-lg font-semibold mt-2">Time Remaining</h3>
 
-					<!-- <span id="countdown-timestamp" class="mt-2 text-lg text-secondary">5 Mins 12 sec </span> -->
 					<div class="mt-2 text-lg text-secondary">
 						<Timestamp startTime={startAt!} endTime={endAt!} eventName="Event"/>
 					</div>
@@ -131,13 +137,18 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 
 				<div>
 
-					<h3 class="text-lg font-semibold mt-2">Questions</h3>
+					<div class="w-full flex flex-row justify-between">
+						<h3 class="text-lg font-semibold mt-2">Questions</h3>
+						<span id="question-counter" class="text-lg text-secondary mt-2">0/0</span>
+					</div>
 
 					<div class="border-2 border-primary rounded-lg p-4 mt-2  grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]    gap-2">
 
 						{Quie.map((question,index) => 
 						<a href={"#question-"+question.questionId}>
-								<div class="shrink-0 text-primary text-lg bg-secondary hover-overlay flex justify-center items-center rounded-lg w-10 h-10 border border-primary">
+								<div 
+									class="shrink-0 text-primary text-lg bg-secondary hover-overlay flex justify-center items-center rounded-lg w-10 h-10 border border-primary question-chip"
+									data-question-id={question.questionId}>
 									{index +1 }
 								</div>
 							</a>
@@ -150,7 +161,7 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 				<div class="flex-1"> </div>
 
 				<div class="flex flex-col w-full mb-2 items-center">
-					<button class="flex flex-row items-center gap-3 bg-accent text-lg rounded-lg border-2 border-primary px-8 py-2">
+					<button id="doSubmit" type="submit" form="submitforum" class="flex flex-row items-center gap-3 bg-accent text-lg rounded-lg border-2 border-primary px-8 py-2">
 
 						<span>Finish & Submit</span>
 					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -304,6 +315,187 @@ const { id, title, description, startAt, endAt, Quie} = Astro.props as Props
 					}
 				}
 			</script>
+
+
+
+		<script is:inline>
+			(function() {
+				const questionStates = {};
+				const STORAGE_KEY = 'quiz_answers_';
+				
+				function loadSavedAnswers() {
+					try {
+						const saved = localStorage.getItem(STORAGE_KEY);
+						if (saved) {
+							return JSON.parse(saved);
+						}
+					} catch (e) {
+						console.error('Error loading saved answers:', e);
+					}
+					return {};
+				}
+				
+				// Save answers to localStorage
+				function saveAnswers(questionId, selectedValues) {
+					try {
+						const saved = loadSavedAnswers();
+						if (selectedValues && selectedValues.length > 0) {
+							saved[questionId] = selectedValues;
+						} else {
+							delete saved[questionId];
+						}
+						localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+					} catch (e) {
+						console.error('Error saving answers:', e);
+					}
+				}
+				
+				function restoreSavedAnswers() {
+					const saved = loadSavedAnswers();
+					
+					Object.keys(saved).forEach(questionId => {
+						const values = saved[questionId];
+						values.forEach(value => {
+							const input = document.querySelector(`input[name="${questionId}"][value="${value}"]`);
+							if (input) {
+								input.checked = true;
+								questionStates[questionId].answered = true;
+							}
+						});
+					});
+				}
+				
+				function updateChipColor(questionId) {
+					const chip = document.querySelector(`.question-chip[data-question-id="${questionId}"]`);
+					if (!chip) return;
+					
+					chip.classList.remove('bg-accent', 'bg-tertiary', 'bg-secondary');
+					
+					const state = questionStates[questionId];
+					if (state?.answered) {
+						chip.classList.add('bg-accent');
+					} else if (state?.visited) {
+						chip.classList.add('bg-tertiary');
+					} else {
+						chip.classList.add('bg-secondary');
+					}
+				}
+				
+				function updateQuestionProgress() {
+					const answeredCount = Object.values(questionStates).filter(s => s?.answered).length;
+					const totalQuestions = Object.keys(questionStates).length -1 ;
+
+					const counterElement = document.getElementById('question-counter');
+					if (counterElement) {
+						counterElement.textContent = `Attempted ( ${answeredCount}/${totalQuestions} )`;
+					}
+					
+					if (totalQuestions > 0) {
+						const percentage = (answeredCount / totalQuestions) * 100;
+						const questionsBar = document.querySelector('.bar-questions');
+						const fill = questionsBar?.querySelector('.fill');
+						
+						if (fill && questionsBar) {
+							fill.style.width = `${percentage}%`;
+							questionsBar.dataset.value = percentage.toFixed(1);
+							
+							questionsBar.dataset.text = `Questions Attempted: ${answeredCount}/${totalQuestions}`;
+						}
+					}
+				}
+				
+				function initQuizFunctionality() {
+					document.querySelectorAll('[id^="question-"]').forEach(questionDiv => {
+						const questionId = questionDiv.id.replace('question-', '');
+						if (!questionStates[questionId]) {
+							questionStates[questionId] = { visited: false, answered: false };
+						}
+					});
+					
+					restoreSavedAnswers();
+					
+					const observer = new IntersectionObserver((entries) => {
+						entries.forEach(entry => {
+							if (entry.isIntersecting) {
+								const questionId = entry.target.id.replace('question-', '');
+								if (!questionStates[questionId].visited) {
+									questionStates[questionId].visited = true;
+									updateChipColor(questionId);
+								}
+							}
+						});
+					}, { threshold: 0.5 });
+					
+					document.querySelectorAll('[id^="question-"]').forEach(el => {
+						observer.observe(el);
+					});
+					
+					document.querySelectorAll('input[type="radio"]').forEach(radio => {
+						let lastChecked = null;
+						
+						radio.addEventListener('click', function(e) {
+							const questionId = this.name;
+							
+							if (lastChecked === this) {
+								this.checked = false;
+								lastChecked = null;
+								questionStates[questionId].answered = false;
+								saveAnswers(questionId, []);
+							} else {
+								lastChecked = this;
+								questionStates[questionId].answered = true;
+								saveAnswers(questionId, [this.value]);
+							}
+							
+							updateChipColor(questionId);
+							updateQuestionProgress();
+						});
+					});
+					
+					document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+						checkbox.addEventListener('change', function() {
+							const questionId = this.name;
+							const checkedBoxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+							const anyChecked = checkedBoxes.length > 0;
+							
+							questionStates[questionId].answered = anyChecked;
+							
+							const selectedValues = Array.from(checkedBoxes).map(cb => cb.value);
+							saveAnswers(questionId, selectedValues);
+							
+							updateChipColor(questionId);
+							updateQuestionProgress();
+						});
+					});
+					
+					Object.keys(questionStates).forEach(questionId => {
+						updateChipColor(questionId);
+					});
+					updateQuestionProgress();
+				}
+				
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', initQuizFunctionality);
+				} else {
+					initQuizFunctionality();
+				}
+				
+				document.addEventListener('astro:page-load', initQuizFunctionality);
+			})();
+
+		</script>
+
+		<script is:inline>
+			const submitBtn = document.getElementById('doSubmit');
+			const targetForm = document.getElementById('submitforum');
+
+			if (submitBtn && targetForm){
+				submitBtn.addEventListener('click', (e) => {
+					targetForm.requestSubmit();
+					console.log(targetForm)
+				});
+			}
+		</script>
 
 	</div>
 </TwoColumnLayout>

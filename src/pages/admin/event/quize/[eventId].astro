@@ -164,7 +164,7 @@ if (Astro.request.method === "POST") {
 						description={quize.questionDescription || ""}
 						options={(quize.options ?? []).map(option => ({
 							text: option.optionTitle || "",
-							value: option.optionlabel || "",
+							value: option.optionId || "",
 							name: quize.questionId,
 							key: option.optionKey
 						}))}
