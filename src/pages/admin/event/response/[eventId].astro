@@ -1,0 +1,172 @@
+---
+export const prerender = false
+import { getDb, siteSchema } from "@db/index"
+import BaseLayout from "@layouts/BaseLayout.astro"
+import { and, eq, isNull } from "drizzle-orm";
+import { type InferSelectModel } from 'drizzle-orm';
+
+const { eventId } = Astro.params;
+
+if (!eventId) {
+  return Astro.redirect("/admin/event");
+}
+
+const db = getDb()
+
+const allquize = await db.query.question.findMany({
+  where:(and(
+    eq(siteSchema.question.eventId, eventId),
+    isNull(siteSchema.question.questionDeletedAt)
+  )),
+  with: {
+    options: true
+  }
+});
+
+const submission = await db
+  .select()
+  .from(siteSchema.response)
+  .innerJoin(
+    siteSchema.submission,
+    eq(siteSchema.response.submissionId, siteSchema.submission.submissionId)
+  )
+  .where(
+    and(
+      eq(siteSchema.submission.eventId, eventId),
+      isNull(siteSchema.submission.submissionDeletedAt)
+    )
+  )
+  .then(res => res[0]);
+
+if (!submission) {
+  return Astro.redirect("/admin/event");
+}
+
+type Event = InferSelectModel<typeof siteSchema.event>;
+type Submission = InferSelectModel<typeof siteSchema.submission>;
+type Participant = InferSelectModel<typeof siteSchema.participant>;
+type Response = InferSelectModel<typeof siteSchema.response>;
+type Question = InferSelectModel<typeof siteSchema.question>;
+type Option = InferSelectModel<typeof siteSchema.option>;
+
+type EventWithRelations = Event & {
+  submissions: (Submission & {
+    participant: Participant;
+    responses: (Response & {
+      question: Question;
+      option: Option;
+    })[];
+  })[];
+};
+
+const allresponse = await db.query.event.findFirst({
+  where: (event, { eq }) => eq(event.eventId, eventId),
+  with: {
+    submissions: {
+      with: {
+        participant: true,
+        responses: {
+          with: {
+            question: true,
+            option: true,
+          },
+        },
+      },
+    },
+  },
+}) as EventWithRelations | undefined;
+
+if (!allresponse) {
+  return Astro.redirect("/admin/event");
+}
+
+const totalQuestions = allquize.length;
+const totalCorrectAnswersAvailable = allquize.flatMap(quiz =>
+  quiz.options.filter(option => option.optionKey === true)
+).length;
+
+---
+<BaseLayout title="Response">
+  <div class="flex flex-col justify-center w-full px-[6%]">
+    <div class="bg-secondary border-2 border-primary rounded-lg">
+      
+      <table class="table-cell w-full border-collapse">
+        <thead>
+          <tr class="hover-overlay border-b-2 border-primary p-4">
+            <th class="px-4 py-2 text-left font-semibold">S.No</th>
+            <th class="px-4 py-2 text-left font-semibold">User</th>
+            <th class="px-4 py-2 text-left font-semibold">User ID</th>
+            <th class="px-4 py-2 text-left font-semibold">Department</th>
+            <th class="px-4 py-2 text-left font-semibold">Questions Attended</th>
+            <th class="px-4 py-2 text-left font-semibold">Missed Questions</th>
+            <th class="px-4 py-2 text-left font-semibold">Correct Answers</th>
+            <th class="px-4 py-2 text-left font-semibold">Wrong Answers</th>
+            <th class="px-4 py-2 text-left font-semibold">Score</th>
+          </tr>
+        </thead>
+
+        <tbody class="text-lg">
+          {allresponse.submissions.map((entry, index) => {
+
+						const uniqueQuestionIds = new Set(entry.responses.map(res => res.questionId));
+						const questionsAttended = uniqueQuestionIds.size;
+						const correctAnswers = entry.responses.filter(res => res.option.optionKey === true).length;
+						const totalCorrectOptionsAvailable = totalCorrectAnswersAvailable;
+						const wrongAnswers = entry.responses.filter(res => res.option.optionKey === false).length;
+						const missedQuestions = totalQuestions - questionsAttended;
+						const scorePercentage = totalCorrectOptionsAvailable > 0 
+							? ((correctAnswers / totalCorrectOptionsAvailable) * 100).toFixed(1)
+							: 0;
+
+
+
+            return (
+              <tr class="border-b-2 border-primary hover-overlay">
+                <td class="px-4 py-2 text-primary">{index + 1}</td>
+                <td class="px-4 py-2 text-primary">{entry.participant.participantName}</td>
+                <td class="px-4 py-2 text-primary">{entry.participant.participantPayrollId}</td>
+                <td class="px-4 py-2 text-primary">{entry.participant.participantDepartment}</td>
+                
+                <td class="px-4 py-2 text-primary">
+                  {questionsAttended} / {totalQuestions}
+                </td>
+                
+                <td class="px-4 py-2 status-indicator-warning border-b-2 font-semibold">
+                  {missedQuestions}
+                </td>
+
+                <td class="px-4 py-2 status-indicator-success border-b-2 font-semibold">
+                  {correctAnswers}
+                </td>
+                
+                <td class="px-4 py-2 status-indicator-error border-b-2 font-semibold ">
+                  {wrongAnswers}
+                </td>
+                
+                
+                <td class="px-4 py-2 text-primary font-bold">
+                  {scorePercentage}%
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+
+        <tfoot>
+          <tr class="border-t-2 border-primary ">
+						<td></td>
+            <td  class="px-4 py-2 text-base text-primary font-semibold">
+            </td>
+            <td  class="px-4 py-2 text-base text-primary font-semibold">
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+			<p class=" status-indicator-info px-4 py-1 inline-flex border-2 m-2 rounded-lg">
+				Total Submissions: {allresponse.submissions.length}
+			</p>
+
+    </div>
+  </div>
+</BaseLayout>

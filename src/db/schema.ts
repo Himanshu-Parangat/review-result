@@ -134,3 +134,44 @@ export const response = sqliteTable("response", {
 export const dbIdentityRelations = relations(dbIdentity, ({ many }) => ({
   events: many(event),
 }));
+
+export const participantRelations = relations(participant, ({ many, one }) => ({
+	submissions: many(submission),
+	event: one(event, {
+		fields: [participant.eventId],
+		references: [event.eventId],
+	}),
+}));
+
+export const submissionRelations = relations(submission, ({ many, one }) => ({
+	participant: one(participant, {
+		fields: [submission.participantId],
+		references: [participant.participantId],
+	}),
+	event: one(event, {
+		fields: [submission.eventId],
+		references: [event.eventId],
+	}),
+	responses: many(response),
+}));
+
+export const responseRelations = relations(response, ({ one }) => ({
+	submission: one(submission, {
+		fields: [response.submissionId],
+		references: [submission.submissionId],
+	}),
+	question: one(question, {
+		fields: [response.questionId],
+		references: [question.questionId],
+	}),
+	option: one(option, {
+		fields: [response.optionId],
+		references: [option.optionId],
+	}),
+}));
+
+export const eventRelations = relations(event, ({ many }) => ({
+  submissions: many(submission),
+  participants: many(participant),
+}));
+
