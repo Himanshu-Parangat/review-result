@@ -1,0 +1,146 @@
+---
+export const prerender = false
+import { getDb, siteSchema } from "@db/index";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { normalizeDateTime, friendlyDateMessage } from "@utils/TimeUtils";
+import { and, eq, isNull } from "drizzle-orm";
+
+
+const { eventId } = Astro.params;
+
+if (!eventId) {
+  return Astro.redirect("/admin/event");
+}
+
+const db = getDb()
+
+const registered = db
+.select()
+.from(siteSchema.participant)
+.where(
+	and(
+		eq(siteSchema.participant.eventId, eventId),
+		isNull(siteSchema.participant.participantDeletedAt)
+	)
+)
+.all()
+
+
+
+
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+	const action = formData.get("action") as string;
+	const participantId = formData.get("participantId") as string | null;
+
+	if (action === "delete") {
+
+		if (!participantId) return
+
+		await db 
+		.update(siteSchema.participant)
+		.set({participantDeletedAt: new Date().toISOString()})
+		.where(
+			and(
+				eq(siteSchema.participant.participantId, participantId),
+				isNull(siteSchema.participant.participantDeletedAt)
+			)
+		);
+
+
+		return Astro.redirect(`/admin/event/register/${eventId}?deleted=1`);
+	}
+
+}
+
+---
+
+<BaseLayout title="Register">
+  <div class="flex flex-col justify-center w-full px-[6%]">
+    <div class="bg-secondary border-2 border-primary rounded-lg">
+      
+      <table class=" w-full border-collapse">
+        <thead>
+          <tr class="hover-overlay border-b-2 border-primary p-4 bg-tertiary">
+            <th class="px-4 py-2 text-left font-semibold rounded-lg">S.No</th>
+            <th class="px-4 py-2 text-left font-semibold">User Name</th>
+            <th class="px-4 py-2 text-left font-semibold">User ID</th>
+            <th class="px-4 py-2 text-left font-semibold">Department</th>
+            <th class="px-4 py-2 text-left font-semibold">Designation</th>
+            <th class="px-4 py-2 text-left font-semibold">Status</th>
+            <th class="px-4 py-2 text-left font-semibold">Registered On</th>
+            <th class="px-4 py-2 text-left font-semibold rounded-lg">Modify</th>
+          </tr>
+        </thead>
+
+				<tbody class="text-lg">
+						<input type="hidden" name="action" value="create">
+						{registered.map((participant, index) => (
+							<tr class="border-b-2 border-primary hover-overlay">
+								<td class="px-4 py-2 text-primary">{index + 1}</td>
+								<td class="px-4 py-2 text-primary">{participant.participantName}</td>
+								<td class="px-4 py-2 text-primary">{participant.participantPayrollId}</td>
+								<td class="px-4 py-2 text-primary">{participant.participantDepartment}</td>
+								<td class="px-4 py-2 text-primary">{participant.participantDesignation}</td>
+								<td class="text-primary border-b-2 border-primary">
+									<div class="px-4 py-2 status-indicator-success border-2 rounded-lg flex flex-row gap-2 items-center">
+
+										<svg width="35" height="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+											<rect x="4" y="6" width="22" height="20" rx="2" stroke-width="2"/>
+											<line x1="4" y1="11" x2="26" y2="11" stroke-width="2"/>
+											<line x1="9" y1="6" x2="9" y2="3" stroke-width="2" stroke-linecap="round"/>
+											<line x1="21" y1="6" x2="21" y2="3" stroke-width="2" stroke-linecap="round"/>
+											<text x="15" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">S</text>
+										</svg>
+										<span>
+											Registered
+										</span>
+									</div>
+								</td>
+								<td class="px-4 py-2 text-primary">{ friendlyDateMessage(normalizeDateTime(participant.participantCreatedAt || new Date().toISOString()))}</td>
+								<td class="p-2">
+								  <form method="post" onsubmit="return confirm('Delete this participant?')">
+										 <input type="hidden" name="action" value="delete" />
+											<input
+												type="hidden"
+												name="participantId"
+												value={participant.participantId}
+											/>
+										<button type="submit" class="px-4 py-2 text-primary hover-overlay status-indicator-error border-2 rounded-lg flex flex-row items-center justify-center gap-2 w-full">
+											<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<polyline points="3 6 5 6 21 6"/>
+												<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+												<line x1="10" y1="11" x2="10" y2="17"/>
+												<line x1="14" y1="11" x2="14" y2="17"/>
+											</svg>
+											<span> Delete </span>
+										</button>
+									</form>
+								</td>
+							</tr>
+						))}
+				</tbody>
+
+
+        <tfoot>
+          <tr class="border-t-2 border-primary ">
+						<td></td>
+            <td  class="px-4 py-2 text-base text-primary font-semibold">
+            </td>
+            <td  class="px-4 py-2 text-base text-primary font-semibold">
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+			{registered.length > 0 && (
+				<p class="status-indicator-info px-4 py-1 inline-flex border-2 m-2 rounded-lg">
+					Total Registered: {registered.length}
+				</p>
+			)}
+
+
+    </div>
+  </div>
+</BaseLayout>
