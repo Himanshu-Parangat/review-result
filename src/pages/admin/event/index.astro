@@ -184,6 +184,15 @@ if (Astro.request.method === "POST") {
 					placeholder="Type your title here..." required />
 
 
+				<h3 class="text-lg font-semibold mt-2">Duration Presets</h3>
+				<div id="quickPresets" class="flex gap-2 mt-2">
+					<button type="button" data-minutes="60" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">1h</button>
+					<button type="button" data-minutes="90" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">1 &frac12;h</button>
+					<button type="button" data-minutes="30" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">30min</button>
+					<button type="button" data-minutes="25" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">25min</button>
+					<button type="button" data-minutes="5" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">5min</button>
+					<button type="button" data-minutes="1440" class="w-18 h-9 text-lg bg-tertiary border-2 border-primary rounded hover-overlay">1day</button>
+				</div>
 
 				<h3 class="text-lg font-semibold mt-2">Event End</h3>
 
@@ -221,6 +230,50 @@ if (Astro.request.method === "POST") {
 				</button>
 
 				</form>
+
+			<script is:inline>
+				document.addEventListener('DOMContentLoaded', () => {
+					const startInput = document.querySelector('input[name="eventScheduledStartAt"]');
+					const endInput = document.querySelector('input[name="eventScheduledEndAt"]');
+					const presetButtons = document.querySelectorAll('#quickPresets button');
+					
+					let hasAutoFilled = false;
+					startInput.addEventListener('focus', () => {
+						if (!hasAutoFilled && !startInput.value) {
+							const now = new Date();
+							startInput.value = toDatetimeLocal(now);
+							hasAutoFilled = true;
+						}
+					});
+					
+					presetButtons.forEach(btn => {
+						btn.addEventListener('click', () => {
+							const minutes = parseInt(btn.dataset.minutes);
+							const startTime = startInput.value ? new Date(startInput.value) : new Date();
+							const endTime = new Date(startTime.getTime() + minutes * 60 * 1000);
+							endInput.value = toDatetimeLocal(endTime);
+						});
+					});
+					
+					startInput.addEventListener('change', () => {
+						if (endInput.value && new Date(endInput.value) < new Date(startInput.value)) {
+							endInput.value = startInput.value;
+						}
+					});
+					
+					endInput.addEventListener('blur', () => {
+						if (startInput.value && endInput.value && new Date(endInput.value) < new Date(startInput.value)) {
+							alert("End time cannot be before start time!");
+							endInput.value = '';
+						}
+					});
+					
+					function toDatetimeLocal(date) {
+						const pad = (n) => String(n).padStart(2, '0');
+						return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+					}
+				});
+			</script>
 
 
 
