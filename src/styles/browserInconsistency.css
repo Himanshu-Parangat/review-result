@@ -42,6 +42,17 @@ input:-webkit-autofill {
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   opacity: 0.8;
+  transform: scale(1.4);
+  cursor: pointer;
+}
+
+/* Firefox only [need change these are getting ingnored] */
+input[type="datetime-local"] {
+  min-height: 3rem;
+}
+
+input[type="datetime-local"]::-moz-calendar-picker-indicator {
+  padding: 6px;
   cursor: pointer;
 }
 

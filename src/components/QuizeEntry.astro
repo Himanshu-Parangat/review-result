@@ -116,9 +116,9 @@ const {
 
 		<div class="flex lg:flex-row flex-col gap-3 justify-between ml-12 mr-8 mt-6">
 			<div class="flex flex-row gap-3 ">
-				<button class="edit-event-btn  text-lg   px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				<button class="edit-event-btn  text-lg   px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
 						<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
 					</svg>
@@ -133,9 +133,9 @@ const {
 					</span>
 				</button>
 
-				<button class="delete-event-btn text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+				<button class="delete-event-btn text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<polyline points="3 6 5 6 21 6"/>
 						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
 						<line x1="10" y1="11" x2="10" y2="17"/>
@@ -149,11 +149,11 @@ const {
 				</button>
 
 				<button
-					class="pin-event-btn text-lg px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"
+					class="pin-event-btn text-lg px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay"
 				>
 					{isPined? (
 						<>
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
 								viewBox="0 0 24 24" fill="currentColor" class="text-primary">
 								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
 							</svg>
@@ -163,7 +163,7 @@ const {
 						</>
 					) : (
 						<>
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
 								viewBox="0 0 24 24" fill="none" stroke="currentColor"
 								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
@@ -181,9 +181,9 @@ const {
 
 			<div class="flex flex-row gap-3">
 
-				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
+				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay">
 
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
 						<rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
 					</svg>
@@ -193,8 +193,8 @@ const {
 					</span>
 				</button>
 
-				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay">
+					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
 						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
 					</svg>
