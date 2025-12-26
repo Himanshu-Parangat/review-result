@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
-import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { config } from "@config";
 import * as siteSchema from "@db/schema";
@@ -130,7 +131,7 @@ export function getDb():  BetterSQLite3Database<typeof siteSchema> {
 	if (db === null) {
 		genrateLog()
 			.time()
-			.yellow("[DB]")
+			.blue("[DB]")
 			.cyan("Opening")
 			.green("Database connection")
 			.cyan("from ")

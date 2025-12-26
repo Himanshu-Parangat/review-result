@@ -1,11 +1,22 @@
 ---
 const textSize = ['text-Small', 'text-Medium', 'text-Large', 'text-ExtraLarge', 'text-Maximized'];
 ---
-<select id="text-size-dropdown" class="text-base">
-  {textSize.map(size => (
-    <option class="text-base text-primary bg-primary" value={size}>{size.replace('text-', '').replace(/^\w/, c => c.toUpperCase())}</option>
-  ))}
-</select>
+
+<div class="relative hover-overlay">
+
+	<select id="text-size-dropdown" class="text-base bg-secondary pl-9 py-2 border-2 border-primary rounded-lg">
+		{textSize.map(size => (
+			<option class="text-base text-primary bg-primary" value={size}>{size.replace('text-', '').replace(/^\w/, c => c.toUpperCase())}</option>
+		))}
+	</select>
+
+	<svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 absolute transform top-1/2 -translate-y-1/2 left-2 cursor-pointer pointer-events-none" viewBox="0 0 48 48">
+		<text x="12" y="36" text-anchor="middle" font-size="34" fill="currentColor" stroke="none">A</text>
+		<text x="31" y="36" text-anchor="middle" font-size="34" fill="currentColor" stroke="none">a</text>
+		<path d="M41.063 9.187H48v1.688h-2.438v26.25H48v1.688h-6.937v-1.688h2.625V10.875H41.063z" fill="currentColor"/>
+	</svg>
+
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
