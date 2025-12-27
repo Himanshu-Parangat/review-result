@@ -61,10 +61,10 @@ if (Astro.request.method === "POST") {
 
 	if (action === "create") {
 
-		const questionId : string = generateId();
+		const newQuestionId : string = generateId();
 		
 		await db.insert(siteSchema.question).values({
-			questionId,
+			questionId: newQuestionId,
 			questionlabel: "Question label",
 			questionCreatedAt: new Date().toISOString(),
 			questionTitle,
@@ -83,7 +83,7 @@ if (Astro.request.method === "POST") {
 				optionKey: option.isCorrect,
 				optionlabel: "",
 				optionOrder: index + 1,
-				questionId,
+				questionId:newQuestionId,
 			}))
 		);
 
@@ -250,6 +250,23 @@ if (Astro.request.method === "POST") {
 					</button>
 				</div>
 
+
+				<div id="editModeIndicator"  class="hidden w-auto shrink mt-4  justify-center">
+					<div class="flex flex-row gap-2 items-center justify-center border-2 p-2 border-primary rounded-lg ">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+							<circle cx="12" cy="12" r="10"/>
+							<line x1="12" y1="8" x2="12" y2="12"/>
+							<line x1="12" y1="16" x2="12.01" y2="16"/>
+						</svg>
+						<p>Editing an existing Entry</p>
+						<button class=" border-2 text-secondary rounded-full text-primary hover:text-(--color-text-error) flex items-center h-6 w-6">
+								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+									<line x1="9" y1="9" x2="15" y2="15"/>
+									<line x1="15" y1="9" x2="9" y2="15"/>
+								</svg>
+						</button>
+					</div>
+				</div>
 
 					<button
 						id="SubmitQuestionEntry"
@@ -453,83 +470,110 @@ if (Astro.request.method === "POST") {
 			quizForm.submit();
 	});
 
-	document.addEventListener('DOMContentLoaded', () => {
-		const editButtons = document.querySelectorAll('[data-title]');
-		
-		editButtons.forEach(button => {
-			button.addEventListener('click', (e) => {
-				const target = e.currentTarget as HTMLElement;
-				
-				const title = target.dataset.title || '';
-				const description = target.dataset.description || '';
-				const type = target.dataset.type || 'radio';
-				const optionsJson = target.dataset.options || '[]';
-				const questionId = target.dataset.id || '';
-				
-				let options: Array<{text: string, key: boolean}> = [];
-				try {
-						options = JSON.parse(optionsJson);
-				} catch (error) {
-						console.error('Error parsing options:', error);
-						return;
-				}
-				
-				const questionTitleInput = document.querySelector('input[name="questionTitle"]') as HTMLInputElement;
-				const questionDescInput = document.querySelector('textarea[name="questionDescription"]') as HTMLTextAreaElement;
-				const questionTypeSelect = document.getElementById('questionTypeField') as HTMLSelectElement;
-				const questionIdInput = document.getElementById('questionId') as HTMLInputElement;
-				
-				if (questionTitleInput) questionTitleInput.value = title;
-				if (questionDescInput) questionDescInput.value = description;
-				if (questionTypeSelect) questionTypeSelect.value = type;
-				if (questionIdInput) questionIdInput.value = questionId;
-				
-				if (optionsContainer) {
-						optionsContainer.innerHTML = '';
-				}
-				allOptions = [];
-				optionCounter = 0;
-				
-				options.forEach(option => {
-						const optionId = optionCounter;
-						
-						const optionElement = createOptionElement(option.text, type);
-						
-						if (optionsContainer) {
-								optionsContainer.appendChild(optionElement);
-						}
-						
-						allOptions.push({
-								id: optionId,
-								text: option.text,
-								isCorrect: option.key
-						});
-						
-						if (option.key) {
-								setTimeout(() => {
-										const input = optionsContainer?.querySelector(`input[value="${optionId}"]`) as HTMLInputElement;
-										if (input) {
-												input.checked = true;
-										}
-								}, 10);
-						}
-				});
-				
-				const actionInput = document.getElementById('action') as HTMLInputElement;
-				const submitButton = document.getElementById('SubmitQuestionEntry') as HTMLButtonElement;
-				
-				if (actionInput) actionInput.value = 'update';
-				if (submitButton) submitButton.textContent = 'Update Question';
-				
-				const formContainer = document.querySelector('[slot="min-slot"]');
-				if (formContainer) {
-						formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				}
+	const editButtons = document.querySelectorAll('[data-title]');
+	
+	editButtons.forEach(button => {
+		button.addEventListener('click', (e) => {
+			const target = e.currentTarget as HTMLElement;
+			
+			const title = target.dataset.title || '';
+			const description = target.dataset.description || '';
+			const type = target.dataset.type || 'radio';
+			const optionsJson = target.dataset.options || '[]';
+			const questionId = target.dataset.id || '';
+			
+			let options: Array<{text: string, key: boolean}> = [];
+			try {
+					options = JSON.parse(optionsJson);
+			} catch (error) {
+					console.error('Error parsing options:', error);
+					return;
+			}
+			
+			const questionTitleInput = document.querySelector('input[name="questionTitle"]') as HTMLInputElement;
+			const questionDescInput = document.querySelector('textarea[name="questionDescription"]') as HTMLTextAreaElement;
+			const questionTypeSelect = document.getElementById('questionTypeField') as HTMLSelectElement;
+			const questionIdInput = document.getElementById('questionId') as HTMLInputElement;
+			const editModeIndicator = document.getElementById('editModeIndicator') as HTMLElement;
+			
+			if (questionTitleInput) questionTitleInput.value = title;
+			if (questionDescInput) questionDescInput.value = description;
+			if (questionTypeSelect) questionTypeSelect.value = type;
+			if (questionIdInput) questionIdInput.value = questionId;
+			if (editModeIndicator) editModeIndicator.classList.remove('hidden');
+			if (optionsContainer) {
+					optionsContainer.innerHTML = '';
+			}
+			allOptions = [];
+			optionCounter = 0;
+			
+			options.forEach(option => {
+					const optionId = optionCounter;
+					
+					const optionElement = createOptionElement(option.text, type);
+					
+					if (optionsContainer) {
+							optionsContainer.appendChild(optionElement);
+					}
+					
+					allOptions.push({
+							id: optionId,
+							text: option.text,
+							isCorrect: option.key
+					});
+					
+					if (option.key) {
+							setTimeout(() => {
+									const input = optionsContainer?.querySelector(`input[value="${optionId}"]`) as HTMLInputElement;
+									if (input) {
+											input.checked = true;
+									}
+							}, 10);
+					}
 			});
+			
+			const actionInput = document.getElementById('action') as HTMLInputElement;
+			const submitButton = document.getElementById('SubmitQuestionEntry') as HTMLButtonElement;
+			
+			if (actionInput) actionInput.value = 'update';
+			if (submitButton) submitButton.textContent = 'Update Question';
+			
+			const formContainer = document.querySelector('[slot="min-slot"]');
+			if (formContainer) {
+					formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
 		});
 	});
 
 		</script>
+
+		<script is:inline>
+			let lastRadio = null;
+
+			document.addEventListener('change', (e) => {
+				const input = e.target;
+				if (input.type !== 'radio') return;
+				
+				lastRadio = input;
+			});
+
+			document.addEventListener('click', (e) => {
+				const label = e.target.closest('label');
+				if (!label) return;
+				
+				const input = label.querySelector('input[type="radio"]');
+				if (!input || !input.checked || lastRadio !== input) return;
+				
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				requestAnimationFrame(() => {
+						input.checked = false;
+						lastRadio = null;
+				});
+			}, true);
+		</script>
+
+
 
 	</div>
 

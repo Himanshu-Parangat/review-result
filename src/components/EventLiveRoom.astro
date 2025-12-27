@@ -36,11 +36,11 @@ const { id, title, description, startAt, endAt, Quie, participant} = Astro.props
 				<form method="post" id="submitforum"  class="flex flex-col w-full mt-4 px-8 py-4 h-full lg:overflow-y-auto">
 				<input type="hidden" name="participantId" value={participant}>
 
+				<div id="quiz-container" data-quiz-id={participant}>
 				{Quie.map((question,index) =>
-					// question.questionTitle
-				<div id={"question-" + question.questionId} class="mb-8 border-2 border-primary bg-tertiary rounded-lg p-4 scroll-mt-24 quiz-jump-target hover:scale-[1.02]">
+				<div id={"question-" + question.questionId} class="quiz-question mb-8 border-2 border-primary bg-tertiary rounded-lg p-4 scroll-mt-24 quiz-jump-target hover:scale-[1.02]">
 						<div class=" flex flex-row justify-start gap-4">
-							<div class="shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
+							<div class="question-number shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
 								{index + 1}
 							</div>
 
@@ -86,6 +86,60 @@ const { id, title, description, startAt, endAt, Quie, participant} = Astro.props
 				</form>
 
 		</div>
+
+		<script>
+			function seededRandom(seed: string) {
+				let h = 0;
+				for (let i = 0; i < seed.length; i++) {
+					h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+				}
+				return function() {
+					h = Math.imul(h ^ h >>> 16, 0x85ebca6b);
+					h = Math.imul(h ^ h >>> 13, 0xc2b2ae35);
+					return ((h ^ h >>> 16) >>> 0) / 4294967296;
+				};
+			}
+
+			function shuffle<T>(array: T[], seed: string): T[] {
+				const rng = seededRandom(seed);
+				const arr = [...array];
+				for (let i = arr.length - 1; i > 0; i--) {
+					const j = Math.floor(rng() * (i + 1));
+					[arr[i], arr[j]] = [arr[j], arr[i]];
+				}
+				return arr;
+			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				const quizId = document.getElementById('quiz-container')?.dataset.quizId;
+				if (!quizId) return;
+
+				const questions = Array.from(document.querySelectorAll('.quiz-question'));
+				const shuffled = shuffle(questions, quizId);
+				const container = questions[0]?.parentElement;
+				if (container) {
+					shuffled.forEach((q, index) => {
+						const numEl = q.querySelector('.question-number');
+						if (numEl) numEl.textContent = String(index + 1);
+						container.appendChild(q);
+					});
+				}
+
+				questions.forEach(q => {
+					const qId = q.id;
+					const options = Array.from(q.querySelectorAll('.option-item'));
+					const shuffledOpts = shuffle(options, `${quizId}-${qId}`);
+					const optContainer = options[0]?.parentElement;
+					if (optContainer) {
+						shuffledOpts.forEach((opt, i) => {
+							const letter = String.fromCharCode(65 + i);
+							opt.querySelector('.option-letter')!.textContent = `${letter}.`;
+							optContainer.appendChild(opt);
+						});
+					}
+				});
+			});
+		</script>
 	</div>
 
 
