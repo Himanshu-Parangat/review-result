@@ -62,27 +62,27 @@ const { id, title, description, startAt, endAt, Quie, participant} = Astro.props
 
 
 						<div class="ml-9 mr-4 mt-6 space-y-4 pl-3 py-3 ">
+							{question.options.map((option,i) => {
+								const letter = String.fromCharCode(65 + i)
+								return (
+									<label class="option-item flex text-2xl items-start p-3 pl-4 border-2 border-primary rounded-lg cursor-pointer hover-overlay text-secondary">
+										<input 
+											type={question.questionType}
+											name={question.questionId}
+											value={option.optionId}
+											class=" mt-[0.40em] w-4 h-4 text-accent text-2xl scale-150 mr-4"
+										/>
+										<span class="text-xl leading-relaxed flex-1">
+											{letter}. {option.optionTitle}
+										</span>
+									</label>
+								)
+							})}
 
-						{question.options.map((option,i) => {
-
-							const letter = String.fromCharCode(65 + i)
-							return (<label class="flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer hover-overlay  text-secondary ">
-								<input 
-								type={question.questionType}
-								name={question.questionId}
-								value={option.optionId}
-								class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
-								>
-							<span class="ml-4 text-xl ">{letter}. {option.optionTitle}</span>
-							</label>)
-
-						} 
-
-
-						)}
 						</div>
 					</div>
 				)}
+				</div>
 				</form>
 
 		</div>

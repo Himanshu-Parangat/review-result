@@ -63,29 +63,42 @@ const {
 					const letter = String.fromCharCode(65 + i)
 
 					return(
-							<label class={`flex text-2xl items-center p-3 border-2 border-primary rounded-lg cursor-pointer  hover-overlay 
-								${opt.key
-								? "status-indicator-success"
-								: "text-secondary"
-								}
-							`}>
-							<input 
-								type={type || "checkbox"}
-								name={opt.name}
-								value={opt.value || i}
-							class="w-4 h-4 text-accent text-2xl scale-150 ml-2 "
+							<label
+								class={`flex items-start gap-4 p-4 border-2 border-primary rounded-lg cursor-pointer
+									${opt.key ? "status-indicator-success" : "text-secondary"}
+								`}
 							>
-						<span class="ml-4 text-xl ">{letter}. {opt.text}</span>
-							{opt.key && (
-								<svg class="w-8 h-8 ml-4 " viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M42 20V39C42 40.6569 40.6569 42 39 42H9C7.34315 42 6 40.6569 6 39V9C6 7.34315 7.34315 6 9 6H30" 
-												stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-									<path d="M16 20L26 28L41 7" 
-												stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-								</svg>
-							)}
+								<input
+									type={type || "radio"}
+									name={opt.name}
+									value={opt.value || i}
+									class="mt-[0.66em] ml-[0.11em] pl-2 w-5 h-5 scale-125 shrink-0"
+								/>
 
-						</label>
+								<span class="text-xl leading-relaxed flex-1">
+									{letter}. {opt.text}
+								</span>
+
+								{opt.key && (
+									<svg class="w-8 h-8 mt-1 shrink-0" viewBox="0 0 48 48" fill="none">
+										<path
+											d="M42 20V39C42 40.6569 40.6569 42 39 42H9C7.34315 42 6 40.6569 6 39V9C6 7.34315 7.34315 6 9 6H30"
+											stroke="currentColor"
+											stroke-width="4"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+										<path
+											d="M16 20L26 28L41 7"
+											stroke="currentColor"
+											stroke-width="4"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								)}
+							</label>
+
 						)}
 					)}
 
