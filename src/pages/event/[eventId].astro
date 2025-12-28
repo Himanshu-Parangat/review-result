@@ -66,6 +66,7 @@ if (now < scheduledStart) {
 
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
+	const action = formData.get("action") as string;
 	let participantId: string | null = null;
 	const answers = new Map<string, string[]>();
 	
@@ -80,46 +81,59 @@ if (Astro.request.method === "POST") {
 		answers.get(key)!.push(String(value));
 	}
 	
-	if (participantId && answers.size > 0) {
-		try {
-			const submissionId = generateId()
-			const now = new Date().toISOString();
-			
-			await db.insert(siteSchema.submission).values({
-				submissionId: submissionId,
-				submissionCreatedAt: now,
-				submissionUpdatedAt: null,
-				submissionDeletedAt: null,
-				eventId: eventId,
-				participantId: participantId,
-			});
-			
-			const responseRecords = [];
-			for (const [questionId, optionIds] of answers.entries()) {
-				for (const optionId of optionIds) {
-					responseRecords.push({
-						responseId: generateId(),
-						responseCreatedAt: now,
-						responseUpdatedAt: null,
-						responseDeletedAt: null,
-						questionId: questionId,
-						optionId: optionId,
-						submissionId: submissionId,
-					});
-				}
-			}
-			
 
-			if (responseRecords.length > 0) {
-				await db.insert(siteSchema.response).values(responseRecords);
+	if (action === "create") {
+
+		if (participantId && answers.size > 0) {
+			try {
+				const submissionId = generateId()
+				const now = new Date().toISOString();
+				
+				await db.insert(siteSchema.submission).values({
+					submissionId: submissionId,
+					submissionCreatedAt: now,
+					submissionUpdatedAt: null,
+					submissionDeletedAt: null,
+					eventId: eventId,
+					participantId: participantId,
+				});
+				
+				const responseRecords = [];
+				for (const [questionId, optionIds] of answers.entries()) {
+					for (const optionId of optionIds) {
+						responseRecords.push({
+							responseId: generateId(),
+							responseCreatedAt: now,
+							responseUpdatedAt: null,
+							responseDeletedAt: null,
+							questionId: questionId,
+							optionId: optionId,
+							submissionId: submissionId,
+						});
+					}
+				}
+				
+
+				if (responseRecords.length > 0) {
+					await db.insert(siteSchema.response).values(responseRecords);
+				}
+				
+				return Astro.redirect(`/event/${eventId}?submitted=1`);
+				
+			} catch (error) {
+				console.error("Error saving submission:", error);
 			}
-			
-			return Astro.redirect(`/event/${eventId}?submitted=1`);
-			
-		} catch (error) {
-			console.error("Error saving submission:", error);
 		}
+
 	}
+
+	if (action === "delete") {
+
+	}
+
+
+
+
 }
 
 
