@@ -1,0 +1,252 @@
+---
+export const prerender = false
+import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
+import { getDb, siteSchema } from "@db/index"
+import { and, eq, isNull } from "drizzle-orm";
+import { type InferSelectModel } from 'drizzle-orm';
+import { question, submission } from "@db/schema";
+
+
+const { eventId } = Astro.params;
+
+if (!eventId) {
+  return Astro.redirect("/admin/event");
+}
+
+const db = getDb()
+const url = new URL(Astro.request.url);
+const participantId = url.searchParams.get("participant");
+
+
+const participant = await db.select()
+.from(siteSchema.participant)
+.where( 
+	and(
+		eq(siteSchema.participant.participantId, participantId!),
+		isNull(siteSchema.participant.participantDeletedAt)
+	)
+).then(res => res[0]);
+
+if (!participant) {
+	return Astro.redirect("/admin/event/response/" + eventId );
+}
+
+
+
+
+type Question = InferSelectModel<typeof siteSchema.question>;
+type Option = InferSelectModel<typeof siteSchema.option>;
+
+type OptionWithSelection = Option & {
+  isSelected: boolean;
+};
+
+type QuestionWithOptions = Question & {
+  options: OptionWithSelection[];
+};
+
+
+
+const questionsWithOptions = await db.query.question.findMany({
+  where: eq(question.eventId, eventId),
+  with: {
+    options: true,
+  },
+});
+
+
+const participantSubmission = await db.query.submission.findFirst({
+  where: and(
+    eq(submission.participantId, participantId!),
+    eq(submission.eventId, eventId)
+  ),
+  with: {
+    responses: true,
+  },
+});
+
+
+const data: QuestionWithOptions[] = questionsWithOptions.map(q => ({
+  ...q,
+  options: q.options.map(opt => ({
+    ...opt,
+    isSelected: participantSubmission?.responses.some(
+      r => r.questionId === q.questionId && r.optionId === opt.optionId
+    ) || false
+  }))
+}));
+
+---
+
+<TwoColumnLayout title="Submission">
+	<div slot="max-slot" class="h-full">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4  flex flex-col items-center overflow-y-auto">
+			<h1 class="text-xl font-bold items-center">Response review</h1>
+			<div class=" border-b-2 border-primary w-full mt-2 mb-4"></div>
+			<div class="w-full p-8">
+
+			{data.map((entry,Index) =>
+
+			<div class="quiz-question w-full mb-8 border-2 border-primary bg-tertiary rounded-lg p-4 scroll-mt-24 quiz-jump-target hover:scale-[1.02]">
+						<div class=" flex flex-row justify-start gap-4">
+							<div class="question-number shrink-0 text-primary text-lg bg-accent flex justify-center items-center rounded-lg w-10 h-10">
+								{Index + 1}
+							</div>
+
+							<details class="group w-full" open="true">
+								<summary class="list-none cursor-pointer flex justify-between  w-full">
+									<h1 class="text-2xl">{entry.questionTitle}</h1>
+
+									<svg xmlns="http://www.w3.org/2000/svg"
+										class="shrink-0 ml-16 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
+										fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M19 9l-7 7-7-7" />
+									</svg>
+								</summary>
+								<h2 class="text-xl text-secondary mt-2">{entry.questionDescription}</h2>
+							</details>
+
+						</div>
+
+
+						<div class="ml-9 mr-4 mt-6 space-y-4 pl-3 py-3 ">
+
+							{entry.options.map((option, Index) =>
+								{
+									const letter = String.fromCharCode(65 + Index)
+									return ( 
+									<label id={"question-" + entry.questionId}  class={(option.optionKey? 
+										( "status-indicator-success"): ("status-indicator-error")) +
+										" option-item relative scroll-mt-50 flex text-2xl items-start p-3 pl-4 border-2 border-primary rounded-lg cursor-pointer hover-overlay pointer-events-none"}
+									>
+										<input 
+											type={entry.questionType}
+											name={entry.questionId}
+											value={option.optionId}
+											class="mt-[0.40em] w-4 h-4 text-accent text-2xl scale-150 mr-4"
+											checked={option.isSelected}
+										/>
+										<span class="text-xl leading-relaxed inline-flex gap-2 flex-1">
+											{letter}. {option.optionTitle}
+										</span>
+											{option.isSelected && (
+												<div class="absolute top-1 right-2 text-white status-indicator-info border-2 border-primary p-[0.2em] rounded-lg items-center justify-center flex flex-row gap-2">
+													<svg class="w-8 h-8 mt-1 shrink-0" viewBox="0 0 48 48" fill="none">
+														<path
+															d="M42 20V39C42 40.6569 40.6569 42 39 42H9C7.34315 42 6 40.6569 6 39V9C6 7.34315 7.34315 6 9 6H30"
+															stroke="currentColor"
+															stroke-width="4"
+															stroke-linecap="round"
+															stroke-linejoin="round"
+														/>
+														<path
+															d="M16 20L26 28L41 7"
+															stroke="currentColor"
+															stroke-width="4"
+															stroke-linecap="round"
+															stroke-linejoin="round"
+														/>
+													</svg>
+													<span>Answered</span>
+												</div>
+											)}
+									</label>
+									)
+								}
+							)}
+						</div>
+
+
+			</div>
+			)}
+
+			</div>
+		</div>
+
+
+	</div>
+
+	<div slot="min-slot" class="h-full">
+		<div class="border-2 border-primary bg-secondary h-full rounded-xl p-4 flex flex-col items-center">
+			<h1 class="text-xl font-bold items-center">Response Tracker</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+
+			<!-- <h3 class="text-lg font-semibold mt-2 w-full">User</h3> -->
+			<div class="w-full mt-4">
+				<div class=" p-6 bg-tertiary border-2 border-primary rounded-lg flex flex-col">
+					<details class="group relative w-full" name="instruction">
+						<summary class="list-none cursor-pointer flex items-start justify-between">
+
+							<div class=" flex flex-row gap-2 items-center">
+								<div class="shrink-0 text-primary text-lg  bg-accent flex justify-center items-center rounded-lg w-10 h-10 ">
+
+									<svg viewBox="0 0 24 24" class=" w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path d="M5 21C5 17.134 8.13401 14 12 14C15.866 14 19 17.134 19 21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" 
+													stroke="currentColor" 
+													stroke-width="2" 
+													stroke-linecap="round" 
+													stroke-linejoin="round"/>
+									</svg>
+								</div>
+
+								<h1 class="text-xl font-bold ml-2">{participant.participantName }</h1>
+							</div>
+
+							<svg xmlns="http://www.w3.org/2000/svg"
+								class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open:rotate-180 mr-4 mt-0"
+								fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M19 9l-7 7-7-7" />
+							</svg>
+						</summary>
+
+
+								<ul class="list-disc text-primary pl-8 mt-4 text-xl">
+									<li>
+										<span class="text-secondary">Employee ID </span> {participant.participantPayrollId}<br/>
+									</li>
+
+									<li>
+										<span class="text-secondary">Designation </span> {participant.participantDesignation}<br/>
+									</li>
+
+									<li>
+										<span class="text-secondary">Department </span> {participant.participantDepartment}
+									</li>
+
+								</ul>
+					</details>
+
+
+				</div>
+
+			</div>
+				<div class="w-full">
+
+					<div class="w-full flex flex-row justify-between">
+						<h3 class="text-lg font-semibold mt-2">Questions</h3>
+						<span id="question-counter" class="text-lg text-secondary mt-2">0/0</span>
+					</div>
+
+					<div class="border-2 border-primary rounded-lg p-4 mt-2  grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]    gap-2">
+
+						{data.map((question,index) => 
+						<a href={"#question-"+question.questionId}>
+								<div 
+									class={ (question.options.some(option => option.isSelected === true) ?
+										("bg-accent") : ("bg-secondary") )+
+										(" shrink-0 text-primary text-lg bg-secondary hover-overlay flex justify-center items-center rounded-lg w-10 h-10 border border-primary question-chip")}
+											data-question-id={question.questionId}>
+											{index +1 }
+								</div>
+							</a>
+						)}
+
+					</div>
+				</div>
+		</div>
+
+	</div>
+
+</TwoColumnLayout>
