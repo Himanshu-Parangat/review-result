@@ -23,24 +23,6 @@ const allquize = await db.query.question.findMany({
   }
 });
 
-const submission = await db
-  .select()
-  .from(siteSchema.response)
-  .innerJoin(
-    siteSchema.submission,
-    eq(siteSchema.response.submissionId, siteSchema.submission.submissionId)
-  )
-  .where(
-    and(
-      eq(siteSchema.submission.eventId, eventId),
-      isNull(siteSchema.submission.submissionDeletedAt)
-    )
-  )
-  .then(res => res[0]);
-
-if (!submission) {
-  return Astro.redirect("/admin/event");
-}
 
 type Event = InferSelectModel<typeof siteSchema.event>;
 type Submission = InferSelectModel<typeof siteSchema.submission>;

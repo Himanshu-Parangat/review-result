@@ -63,6 +63,9 @@ if (now < scheduledStart) {
 }
 
 
+type SubmitState = "Pending" | "Done" | "Reject"
+let submitState: SubmitState = "Pending";
+
 
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
@@ -73,6 +76,10 @@ if (Astro.request.method === "POST") {
 	for (const [key, value] of formData.entries()) {
 		if (key === "participantId") {
 			participantId = String(value);
+			continue;
+		}
+
+		if (key === "action") {
 			continue;
 		}
 		if (!answers.has(key)) {
@@ -86,6 +93,8 @@ if (Astro.request.method === "POST") {
 
 		if (participantId && answers.size > 0) {
 			try {
+
+
 				const submissionId = generateId()
 				const now = new Date().toISOString();
 				
@@ -148,8 +157,28 @@ if (cookie) {
 }
 
 
+if (participationId) {
+	const existingSubmission = db
+		.select()
+		.from(siteSchema.submission)
+		.where(and(
+			eq(siteSchema.submission.eventId, eventId),
+			eq(siteSchema.submission.participantId, participationId),
+			isNull(siteSchema.submission.submissionDeletedAt)
+		))
+		.get();
+	
+	if (existingSubmission) {
+		submitState = "Done";
+	}
+}
 
 
+if (Astro.url.searchParams.get("submitted") === "1") {
+	submitState = "Done";
+}
+
+const showClosedRoom = eventState === "ENDED" || submitState === "Done";
 ---
 
 {eventState === "WAITING" && (
@@ -163,7 +192,7 @@ if (cookie) {
 )}
 
 
-{eventState === "LIVE" && (
+{eventState === "LIVE" && submitState !== "Done" && (
 	<EventLiveRoom
 		id={event.eventId}
 		participant={participationId!}
@@ -175,12 +204,13 @@ if (cookie) {
 	/>
 )}
 
-
-{eventState === "ENDED" && (
+{showClosedRoom && (
 	<EventClosedRoom
+		Id={event.eventId}
 		Title={event.eventTitle}
 		Description={event.eventDescription}
 		StartAt={event.eventScheduledStartAt}
 		EndAt={event.eventScheduledEndAt}
+		IsSubmitted={submitState === "Done"}
 	/>
 )}

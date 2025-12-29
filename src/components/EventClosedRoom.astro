@@ -2,14 +2,14 @@
 import BaseLayout from "@layouts/BaseLayout.astro"
 import Timestamp from "@components/Timestamp.astro"
 
-const { Id, Title, Description, StartAt, EndAt} = Astro.props
+const { Id, Title, Description, StartAt, EndAt, IsSubmitted} = Astro.props
 
 const registerId = ""
 
 ---
 <BaseLayout title="Register">
 	<div class="h-full mx-[5%] flex flex-col items-center">
-		<h1 class="text-2xl font-bold mb-1">Event is Ended!</h1>
+		<h1 class="text-2xl font-bold mb-1">{ IsSubmitted ? ("Your Response is Recorded!"):("Event is Ended!") }</h1>
 		<h3 class="text-secondary text-sm font-bold mb-2">
 			Please Contact you Organizer for update.
 		</h3>

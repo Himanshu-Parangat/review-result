@@ -62,12 +62,6 @@ if (Astro.request.method === "POST") {
 	if (action === "create") {
 
 
-		console.log("eventId is set to", registerId)
-		console.log("participantName is set to", participantName)
-		console.log("participantPayrollId is set to", participantPayrollId)
-		console.log("participantDepartment is set to", participantDepartment)
-		console.log("participantDesignation is set to", participantDesignation)
-
 		if (!registerId || !participantName || !participantPayrollId || !participantDepartment || !participantDesignation) {
 			registerStatus = "fail"
 			console.warn("Missing required fields. No DB entry created.")
@@ -113,6 +107,29 @@ if (Astro.request.method === "POST") {
 		}
 
 	}
+
+	if (action === "forfeit") {
+  try {
+    // Clear the registration cookie
+    Astro.cookies.delete("registeredForEvent", {
+      path: "/",
+    });
+    
+    // Optional: Mark the participant as withdrawn in the database
+    // if (participantId) {
+    //   await db.update(siteSchema.participant)
+    //     .set({ 
+    //       participantDeletedAt: new Date().toISOString() 
+    //     })
+    //     .where(eq(siteSchema.participant.participantId, participantId));
+    // }
+    
+    return Astro.redirect(`/register?forfeited=1`);
+    
+  } catch (error) {
+    console.error("Error forfeiting registration:", error);
+  }
+}
 }
 
 
