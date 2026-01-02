@@ -470,7 +470,7 @@ if (Astro.request.method === "POST") {
 			quizForm.submit();
 	});
 
-	const editButtons = document.querySelectorAll('[data-title]');
+	const editButtons = document.querySelectorAll('.edit-quiz-trigger');
 	
 	editButtons.forEach(button => {
 		button.addEventListener('click', (e) => {

@@ -136,6 +136,7 @@ const {
 						<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
 					</svg>
 					<span
+						class="edit-quiz-trigger"
 							data-Id={Id}
 						  data-title={title}
 							data-description={description}
@@ -194,25 +195,34 @@ const {
 
 			<div class="flex flex-row gap-3">
 
-				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay active-overlay">
+				<button
+					class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay active-overlay"
+					data-title={title}
+					data-description={description}
+					data-options={JSON.stringify(options.map(opt => opt.text))}
+					onclick='
+					const original = this.textContent;
+					const title = this.dataset.title
+					const description = this.dataset.description
+					const options = JSON.parse(this.dataset.options)
+					const content =
+						`${title}\n${description}\n\n` +
+						options.map((opt, i) => `${i + 1}. ${opt}`).join("\\n")
+					navigator.clipboard.writeText(content);
+					this.querySelector("span").textContent = "Copied!";
 
+					setTimeout(() => {
+						this.querySelector("span").textContent = original;
+					}, 700);
+
+					'
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
 						<rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
 					</svg>
-
 					<span>
-						Copy Content
-					</span>
-				</button>
-
-				<button class="text-lg  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 hover-overlay active-overlay">
-					<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-					</svg>
-					<span>
-						Duplicate
+						Copy Quize
 					</span>
 				</button>
 
