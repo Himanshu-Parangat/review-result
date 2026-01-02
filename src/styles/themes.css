@@ -11,28 +11,33 @@
 
 
 	--hover-overlay: hsla(0, 0%, 0%, 0.08);
+	--button-active-overlay: hsla(0, 0%, 100%, 0.3);
+	--button-bottom-notch: hsla(0, 0%, 0%, 0.6); 
 	--color-border-primary: hsl(255, 10%, 85%);
 
-	--color-text-info: hsl(265,75%,55%);
-	--color-text-success: hsl(145,65%,42%);
-	--color-text-error: hsl(0,85%,70%); 
-	--color-text-warning: hsl(38,90%,55%);
+	--color-text-info: hsl(265, 55%, 48%);
+	--color-text-success: hsl(145, 50%, 38%);
+	--color-text-error: hsl(0, 65%, 55%);
+	--color-text-warning: hsl(38, 65%, 48%);
+
+	--color-button-accent: hsl(215, 58%, 42%);
+	--color-button-info: hsl(265, 58%, 52%);
+	--color-button-success: hsl(145, 52%, 42%);
+	--color-button-error: hsl(0, 68%, 58%);
+	--color-button-warning: hsl(38, 68%, 52%);
 
 
-	--color-background-info: hsla(265,75%,45%,0.12);
-	--color-background-success: hsla(145,65%,35%,0.12);
-	--color-background-error: hsla(0,85%,45%,0.12);
-	--color-background-warning: hsla(38,90%,45%,0.14);
+	--color-tint-info: hsla(265, 55%, 50%, 0.14);
+	--color-tint-success: hsla(145, 50%, 40%, 0.14);
+	--color-tint-error: hsla(0, 65%, 50%, 0.14);
+	--color-tint-warning: hsla(38, 65%, 50%, 0.16);
+	--color-tint-accent: hsla(215, 80%, 55%, 0.14);
 
-	--color-border-info: hsla(265, 75%, 45%, 0.4);
-	--color-border-success: hsla(145, 65%, 35%, 0.4);
-	--color-border-error: hsla(0, 85%, 45%, 0.4); 
-	--color-border-warning: hsla(38, 90%, 45%, 0.4);
-
-	/* --color-text-accent: hsl(215 80% 45%); */
-	/* --color-background-accent: hsl(215 80% 35% / 0.12); */
-	/* --color-border-accent: hsl(215 80% 35% / 0.4); */
-
+	--color-border-info: hsla(265, 55%, 45%, 0.35);
+	--color-border-success: hsla(145, 50%, 35%, 0.35);
+	--color-border-error: hsla(0, 65%, 45%, 0.35);
+	--color-border-warning: hsla(38, 65%, 45%, 0.35);
+	--color-border-accent: hsla(215, 80%, 35%, 0.4);
 }
 
 
@@ -48,8 +53,11 @@
 	--color-background-tertiary: hsl(0, 0%, 13%);  
 	--color-background-accent: hsl(215, 80%, 35%);
 
-	--hover-overlay: hsla(0, 0%, 100%, 0.08);
 	--color-border-primary: hsl(0, 0%, 23%);
+
+	--hover-overlay: hsla(0, 0%, 100%, 0.05);
+	--button-active-overlay: hsla(0, 0%, 100%, 0.3);
+	--button-bottom-notch: hsla(0, 0%, 0%, 0.6); 
 
 	--color-text-info:hsl(265,75%,70%);
 	--color-text-success:hsl(145,65%,65%);
@@ -57,18 +65,21 @@
 	--color-text-warning:hsl(38,90%,70%);
 
 
-	--color-background-info:hsla(265,75%,65%,0.18);
-	--color-background-success:hsla(145,65%,55%,0.18);
-	--color-background-error:hsla(0,85%,65%,0.18);
-	--color-background-warning:hsla(38,90%,65%,0.18);
+	--color-button-accent: hsl(215, 80%, 40%);
+	--color-button-info: hsl(265, 58%, 48%);
+	--color-button-success: hsl(145, 75%, 40%);
+	--color-button-error: hsl(0, 68%, 56%);
+	--color-button-warning: hsl(40, 85%, 59%);
 
+	--color-tint-info:hsla(265,75%,65%,0.18);
+	--color-tint-success:hsla(145,65%,55%,0.18);
+	--color-tint-error:hsla(0,85%,65%,0.18);
+	--color-tint-warning:hsla(38,90%,65%,0.18);
+	--color-tint-accent: hsla(215, 80%, 35%, 0.18);
 
 	--color-border-info:hsla(265,75%,65%,0.45);
 	--color-border-success:hsla(145,65%,55%,0.45);
 	--color-border-error:hsla(0,85%,65%,0.45);
 	--color-border-warning:hsla(38,90%,65%,0.45);
-
-	/* --color-text-accent: hsl(215 80% 70%); */
-	/* --color-background-accent: hsl(215 80% 55% / 0.18); */
-	/* --color-border-accent: hsl(215 80% 55% / 0.45); */
+	--color-border-accent: hsla(215, 80%, 55%, 0.45);
 }

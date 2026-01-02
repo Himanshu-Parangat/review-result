@@ -131,24 +131,27 @@ const data: QuestionWithOptions[] = questionsWithOptions.map(q => ({
 											{letter}. {option.optionTitle}
 										</span>
 											{option.isSelected && (
-												<div class="absolute top-1 right-2 text-white status-indicator-info border-2 border-primary p-[0.2em] rounded-lg items-center justify-center flex flex-row gap-2">
-													<svg class="w-8 h-8 mt-1 shrink-0" viewBox="0 0 48 48" fill="none">
-														<path
-															d="M42 20V39C42 40.6569 40.6569 42 39 42H9C7.34315 42 6 40.6569 6 39V9C6 7.34315 7.34315 6 9 6H30"
-															stroke="currentColor"
-															stroke-width="4"
-															stroke-linecap="round"
-															stroke-linejoin="round"
-														/>
-														<path
-															d="M16 20L26 28L41 7"
-															stroke="currentColor"
-															stroke-width="4"
-															stroke-linecap="round"
-															stroke-linejoin="round"
-														/>
-													</svg>
-													<span>Answered</span>
+											<div class="absolute top-1 right-2 rounded-lg  gap-2">
+													<div class="p-[0.2em] items-center justify-center flex flex-row border-2 rounded-lg status-indicator-accent">
+														<svg class="w-8 h-8 mt-1 shrink-0" viewBox="0 0 48 48" fill="none">
+															<path
+																d="M42 20V39C42 40.6569 40.6569 42 39 42H9C7.34315 42 6 40.6569 6 39V9C6 7.34315 7.34315 6 9 6H30"
+																stroke="currentColor"
+																stroke-width="4"
+																stroke-linecap="round"
+																stroke-linejoin="round"
+															/>
+															<path
+																d="M16 20L26 28L41 7"
+																stroke="currentColor"
+																stroke-width="4"
+																stroke-linecap="round"
+																stroke-linejoin="round"
+															/>
+														</svg>
+														<span>Answered</span>
+
+													</div>
 												</div>
 											)}
 									</label>

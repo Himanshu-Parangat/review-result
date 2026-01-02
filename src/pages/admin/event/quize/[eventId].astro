@@ -226,7 +226,7 @@ if (Astro.request.method === "POST") {
 						class="w-full p-2 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
 						placeholder="Type text or paste options here..." />
 
-					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-6 py-2 border-primary text-lg rounded-lg whitespace-nowrap flex flex-row gap-2 items-center justify-center hover-overlay">
+					<button type="button" id="addOptionBtn" class="border-2 bg-tertiary px-6 py-2 border-primary text-lg rounded-lg whitespace-nowrap flex flex-row gap-2 items-center justify-center hover-overlay active-overlay">
 
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -259,7 +259,7 @@ if (Astro.request.method === "POST") {
 							<line x1="12" y1="16" x2="12.01" y2="16"/>
 						</svg>
 						<p>Editing an existing Entry</p>
-						<button class=" border-2 text-secondary rounded-full text-primary hover:text-(--color-text-error) flex items-center h-6 w-6">
+						<button class=" border-2 text-secondary rounded-full text-primary hover:text-(--color-text-error) flex items-center h-6 w-6 hover-overlay active-overlay">
 								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
 									<line x1="9" y1="9" x2="15" y2="15"/>
 									<line x1="15" y1="9" x2="9" y2="15"/>
@@ -271,7 +271,7 @@ if (Astro.request.method === "POST") {
 					<button
 						id="SubmitQuestionEntry"
 						type="submit"
-						class="w-full p-3 mt-3 rounded-lg bg-accent text-white font-semibold hover:opacity-90 transition"
+						class="w-full p-3 mt-3 rounded-lg text-white button-accent  hover-overlay active-overlay font-semibold"
 					>
 						Set Question
 					</button>
@@ -320,7 +320,7 @@ if (Astro.request.method === "POST") {
 							<span class="ml-3 text-xl text-secondary">${text}</span>
 						</label>
 
-						<button type="button" class="delete-btn flex flex-row whitespace-normal justify-between hover:text-(--color-text-error)">
+						<button type="button" class="delete-btn flex flex-row whitespace-normal justify-between hover:text-(--color-text-error) hover-overlay active-overlay rounded-full">
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<polyline points="3 6 5 6 21 6"/>
 								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>

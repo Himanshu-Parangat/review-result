@@ -7,6 +7,7 @@
 @import "@styles/transitionsEffects.css";
 
 
+/* Foreground background Border */
 @layer utilities{
 	.text-primary { color: var(--color-text-primary); }
 	.text-secondary { color: var(--color-text-secondary); }
@@ -22,38 +23,38 @@
 }
 
 
-/* Status */
+
+/* Status Indicator */
 @layer utilities{
 	.status-indicator-success{
 		color: var(--color-text-success);
-		background-color: var(--color-background-success);
+		background-color: var(--color-tint-success);
 		border-color: var(--color-border-success)
 	}
 
 	.status-indicator-error{
 		color: var(--color-text-error);
-		background-color: var(--color-background-error);
+		background-color: var(--color-tint-error);
 		border-color: var(--color-border-error);
 	}
 
-	/* warrning */
 	.status-indicator-warning{
 	  color: var(--color-text-warning);
-		background-color: var(--color-background-warning);
+		background-color: var(--color-tint-warning);
 		border-color: var(--color-border-warning);
 	}
 
 
 	.status-indicator-info{
 		color: var(--color-text-info);
-		background-color: var(--color-background-info);
+		background-color: var(--color-tint-info);
 		border-color: var(--color-border-info);
 	}
 
 
 	.status-indicator-accent{
 		color: var(--color-text-accent);
-		background-color: var(--color-background-accent);
+		background-color: var(--color-tint-accent);
 		border-color: var(--color-border-accent);
 	}
 
@@ -61,27 +62,114 @@
 
 
 
+/* Buttons */
 @layer utilities{
+	.button-nutral,
+	.button-success,
+	.button-error,
+	.button-warning,
+	.button-info,
+	.button-accent{
+		/* color: white; */
+	}
+
+	
+	.button-success {
+		background-color: var(--color-button-success);
+		border-color: var(--color-border-success);
+	}
+	.button-error {
+		background-color: var(--color-button-error);
+		border-color: var(--color-border-error);
+	}
+	.button-warning {
+		background-color: var(--color-button-warning);
+		border-color: var(--color-border-warning);
+	}
+	.button-info { 
+		background-color: var(--color-button-info);
+		border-color: var(--color-border-info);
+	}
+	.button-accent {
+		background-color: var(--color-button-accent);
+		border-color: var(--color-border-accent);
+	}
+}
+
+
+@layer utilities {
 
 	.hover-overlay {
 		position: relative;
 		overflow: hidden;
 	}
 
-	.hover-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--hover-overlay);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
+	.hover-overlay::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: var(--hover-overlay);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
 		border-radius: inherit;
-  }
+	  z-index: 1;
+	}
 
-	.hover-overlay:hover::after {
-    opacity: 1;
-  }
+	.hover-overlay:hover::before {
+		opacity: 1;
+	}
+
 }
 
 
+
+@layer utilities {
+
+	.active-overlay {
+		position: relative;
+		overflow: hidden;
+		transition: box-shadow 0.15s ease, transform 0.15s ease;
+	}
+
+	.active-overlay:hover{
+		transform: translateY(-4px) scale(1.03);
+		transition: transform 0.15s ease;
+	}
+
+	.active-overlay:active{
+		transform: translateY(-2px) scale(1);
+		transition:transform 0.15s ease;
+	}
+
+	.active-overlay::before{
+		display: none;
+		opacity: 0;
+
+	}
+
+	.active-overlay::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: var(--hover-overlay);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
+		border-radius: inherit;
+	  z-index: 1;
+		box-shadow: 0 6px 12px var(--button-bottom-notch);
+		transform: translateY(-6px);
+	}
+
+	.active-overlay:hover::after {
+		opacity: 1;
+	}
+
+	.active-overlay:active::after {
+		background: var(--button-active-overlay);
+		transform: translateY(-1px);
+		transition: box-shadow 0.15s ease, transform 0.15s ease;
+	}
+
+}
