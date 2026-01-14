@@ -1,0 +1,316 @@
+---
+export const prerender = false;
+import BaseLayout from "@layouts/BaseLayout.astro"
+
+
+type Action = "create" | "reset";
+type props = {
+	TokenId: string
+	TokenAction: Action;
+	TokenRefrence: string;
+	TokenExpire: string;
+};
+
+const { TokenId, TokenAction, TokenRefrence, TokenExpire } = Astro.props as props;
+
+const action = TokenAction
+
+---
+
+<BaseLayout title="Login">
+	<div class="h-full flex w-full flex-col items-center">
+		<div class="border-2 border-primary bg-secondary rounded-lg px-15 py-10 space-y-6 mt-[5%] w-[90%] lg:max-w-[60%]">
+			<h1 class="text-2xl font-bold text-center mb-1">{action === "create" ? "Create Account" : "Reset Account"}</h1>
+			<h3 class="text-secondary text-sm font-bold text-center mb-8">{action === "create" ? "Please provide the Account details" : "Please provide the new Account details."}</h3>
+			<form method="POST" class="">
+				<div class="space-y-8">
+
+						<input type="hidden" name="tokenId" value={TokenId}>
+						<input type="hidden" name="TokenAction" value={TokenAction}>
+						<input type="hidden" name="TokenRefrence" value={TokenRefrence}>
+						<input type="hidden" name="TokenExpire" value={TokenExpire}>
+
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold capitalize mb-2">Payroll</h3>
+
+							<input
+								type="text"
+								name="Payroll"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Enter your Payroll Number..." required />
+						</div>
+
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold capitalize mb-2">User Name</h3>
+
+							<input
+								type="text"
+								name="username"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder={action === "create" ? "Choose a username" : "Enter your current username"} required />
+						</div>
+
+
+					{ action === "create" ? "":
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold capitalize mb-2">Old Password</h3>
+
+							<input
+								type="text"
+								name="oldusername"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Enter your old password" required />
+						</div>
+						}
+
+						<div class="flex-2">
+							<div class="flex flex-row justify-between items-center">
+							<h3 class="text-lg font-semibold mb-2">{action === "create"? "Password" : "New Password"}</h3>
+							<div class="text-secondary font-thin ml-2 hidden">Strength: <span id="passwordStrengthShow" class="font-bold"></span></div>
+
+							</div>
+
+							<input
+								type="text"
+								id="password"
+								name="password"
+								class="w-full p-3 mb-2 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder={action === "create"? "Enter a new password" : "Enter your new password"} required />
+
+
+							<h3 class="text-lg font-semibold mb-2">Confirm Password</h3>
+							<input
+								type="text"
+								id="confirmPassword"
+								name="password"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder={action === "create"? "Re-enter your password" : "Re-enter your new password"} required />
+
+						</div>
+
+				</div>
+
+
+				<div class="mt-8">
+
+
+					<div id="passwordMismatchError" class="status-indicator-error border-2 w-full mb-4 px-8 py-2 font-bold rounded-lg text-center hidden">
+						password Did not match!! Re-enter password again
+					</div>
+
+					<div id="passwordRequirementUnmatched" class="status-indicator-warning border-2 w-full mb-4 px-8 py-2 font-bold rounded-lg text-center hidden">
+						 Password must include uppercase, lowercase, number, special character, and be at least 6 characters long.
+					</div>
+
+
+					<div id="successfulSubmition" class="status-indicator-success border-2 w-full mb-4 px-8 py-2 font-bold rounded-lg text-center hidden">
+						Submission successful, Please try logging in after 24 hours.
+					</div>
+
+					<button
+						class="w-full p-3 rounded-lg font-semibold button-accent text-white active-overlay hover-overlay transition"
+					>
+						Submit
+					</button>
+
+
+				</div>
+			</form>
+
+		</div>
+
+
+
+	</div>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const form = document.querySelector('form') as HTMLFormElement;
+			const passwordInput = document.getElementById('password') as HTMLInputElement;
+			const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+			const errorDiv = document.getElementById('passwordMismatchError') as HTMLDivElement;
+			const passwordRule = {
+				lowercase: /[a-z]/,
+				uppercase: /[A-Z]/,
+				number: /[0-9]/,
+				special: /[$@!%*?&#^(){}\[\]"',<>_-]/,
+				length: /.{6,}/,
+			};
+			const feedBack = {
+				error: 'status-indicator-error',
+				warning: 'status-indicator-warning',
+				success: 'status-indicator-success',
+			} as const;
+
+			const streangthIndicator = document.getElementById(
+				'passwordStrengthShow'
+			) as HTMLSpanElement;
+
+			const strength = {
+				invalid: 'text-(--color-text-error)',
+				weak: 'text-(--color-text-warning)',
+				Strong: 'text-(--color-text-success)'
+			} as const;
+
+
+
+			if (form && passwordInput && confirmPasswordInput && streangthIndicator && errorDiv){
+
+
+				function showFeedback(input: HTMLInputElement, FeedbackType: keyof typeof feedBack) {
+					if (!input) return; input.value = '';
+
+					Object.values(feedBack).forEach((cls) =>
+						input.classList.remove(cls)
+					);
+
+					input.classList.add(feedBack[FeedbackType], 'animate-shake');
+					setTimeout(() => {
+						input.classList.remove(feedBack[FeedbackType], 'animate-shake');
+					}, 4500);
+				}
+
+
+				function isPasswordValid(password: string): boolean {
+
+					return (
+						passwordRule.lowercase.test(password) &&
+						passwordRule.uppercase.test(password) &&
+						passwordRule.number.test(password) &&
+						passwordRule.special.test(password) &&
+						passwordRule.length.test(password)
+					);
+				}
+
+				function isPasswordMatch(password: string, confirmPassword: string): boolean {
+					return password === confirmPassword;
+				}
+
+				function showPasswordRequirementError() {
+					const div = document.getElementById(
+						'passwordRequirementUnmatched'
+					) as HTMLDivElement;
+
+					div.classList.remove('hidden');
+					showFeedback(passwordInput, "warning");
+
+					setTimeout(() => div.classList.add('hidden'), 3500);
+				}
+
+
+
+				function getPasswordStrength(password: string): 'invalid' | 'weak' | 'strong' {
+
+					const isValid =
+						passwordRule.lowercase.test(password) &&
+						passwordRule.uppercase.test(password) &&
+						passwordRule.number.test(password) &&
+						passwordRule.special.test(password) &&
+						passwordRule.length.test(password); // >= 6
+
+					if (!isValid) return 'invalid';
+
+
+						function countMatches(value: string, rule: RegExp): number {
+							const globalRule = new RegExp(rule.source, 'g');
+							return value.match(globalRule)?.length ?? 0;
+						}
+					const specialCount = countMatches(password, passwordRule.special);
+					const numberCount = countMatches(password, passwordRule.number);
+
+					if (password.length >= 8 && specialCount >= 2 || numberCount >= 5) {
+						return 'strong';
+					}
+
+					return 'weak';
+				}
+
+
+				function updatePasswordStrength(password: string) {
+					const container = streangthIndicator.parentElement;
+					if (!container) return;
+
+					if (password.length > 0) {
+						container.classList.remove('hidden');
+					} else {
+						container.classList.add('hidden');
+						return;
+					}
+
+					const result = getPasswordStrength(password);
+
+					streangthIndicator.classList.remove(
+						strength.invalid,
+						strength.weak,
+						strength.Strong
+					);
+
+
+					switch (result) {
+						case 'invalid':
+							streangthIndicator.textContent = 'Invalid';
+							streangthIndicator.classList.add(strength.invalid);
+							break;
+
+						case 'weak':
+							streangthIndicator.textContent = 'Weak';
+							streangthIndicator.classList.add(strength.weak);
+							break;
+
+						case 'strong':
+							streangthIndicator.textContent = 'Strong';
+							streangthIndicator.classList.add(strength.Strong);
+							break;
+					}
+				}
+
+
+				function showPasswordMismatchError() {
+					errorDiv.classList.remove('hidden');
+					showFeedback(confirmPasswordInput, "error");
+
+					setTimeout(() => errorDiv.classList.add('hidden'), 3500);
+				}
+
+				form.addEventListener('submit', (e) => {
+					const password = passwordInput.value;
+					const confirmPassword = confirmPasswordInput.value;
+
+					if (!isPasswordValid(password)) {
+						e.preventDefault();
+						showPasswordRequirementError();
+						return;
+					}
+
+					if (!isPasswordMatch(password, confirmPassword)) {
+						e.preventDefault();
+						showPasswordMismatchError();
+						return;
+					}
+				});
+
+				passwordInput.addEventListener('input', () => {
+					updatePasswordStrength(passwordInput.value);
+				});
+
+			}
+
+
+		});
+	</script>
+
+	<style>
+		@keyframes shake {
+			0%, 100% { transform: translateX(0); }
+			10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+			20%, 40%, 60%, 80% { transform: translateX(5px); }
+		}
+
+		.animate-shake {
+			animation: shake 0.5s ease-in-out;
+		}
+	</style>
+
+
+</BaseLayout>
+
