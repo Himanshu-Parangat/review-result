@@ -1,0 +1,1 @@
+ALTER TABLE `accountToken` ADD `accountUserRefrence` text;

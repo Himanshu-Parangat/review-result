@@ -15,6 +15,23 @@ export const dbIdentity = sqliteTable("dbIdentity", {
 });
 
 
+export const accountToken = sqliteTable("accountToken", {
+	accountTokenHash: text("accountTokenHash").primaryKey(),
+	accountTokenExpireAt: text("accountTokenExpireAt"),
+	accountUserRefrence: text("accountUserRefrence"),
+	accountTokenAction: text("accountTokenAction", {enum: ["create", "reset"]}),
+})
+
+
+export const user = sqliteTable("user", {
+	userId: text("userId").primaryKey(),
+	userPayroll: text("userPayroll"),
+	userName: text("userName"),
+	userHash: text("userHash"),
+	userCreatedAt: text("userCreatedAt"),
+	userIsActive: integer("userIsActive", {mode: "boolean"}).notNull().default(true),
+})
+
 export const event = sqliteTable("event", {
 	eventId: text("eventId").primaryKey(),
 	eventlabel: text("eventlabel"),
