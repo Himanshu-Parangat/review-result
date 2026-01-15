@@ -12,6 +12,7 @@ const navConfig = [
 			{ href: "/", label: "Home" },
 			{ href: "/admin/event", label: "Organize" },
 			{ href: "/admin/status", label: "Status" },
+			{ href: "/admin/manage/account", label: "Account" },
 		],
 	},
 	{
@@ -33,7 +34,7 @@ const activeNav =
 			{activeNav.map((link, index) => (
 				<a
 					href={link.href}
-					class={`px-4 py-2 hover:underline hover-overlay ${
+					class={`px-4 py-2 hover:underline hover-overlay whitespace-nowrap ${
 						index !== activeNav.length - 1
 							? "border-r-2 border-primary"
 							: ""

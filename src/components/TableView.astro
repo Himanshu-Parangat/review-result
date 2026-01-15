@@ -1,0 +1,65 @@
+---
+interface User {
+	userId: string;
+	userName: string;
+	userPassword: string;
+	userDescription: string;
+	userIsActive: boolean;
+	userGroup: string[];
+}
+
+interface Props {
+	dataStream: User[];
+}
+
+const { dataStream } = Astro.props as Props;
+
+import { friendlyDateMessage } from '@utils/TimeUtils';
+---
+
+<div class="overflow-x-auto">
+	<table class="table-auto w-full border-collapse min-w-max">
+		<thead>
+			<tr class="hover-overlay border-2 border-primary bg-tertiary">
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
+				<!-- <th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Id</th> -->
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Name</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Description</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Active</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Group</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Created At</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Password</th>
+				<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Password</th>
+			</tr>
+		</thead>
+		<tbody>
+			{dataStream.map((entry, index) => 
+				<tr class="border-2 border-primary hover-overlay">
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
+					<!-- <td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userId}</td> -->
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Anonimus"}</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"95000221"}</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userName}</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userDescription}</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						{entry.userIsActive ? '✓' : '✗'}
+					</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						{entry.userGroup.join(", ")}
+					</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						{friendlyDateMessage(new Date())}
+					</td>
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userPassword}</td>
+					<td class="gri -> idc - vno -> msc(cs)  p-1 ">
+						<a  target="_blank" rel="noopener noreferrer" href={"/account/reset/" + entry.userId }>
+							<button class="bg-(--color-button-error) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Reset</button>
+						</a>
+					</td>
+				</tr>
+			)}
+		</tbody>
+	</table>
+</div>

@@ -1,0 +1,194 @@
+---
+export const prerender = false
+// import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+import RolePicker from "@components/RolePicker.astro"
+
+import TableView from "@components/TableView.astro";
+
+const allgroups: string[] =  ["Admin", "Health", "HR Human Resource", "Safety", "Training"];
+
+
+const allUSers = [
+
+	{
+		"userId":"yPGT9Zu323zy6NBSDMUjV",
+		"userName": "testuser1",
+		"userPassword": "testuser",
+		"userDescription": "data",
+		"userIsActive": true,
+		"userGroup": ["Safety","Training", "Health"],
+	},
+	{
+		"userId":"XZBChcSoFjBOzt3uJ52uf",
+		"userName": "testuser2",
+		"userPassword": "testuser",
+		"userDescription": "data",
+		"userIsActive": true,
+		"userGroup": ["Safety","Training", "Health"],
+	},
+	{
+		"userId":"CwbcmeLZj4Gsw7h2wMxZt",
+		"userName": "testuser3",
+		"userPassword": "testuser",
+		"userDescription": "data",
+		"userIsActive": true,
+		"userGroup": ["Safety","Training", "Health"],
+	},
+	{
+		"userId":"9jE8Qff56yi0SsbPKCpLm",
+		"userName": "testuser4",
+		"userPassword": "testuser",
+		"userDescription": "data",
+		"userIsActive": true,
+		"userGroup": ["Safety","Training", "Health"],
+	},
+	{
+		"userId":"B1Q8Cbzlv8FNhf4pabXnv",
+		"userName": "testuser5",
+		"userPassword": "testuser",
+		"userDescription": "data",
+		"userIsActive": true,
+		"userGroup": ["Safety","Training", "Health"],
+	}
+
+]
+
+import { generateId } from "@utils/MainUtils";
+import { getDb, siteSchema } from "@db/index";
+
+
+const db = getDb()
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+	const action = formData.get("action") as string;
+
+	console.log("post happens")
+	if (action === "create") {
+
+		console.log("create happens")
+		const oneTimeToken = generateId() + generateId()
+		const userId = generateId()
+		const validity = 30 * 60 * 1000; // 30 min
+		const expiresAt = new Date(Date.now() + validity).toISOString();
+
+		await db.insert(siteSchema.accountToken).values({
+			accountTokenHash: oneTimeToken,
+			accountTokenAction: "create",
+			accountUserRefrence: userId,
+			accountTokenExpireAt: expiresAt,
+		}).returning();
+
+		return Astro.redirect(`/account/create/${oneTimeToken}`);
+
+	} 
+
+
+}
+
+
+
+
+---
+
+<BaseLayout title="Access Control">
+
+	<div class="w-full px-[3%] overflow-auto h-full">
+		<div class="flex flex-col bg-secondary border-2 border-primary rounded-lg h-full px-8 py-2 items-center ">
+			<h1 class="text-xl font-bold items-center">Manage User</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+
+			<div class="mt-4 w-full overflow-x-auto">
+				<table class="table-auto w-full border-collapse min-w-max">
+					<thead>
+						<tr class="hover-overlay border-2 border-primary bg-tertiary">
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
+							<!-- <th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Id</th> -->
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Name</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Description</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Active</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Group</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Created At</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Password</th>
+							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Password</th>
+						</tr>
+					</thead>
+					<tbody>
+							<tr class="border-2 border-primary hover-overlay">
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"1"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Jane Doe"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"92004321"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"JaneDoe"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"For making it new"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"✗"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Training"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Sat, Jan 10, 2026, 5:16 PM"}</td>
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"testuser"}</td>
+
+								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+									<form method="post">
+										<input type="hidden" name="action" value="create" />
+										<button type="submit" class="bg-(--color-button-accent) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary">Create</button>
+									</form>
+								</td>
+							</tr>
+					</tbody>
+				</table>
+			</div>
+
+
+			<div class="overflow-scroll w-full mt-4">
+				<TableView dataStream={allUSers}/>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="flex flex-col bg-secondary border-2 border-primary rounded-lg h-full px-8 py-4 items-center overflow-x-auto" style="display: none;">
+		<h1 class="text-xl font-bold items-center">Add User</h1>
+		<div class="border-b-2 border-primary w-full mt-2"></div>
+			<form method="post" class="flex flex-col w-full mt-2 px-2 h-full">
+				<input type="hidden" name="userId" >
+				<input type="hidden" name="action" value="create">
+
+				<h3 class="text-lg font-semibold mt-2">User Name</h3>
+				<input
+					type="text"
+					name="userName"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+				<h3 class="text-lg font-semibold mt-2">User Password</h3>
+				<input
+					type="text"
+					name="userHash"
+					class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+					placeholder="Type your title here..." required />
+
+				<h3 class="text-lg font-semibold mt-2">User Description</h3>
+
+				<textarea 
+					name="userDescription"
+					rows="4"
+					class="w-full min-h-[14%] mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+					placeholder="Type your answer here..." required></textarea>
+
+				<h3 class="text-lg font-semibold mt-2 mb-2">User Group</h3>
+				<RolePicker groupsList={allgroups}/>
+
+				<button
+					id="doEntry"
+					type="submit"
+					class="w-full p-3 min-h-12 mt-4 rounded-lg  font-bold button-accent text-white active-overlay hover-overlay transition"
+				>
+					Create
+				</button>
+
+			</form>
+
+	</div>
+</BaseLayout>

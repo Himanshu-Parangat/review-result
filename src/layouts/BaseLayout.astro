@@ -37,12 +37,12 @@ const pageTitle = title ? `${title} - ${config.title}` : config.title;
 		</script>
 
 </head>
-<body class="theme-light scrollbar-primary scroll-smooth font-sans">
-	<div class="text-primary bg-primary text-base w-screen h-screen flex flex-col">
+<body class="theme-light scrollbar-primary scroll-smooth font-sans w-screen">
+	<div class="text-primary bg-primary text-base h-screen flex flex-col w-full min-h-screen ">
 		<header class="shrink-0">
 			<NavBar/>
 		</header>
-		<main class="flex-1 overflow-y-auto min-h-0 max-w-[100%]">
+		<main class="flex-1 overflow-y-auto min-h-0 max-w-full">
 				<slot/>
 		</main>
 		<footer class="shrink-0">
