@@ -1,0 +1,60 @@
+---
+export const prerender = false
+
+import AccountManage from "@components/AccountManage.astro"
+import { getDb } from "@db/index";
+import { and, eq, gt } from "drizzle-orm";
+import { accountToken  } from "@db/schema";
+
+
+
+type AccountToken = typeof accountToken.$inferSelect;
+type AccountAction = AccountToken["accountTokenAction"];
+
+
+const { action, tokenId } = Astro.params;
+
+
+const db = getDb()
+
+
+async function getTokenEntry(TokenHash: string | undefined, TokenAction: string | undefined): Promise<AccountToken | undefined> {
+	const TOKEN_FORMAT = /^[A-Za-z0-9]{50}$/;
+
+	const isValidAction = (action: any): action is AccountAction => {
+    return ["create", "reset"].includes(action);
+  };
+
+  if (!TokenAction || !TokenHash || !TOKEN_FORMAT.test(TokenHash) || !isValidAction(TokenAction)) return undefined;
+
+
+  const [entry] = await db
+    .select()
+    .from(accountToken)
+    .where(
+      and(
+        eq(accountToken.accountTokenHash, TokenHash),
+        eq(accountToken.accountTokenAction, TokenAction),
+        gt(accountToken.accountTokenExpireAt, new Date().toISOString())
+      )
+    )
+    .limit(1);
+
+  return entry;
+}
+
+const entry = await getTokenEntry(tokenId, action)
+
+if (!entry) {
+	return Astro.redirect("/", 302);
+}
+
+---
+
+
+<AccountManage 
+	TokenId={entry.accountTokenHash}
+  TokenAction={entry.accountTokenAction}
+  TokenRefrence={entry.accountUserRefrence}
+	TokenExpire={entry.accountTokenExpireAt}
+/>
