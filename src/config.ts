@@ -23,6 +23,14 @@ interface Config {
   /** Base db migration path (./drizzle) */
 	dbMigration: string;
 
+  /** Argon2 memory cost value */
+	hashMemoryCost: number;
+
+  /** Argon2 time cost value */
+	hashComputeTimeCost: number;
+
+  /** Argon2 parallelism value */
+	hashComputeParallelism: number;
 }
 
 
@@ -38,7 +46,12 @@ export const config: Config  = {
 	url : env.PUBLIC_SITE_URL || "https://www.example.com/",
 
 	dbPath : env.PUBLIC_SITE_DB_PATH || "store.db",
-	dbMigration: env.PUBLIC_SITE_DB_MIGRATION_PATH || "drizzle"
+	dbMigration: env.PUBLIC_SITE_DB_MIGRATION_PATH || "drizzle", 
+
+
+	hashMemoryCost: env.HASH_MEMORY_COST || "65536",
+	hashComputeTimeCost: env.HASH_COMPUTE_TIME_COST || "2",
+	hashComputeParallelism: env.HASH_COMPUTE_PARALLELISM || "1"
 }
 
 

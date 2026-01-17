@@ -9,21 +9,22 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.0",
+    "@astrojs/node": "^9.5.1",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/twinkle-star": "^5.2.8",
     "@tailwindcss/vite": "^4.1.17",
-    "astro": "^5.15.8",
+    "argon2": "^0.44.0",
+    "astro": "^5.16.9",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.10.0",
-    "drizzle-kit": "^0.31.7",
+    "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.44.7",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
-    "ts-node": "^10.9.2",
+    "ts-node": "^1.7.1",
     "typescript": "^5.9.3"
   }
 }
