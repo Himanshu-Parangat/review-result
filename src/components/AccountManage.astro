@@ -9,9 +9,12 @@ type props = {
 	TokenAction: Action;
 	TokenRefrence: string;
 	TokenExpire: string;
+
+	existUsername: string | null;
+	existPayroll: string | null;
 };
 
-const { TokenId, TokenAction, TokenRefrence, TokenExpire } = Astro.props as props;
+const { TokenId, TokenAction, TokenRefrence, TokenExpire, existUsername, existPayroll } = Astro.props as props;
 
 const action = TokenAction
 
@@ -25,7 +28,7 @@ const action = TokenAction
 			<form method="POST" class="">
 				<div class="space-y-8">
 
-						<input type="hidden" name="tokenId" value={TokenId}>
+						<input type="hidden" name="TokenId" value={TokenId}>
 						<input type="hidden" name="TokenAction" value={TokenAction}>
 						<input type="hidden" name="TokenRefrence" value={TokenRefrence}>
 						<input type="hidden" name="TokenExpire" value={TokenExpire}>
@@ -36,6 +39,8 @@ const action = TokenAction
 							<input
 								type="text"
 								name="Payroll"
+								value={existPayroll || ""}
+								readonly={action === "reset" && existPayroll}
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 								placeholder="Enter your Payroll Number..." required />
 						</div>
@@ -45,7 +50,9 @@ const action = TokenAction
 
 							<input
 								type="text"
-								name="username"
+								name="Username"
+								value={existUsername || ""}
+								readonly={action === "reset" &&  existUsername}
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 								placeholder={action === "create" ? "Choose a username" : "Enter your current username"} required />
 						</div>
@@ -57,7 +64,7 @@ const action = TokenAction
 
 							<input
 								type="text"
-								name="oldusername"
+								name="OldUsername"
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 								placeholder="Enter your old password" required />
 						</div>
@@ -65,7 +72,24 @@ const action = TokenAction
 
 						<div class="flex-2">
 							<div class="flex flex-row justify-between items-center">
-							<h3 class="text-lg font-semibold mb-2">{action === "create"? "Password" : "New Password"}</h3>
+
+							<div class="flex flex-row items-center gap-2 group relative">
+									<h3 class="text-lg font-semibold mb-2">
+											{action === "create" ? "Password" : "New Password"}
+									</h3>
+
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-accent -translate-y-1 cursor-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"/>
+											<line x1="12" y1="8" x2="12" y2="12"/>
+											<line x1="12" y1="16" x2="12.01" y2="16"/>
+									</svg>
+
+									<div class="absolute bottom-full left-12 mb-2 hidden group-hover:block w-64 p-2 bg-secondary text-primary text-xs rounded-lg shadow-xl border border-primary z-50">
+											Password must include uppercase, lowercase, number, special character, and be at least 6 characters long.
+											<div class="absolute top-full left-4 border-8 border-transparent border-t-secondary"></div>
+									</div>
+							</div>
+
 							<div class="text-secondary font-thin ml-2 hidden">Strength: <span id="passwordStrengthShow" class="font-bold"></span></div>
 
 							</div>
@@ -73,16 +97,17 @@ const action = TokenAction
 							<input
 								type="text"
 								id="password"
-								name="password"
+								name="Password"
 								class="w-full p-3 mb-2 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 								placeholder={action === "create"? "Enter a new password" : "Enter your new password"} required />
 
 
 							<h3 class="text-lg font-semibold mb-2">Confirm Password</h3>
+								<!-- onpaste="return false;" -->
 							<input
 								type="text"
 								id="confirmPassword"
-								name="password"
+								name="ConfirmPassword"
 								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
 								placeholder={action === "create"? "Re-enter your password" : "Re-enter your new password"} required />
 
