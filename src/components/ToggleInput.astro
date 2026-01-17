@@ -1,0 +1,50 @@
+---
+
+interface Props {
+	name: string;
+  id?: string;
+  checked?: boolean;
+  disabled?: boolean;
+	onclick?: string;
+}
+
+
+const { id, name, checked, disabled, onclick } = Astro.props as Props;
+
+
+---
+
+
+<label class="group">
+	<input 
+		id={id}
+		type="checkbox"
+		name={name}
+		class="scale-110 peer sr-only"
+		checked={checked}
+		disabled={disabled}
+		onclick={onclick}
+	>
+
+	<div class="
+		relative group inline-block rounded-full h-6 w-12 border-2 border-primary
+		bg-(--color-background-primary) peer-checked:bg-(--color-background-accent) peer-disabled:bg-(--color-border-primary) 
+		hover:scale-110 transition-colors duration-300
+	">
+
+		<div class="absolute size-6 rounded-full border-2 border-primary
+			bg-tertiary inline-flex items-center justify-center -translate-y-0.5  
+			-translate-x-0.5 group-has-checked:translate-x-6
+			transition-transform duration-300">
+
+			<span class="text-xs font-semibold text-secondary
+					group-has-checked:hidden block">✗</span>
+			<span class="text-xs font-semibold text-secondary
+					group-has-checked:block hidden">✓</span>
+		
+		</div>
+
+
+	</div>
+
+</label>
