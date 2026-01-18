@@ -1,83 +1,39 @@
 ---
 export const prerender = false
-// import TwoColumnLayout from "@layouts/TwoColumnLayout.astro"
 import BaseLayout from "@layouts/BaseLayout.astro";
 
-import RolePicker from "@components/RolePicker.astro"
-
-import TableView from "@components/TableView.astro";
-
-const allgroups: string[] =  ["Admin", "Health", "HR Human Resource", "Safety", "Training"];
-
-
-const allUSers = [
-
-	{
-		"userId":"yPGT9Zu323zy6NBSDMUjV",
-		"userName": "testuser1",
-		"userPassword": "testuser",
-		"userDescription": "data",
-		"userIsActive": true,
-		"userGroup": ["Safety","Training", "Health"],
-	},
-	{
-		"userId":"XZBChcSoFjBOzt3uJ52uf",
-		"userName": "testuser2",
-		"userPassword": "testuser",
-		"userDescription": "data",
-		"userIsActive": true,
-		"userGroup": ["Safety","Training", "Health"],
-	},
-	{
-		"userId":"CwbcmeLZj4Gsw7h2wMxZt",
-		"userName": "testuser3",
-		"userPassword": "testuser",
-		"userDescription": "data",
-		"userIsActive": true,
-		"userGroup": ["Safety","Training", "Health"],
-	},
-	{
-		"userId":"9jE8Qff56yi0SsbPKCpLm",
-		"userName": "testuser4",
-		"userPassword": "testuser",
-		"userDescription": "data",
-		"userIsActive": true,
-		"userGroup": ["Safety","Training", "Health"],
-	},
-	{
-		"userId":"B1Q8Cbzlv8FNhf4pabXnv",
-		"userName": "testuser5",
-		"userPassword": "testuser",
-		"userDescription": "data",
-		"userIsActive": true,
-		"userGroup": ["Safety","Training", "Health"],
-	}
-
-]
-
 import { generateId } from "@utils/MainUtils";
-import { getDb, siteSchema } from "@db/index";
+import { getDb } from "@db/index";
+import { account, accountToken } from "@db/schema";
+import {  eq, gt, isNull, sql } from "drizzle-orm";
 
+
+import ToggleInput from '@components/ToggleInput.astro';
+import RolePicker from '@components/RolePicker.astro';
+import { friendlyDateMessage } from "@utils/TimeUtils";
 
 const db = getDb()
+
+const accounts = db.select()
+	.from(account)
+	.where(isNull(account.accountDeletedAt)).all()
+
 
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
 	const action = formData.get("action") as string;
+	const userId = formData.get("userId") as string;
 
-	console.log("post happens")
 	if (action === "create") {
 
-		console.log("create happens")
 		const oneTimeToken = generateId() + generateId()
-		const userId = generateId()
 		const validity = 30 * 60 * 1000; // 30 min
 		const expiresAt = new Date(Date.now() + validity).toISOString();
 
-		await db.insert(siteSchema.accountToken).values({
+		await db.insert(accountToken).values({
 			accountTokenHash: oneTimeToken,
 			accountTokenAction: "create",
-			accountUserRefrence: userId,
+			accountUserRefrence: generateId(),
 			accountTokenExpireAt: expiresAt,
 		}).returning();
 
@@ -86,63 +42,200 @@ if (Astro.request.method === "POST") {
 	} 
 
 
+	if (action === "reset") {
+
+		const oneTimeToken = generateId() + generateId()
+		const validity = 30 * 60 * 1000; // 30 min
+		const expiresAt = new Date(Date.now() + validity).toISOString();
+
+		await db.insert(accountToken).values({
+			accountTokenHash: oneTimeToken,
+			accountTokenAction: "reset",
+			accountUserRefrence: userId,
+			accountTokenExpireAt: expiresAt,
+		}).returning();
+
+		return Astro.redirect(`/account/reset/${oneTimeToken}`);
+
+	} 
+
+
+	if (action === "delete") {
+		console.log("deletion request for", formData)
+
+		await db.update(account)
+		.set({
+			accountDeletedAt: new Date().toISOString()
+		}).where(eq(account.accountId, userId ))
+
+		return Astro.redirect("/admin/manage/account?deleted=1");
+	}
+
+
+	if (action === "toggleStatus") {
+
+		await db.update(account)
+			.set({
+				accountIsActive: sql`NOT ${account.accountIsActive}`
+			}).where(eq(account.accountId, userId ))
+
+		return Astro.redirect("/admin/manage/account?toggleStatus=1");
+	}
+
+
 }
 
 
+const allgroups: string[] =  ["Admin", "Health", "HR Human Resource", "Safety", "Training"];
+const accountTokens = db.select().from(accountToken)
+    .where(
+			gt(accountToken.accountTokenExpireAt, new Date().toISOString())
+    ).all();
+
+
+const createCount = accountTokens.filter(t => t.accountTokenAction === 'create').length;
+const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').length;
 
 
 ---
 
-<BaseLayout title="Access Control">
+<BaseLayout title="Manage Account">
 
 	<div class="w-full px-[3%] overflow-auto h-full">
 		<div class="flex flex-col bg-secondary border-2 border-primary rounded-lg h-full px-8 py-2 items-center ">
-			<h1 class="text-xl font-bold items-center">Manage User</h1>
+			<h1 class="text-xl font-bold items-center">Manage Account</h1>
 			<div class="border-b-2 border-primary w-full mt-2"></div>
 
-			<div class="mt-4 w-full overflow-x-auto">
-				<table class="table-auto w-full border-collapse min-w-max">
-					<thead>
-						<tr class="hover-overlay border-2 border-primary bg-tertiary">
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
-							<!-- <th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Id</th> -->
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Name</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Description</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Active</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Group</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Created At</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Password</th>
-							<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Password</th>
-						</tr>
-					</thead>
-					<tbody>
-							<tr class="border-2 border-primary hover-overlay">
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"1"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Jane Doe"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"92004321"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"JaneDoe"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"For making it new"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"✗"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Training"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Sat, Jan 10, 2026, 5:16 PM"}</td>
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"testuser"}</td>
+			<div class="w-full overflow-x-auto">
 
-								<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-									<form method="post">
-										<input type="hidden" name="action" value="create" />
-										<button type="submit" class="bg-(--color-button-accent) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary">Create</button>
-									</form>
-								</td>
-							</tr>
-					</tbody>
-				</table>
+				<div class="flex flex-row gap-2 items-center w-full justify-end px-4 py-2  ">
+
+					{ resetCount > 0 &&
+						<div class="status-indicator-error border-2 px-4 py-1 rounded-lg">Reset Request { resetCount } </div>
+					}
+
+					{ createCount > 0 &&
+						<div class="status-indicator-accent border-2 px-4 py-1 rounded-lg">Creation Request { createCount } </div>
+					}
+
+					<form method="post">
+						<input type="hidden" name="action" value="create" />
+						<button type="submit" class="bg-(--color-button-accent) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary">Create Account</button>
+					</form>
+				</div>
+
+				<div class="border-b-2 border-primary w-full "></div>
+
+				<!-- <table class="table-auto w-full border-collapse min-w-max mt-2"> -->
+				<!-- 	<thead> -->
+				<!-- 		<tr class="hover-overlay border-2 border-primary bg-tertiary"> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account Id</th> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Name</th> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Is Active</th> -->
+				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Created At</th> -->
+				<!-- 		</tr> -->
+				<!-- 	</thead> -->
+				<!-- 	<tbody> -->
+				<!-- 			<tr class="border-2 border-primary hover-overlay"> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"1"}</td> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"qrreg5bf8zdsk1guytxu9m8oc"}</td> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"testuser1"}</td> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"92004321"}</td> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap"><ToggleInput name={"sd"} checked={false} /></td> -->
+				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Sat, Jan 10, 2026, 5:16 PM"}</td> -->
+				<!-- 			</tr> -->
+				<!-- 	</tbody> -->
+				<!-- </table> -->
 			</div>
 
 
 			<div class="overflow-scroll w-full mt-4">
-				<TableView dataStream={allUSers}/>
+
+				<div class="overflow-x-auto">
+					<table class="table-auto w-full border-collapse min-w-max">
+						<thead>
+							<tr class="hover-overlay border-2 border-primary bg-tertiary">
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account Id</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Username</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Is Active</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Created At</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Updated At</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Group</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Password</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account</th>
+							</tr>
+						</thead>
+						<tbody>
+							{accounts.map((entry, index) => 
+								<tr class="border-2 border-primary hover-overlay">
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.accountId || ""}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.accountUserName || "Some User"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userPayroll || "Missing"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+
+									{entry.accountId ?
+										<form method="post">
+											<input type="hidden" name="action" value="toggleStatus" />
+											<input type="hidden" name="userId" value={entry.accountId} />
+										<!-- do submit -->
+										<ToggleInput
+											name={entry.accountId}
+											checked={entry.accountIsActive}
+											onclick={`return confirm('Are you sure you want to ${entry.accountIsActive ? 'disable' : 'enable'} this account?') && this.form.submit()`}
+										/>
+										</form> :
+
+									<ToggleInput name={""} checked={entry.accountIsActive || false} disabled={true} />
+
+									}
+									</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+										{entry.accountCreatedAt ? friendlyDateMessage(entry.accountCreatedAt) : ""}
+									</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+										{entry.accountUpdatedAt ? friendlyDateMessage(entry.accountUpdatedAt) : ""}
+									</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+										<RolePicker groupsList={allgroups}/>
+									</td>
+									<td class=" p-1 ">
+									{entry.accountId ?
+										<form method="post">
+											<input type="hidden" name="action" value="reset" />
+											<input type="hidden" name="userId" value={entry.accountId} />
+											<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Reset</button>
+										</form> :
+
+										<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
+
+									}
+									</td>
+
+
+									<td class=" p-1 ">
+									{entry.accountId ?
+										<form method="post"
+											onsubmit="return confirm('Are you sure you want to delete the account')"
+										>
+											<input type="hidden" name="action" value="delete" />
+											<input type="hidden" name="userId" value={entry.accountId} />
+											<button type="submit" class="bg-(--color-button-error) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Delete</button>
+										</form> :
+
+										<button type="reset" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
+
+									}
+									</td>
+								</tr>
+							)}
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -178,7 +271,7 @@ if (Astro.request.method === "POST") {
 					placeholder="Type your answer here..." required></textarea>
 
 				<h3 class="text-lg font-semibold mt-2 mb-2">User Group</h3>
-				<RolePicker groupsList={allgroups}/>
+				<!-- <RolePicker groupsList={allgroups}/> -->
 
 				<button
 					id="doEntry"
