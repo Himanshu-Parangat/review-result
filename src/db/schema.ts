@@ -18,18 +18,33 @@ export const dbIdentity = sqliteTable("dbIdentity", {
 export const accountToken = sqliteTable("accountToken", {
 	accountTokenHash: text("accountTokenHash").primaryKey(),
 	accountTokenExpireAt: text("accountTokenExpireAt"),
-	accountUserRefrence: text("accountUserRefrence"),
 	accountTokenAction: text("accountTokenAction", {enum: ["create", "reset"]}),
+
+
+	accountUserRefrence: text("accountUserRefrence"),
+	// Note: Do not make account.accountUserRefrence a Fk, to account.accountId 
+	// account.accountUserRefrence is Deliberately not a foreign key. to account.accountId
+	// During account creation, tokens are generated before the account row exists,
+	// so enforcing a FK would break that flow. app logic share the same value acting as a Fk.
+
 })
 
 
-export const user = sqliteTable("user", {
-	userId: text("userId").primaryKey(),
+export const account = sqliteTable("account", {
+
 	userPayroll: text("userPayroll"),
-	userName: text("userName"),
-	userHash: text("userHash"),
-	userCreatedAt: text("userCreatedAt"),
-	userIsActive: integer("userIsActive", {mode: "boolean"}).notNull().default(true),
+
+	accountId: text("accountId").primaryKey(), 
+	// accountId is Referenced by accountToken.accountUserRefrence
+
+	accountUserName: text("accountUserName"),
+	accountHash: text("accountHash"),
+
+	accountCreatedAt: text("accountCreatedAt"),
+	accountUpdatedAt : text("accountUpdatedAt"),
+	accountDeletedAt: text("accountDeletedAt"),
+
+	accountIsActive: integer("accountIsActive", {mode: "boolean"}).notNull().default(true),
 })
 
 export const event = sqliteTable("event", {

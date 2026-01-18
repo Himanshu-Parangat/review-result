@@ -3,13 +3,17 @@ export const prerender = false
 
 import AccountManage from "@components/AccountManage.astro"
 import { getDb } from "@db/index";
-import { and, eq, gt } from "drizzle-orm";
-import { accountToken  } from "@db/schema";
+import { and, eq, gt, lt, or } from "drizzle-orm";
+import { account, accountToken } from "@db/schema";
+import { hashPassword } from "@utils/HashUtils";
+import { generateId } from "@utils/MainUtils";
 
 
 
+type Account = typeof account.$inferSelect;
 type AccountToken = typeof accountToken.$inferSelect;
 type AccountAction = AccountToken["accountTokenAction"];
+type JoinedTokenEntry = { accountToken: AccountToken; account: Account | null; };
 
 
 const { action, tokenId } = Astro.params;
@@ -17,13 +21,12 @@ const { action, tokenId } = Astro.params;
 
 const db = getDb()
 
+const isValidAction = (action: any): action is AccountAction => {
+	return ["create", "reset"].includes(action);
+};
 
-async function getTokenEntry(TokenHash: string | undefined, TokenAction: string | undefined): Promise<AccountToken | undefined> {
+async function getTokenEntry(TokenHash: string | undefined, TokenAction: string | undefined): Promise<JoinedTokenEntry | undefined> {
 	const TOKEN_FORMAT = /^[A-Za-z0-9]{50}$/;
-
-	const isValidAction = (action: any): action is AccountAction => {
-    return ["create", "reset"].includes(action);
-  };
 
   if (!TokenAction || !TokenHash || !TOKEN_FORMAT.test(TokenHash) || !isValidAction(TokenAction)) return undefined;
 
@@ -31,6 +34,7 @@ async function getTokenEntry(TokenHash: string | undefined, TokenAction: string 
   const [entry] = await db
     .select()
     .from(accountToken)
+		.leftJoin(account, eq(accountToken.accountUserRefrence, account.accountId))
     .where(
       and(
         eq(accountToken.accountTokenHash, TokenHash),
@@ -49,12 +53,112 @@ if (!entry) {
 	return Astro.redirect("/", 302);
 }
 
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+
+  const action = formData.get("TokenAction") as AccountAction;
+	const tokenId = formData.get("TokenId") as string;
+  const tokenRefrence = formData.get("TokenRefrence") as string;
+  const tokenExpire = formData.get("TokenExpire") as string;
+  const payroll = formData.get("Payroll") as string;
+  const username = formData.get("Username") as string;
+  const password = formData.get("Password") as string;
+  const confirmPassword = formData.get("ConfirmPassword") as string;
+
+	if (
+		!tokenId ||
+		!tokenRefrence ||
+		!tokenExpire || 
+		!username || 
+		!payroll || 
+		!password ||
+		password !== confirmPassword ||
+		!action||
+		!isValidAction(action)
+	) {
+		return Astro.redirect("/", 302);
+	}
+
+	const tokenEntry = await getTokenEntry(tokenId, action);
+  if (!tokenEntry) {
+    return Astro.redirect("/", 302);
+  }
+
+	console.log("data", formData)
+
+	if (action === "create") {
+
+		const passwordHash = await hashPassword(password);
+
+		db.transaction((tx) => {
+			tx.insert(account).values({
+				userPayroll: payroll,
+				accountId: generateId(),
+				accountUserName: username,
+				accountHash: passwordHash,
+				accountCreatedAt: new Date().toISOString(),
+				accountIsActive: false,
+			}).run();
+
+			tx.delete(accountToken)
+				.where(
+					or(
+						eq(accountToken.accountTokenHash, tokenId),
+						lt(accountToken.accountTokenExpireAt, new Date().toISOString())
+					)
+				).run();
+
+		});
+
+		return Astro.redirect("/",302)
+
+	}
+
+
+	if (action === "reset"){
+
+		const newPasswordHash = await hashPassword(password);
+
+
+		db.transaction((tx) => {
+			tx.update(account).set({
+				// userName: username, // maybe
+				accountHash: newPasswordHash,
+				accountUpdatedAt: new Date().toISOString()
+			}).where(eq(account.accountId, tokenRefrence)).run();
+
+			tx.delete(accountToken)
+				.where(
+					or(
+						eq(accountToken.accountTokenHash, tokenId),
+						lt(accountToken.accountTokenExpireAt, new Date().toISOString())
+					)
+				).run();
+
+
+		});
+
+		return Astro.redirect("/",302)
+
+	}
+
+
+}
+
+
+
+
+
 ---
 
 
 <AccountManage 
-	TokenId={entry.accountTokenHash}
-  TokenAction={entry.accountTokenAction}
-  TokenRefrence={entry.accountUserRefrence}
-	TokenExpire={entry.accountTokenExpireAt}
+	TokenId={entry.accountToken.accountTokenHash}
+  TokenAction={entry.accountToken.accountTokenAction}
+  TokenRefrence={entry.accountToken.accountUserRefrence}
+	TokenExpire={entry.accountToken.accountTokenExpireAt}
+
+	existUsername={entry.account?.accountUserName}
+	existPayroll={entry.account?.userPayroll}
 />
