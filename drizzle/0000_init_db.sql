@@ -1,3 +1,37 @@
+CREATE TABLE `access` (
+	`accessId` text PRIMARY KEY NOT NULL,
+	`accountId` text NOT NULL,
+	`groupId` text NOT NULL,
+	`accessCanView` integer,
+	`accessCanCreate` integer,
+	`accessCanDelete` integer,
+	`accessCanExport` integer,
+	`accessCanRestore` integer,
+	`accessCreatedAt` text,
+	`accessUpdatedAt` text,
+	`accessDeletedAt` text,
+	FOREIGN KEY (`accountId`) REFERENCES `account`(`accountId`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`groupId`) REFERENCES `group`(`groupId`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `account` (
+	`userPayroll` text,
+	`accountId` text PRIMARY KEY NOT NULL,
+	`accountUserName` text,
+	`accountHash` text,
+	`accountCreatedAt` text,
+	`accountUpdatedAt` text,
+	`accountDeletedAt` text,
+	`accountIsActive` integer DEFAULT true NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `accountToken` (
+	`accountTokenHash` text PRIMARY KEY NOT NULL,
+	`accountTokenExpireAt` text,
+	`accountTokenAction` text,
+	`accountUserRefrence` text
+);
+--> statement-breakpoint
 CREATE TABLE `dbIdentity` (
 	`dbId` text PRIMARY KEY NOT NULL,
 	`dbLabel` text,
@@ -21,6 +55,16 @@ CREATE TABLE `event` (
 	`eventIsPinned` integer DEFAULT false NOT NULL,
 	`dbId` text NOT NULL,
 	FOREIGN KEY (`dbId`) REFERENCES `dbIdentity`(`dbId`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `group` (
+	`groupId` text PRIMARY KEY NOT NULL,
+	`grouplabel` text,
+	`groupName` text,
+	`groupDescription` text,
+	`groupCreatedAt` text,
+	`groupUpdatedAt` text,
+	`groupDeletedAt` text
 );
 --> statement-breakpoint
 CREATE TABLE `option` (
@@ -77,6 +121,16 @@ CREATE TABLE `response` (
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`submissionId`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `session` (
+	`sessionId` text PRIMARY KEY NOT NULL,
+	`sessionToken` text,
+	`sessionCreatedAt` text,
+	`sessionUpdatedAt` text,
+	`sessionDeletedAt` text,
+	`accountId` text NOT NULL,
+	FOREIGN KEY (`accountId`) REFERENCES `account`(`accountId`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `submission` (
 	`submissionId` text PRIMARY KEY NOT NULL,
 	`submissionCreatedAt` text,
@@ -86,4 +140,11 @@ CREATE TABLE `submission` (
 	`participantId` text NOT NULL,
 	FOREIGN KEY (`eventId`) REFERENCES `event`(`eventId`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`participantId`) REFERENCES `participant`(`participantId`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `user` (
+	`userName` text,
+	`userPayroll` text,
+	`userDesignation` text,
+	`userDepartment` text
 );

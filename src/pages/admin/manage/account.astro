@@ -4,7 +4,7 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 
 import { generateId } from "@utils/MainUtils";
 import { getDb } from "@db/index";
-import { account, accountToken } from "@db/schema";
+import { account, accountToken, user } from "@db/schema";
 import {  eq, gt, isNull, sql } from "drizzle-orm";
 
 
@@ -16,6 +16,7 @@ const db = getDb()
 
 const accounts = db.select()
 	.from(account)
+	.leftJoin(user, eq(account.userPayroll, user.userPayroll))
 	.where(isNull(account.accountDeletedAt)).all()
 
 
@@ -158,9 +159,10 @@ const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').l
 						<thead>
 							<tr class="hover-overlay border-2 border-primary bg-tertiary">
 								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account Id</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Username</th>
 								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Name</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Department</th>
+								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Username</th>
 								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Is Active</th>
 								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Created At</th>
 								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Updated At</th>
@@ -173,41 +175,42 @@ const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').l
 							{accounts.map((entry, index) => 
 								<tr class="border-2 border-primary hover-overlay">
 									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.accountId || ""}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.accountUserName || "Some User"}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userPayroll || "Missing"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.account.userPayroll || "Missing"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.user?.userName || "Missing"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.user?.userDepartment || "Missing"}</td>
+									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.account.accountUserName || "Some User"}</td>
 									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
 
-									{entry.accountId ?
+									{entry.account.accountId ?
 										<form method="post">
 											<input type="hidden" name="action" value="toggleStatus" />
-											<input type="hidden" name="userId" value={entry.accountId} />
+											<input type="hidden" name="userId" value={entry.account.accountId} />
 										<!-- do submit -->
 										<ToggleInput
-											name={entry.accountId}
-											checked={entry.accountIsActive}
-											onclick={`return confirm('Are you sure you want to ${entry.accountIsActive ? 'disable' : 'enable'} this account?') && this.form.submit()`}
+											name={entry.account.accountId}
+											checked={entry.account.accountIsActive}
+											onclick={`return confirm('Are you sure you want to ${entry.account.accountIsActive ? 'disable' : 'enable'} this account?') && this.form.submit()`}
 										/>
 										</form> :
 
-									<ToggleInput name={""} checked={entry.accountIsActive || false} disabled={true} />
+									<ToggleInput name={""} checked={entry.account.accountIsActive || false} disabled={true} />
 
 									}
 									</td>
 									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-										{entry.accountCreatedAt ? friendlyDateMessage(entry.accountCreatedAt) : ""}
+										{entry.account.accountCreatedAt ? friendlyDateMessage(entry.account.accountCreatedAt) : ""}
 									</td>
 									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-										{entry.accountUpdatedAt ? friendlyDateMessage(entry.accountUpdatedAt) : ""}
+										{entry.account.accountUpdatedAt ? friendlyDateMessage(entry.account.accountUpdatedAt) : ""}
 									</td>
 									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
 										<RolePicker groupsList={allgroups}/>
 									</td>
 									<td class=" p-1 ">
-									{entry.accountId ?
+									{entry.account.accountId ?
 										<form method="post">
 											<input type="hidden" name="action" value="reset" />
-											<input type="hidden" name="userId" value={entry.accountId} />
+											<input type="hidden" name="userId" value={entry.account.accountId} />
 											<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Reset</button>
 										</form> :
 
@@ -218,12 +221,12 @@ const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').l
 
 
 									<td class=" p-1 ">
-									{entry.accountId ?
+									{entry.account.accountId ?
 										<form method="post"
 											onsubmit="return confirm('Are you sure you want to delete the account')"
 										>
 											<input type="hidden" name="action" value="delete" />
-											<input type="hidden" name="userId" value={entry.accountId} />
+											<input type="hidden" name="userId" value={entry.account.accountId} />
 											<button type="submit" class="bg-(--color-button-error) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Delete</button>
 										</form> :
 

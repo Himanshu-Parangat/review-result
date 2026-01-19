@@ -47,6 +47,69 @@ export const account = sqliteTable("account", {
 	accountIsActive: integer("accountIsActive", {mode: "boolean"}).notNull().default(true),
 })
 
+export const user = sqliteTable("user", {
+	userName: text("userName"),
+	userPayroll: text("userPayroll"),
+	userDesignation: text("userDesignation"),
+	userDepartment: text("userDepartment"),
+})
+
+export const group = sqliteTable("group", {
+	groupId: text("groupId").primaryKey(),
+	grouplabel: text("grouplabel"),
+
+	groupName: text("groupName"),
+	groupDescription: text("groupDescription"),
+
+	groupCreatedAt:text("groupCreatedAt"),
+	groupUpdatedAt : text("groupUpdatedAt"),
+	groupDeletedAt: text("groupDeletedAt"),
+})
+
+
+
+export const access = sqliteTable("access", {
+	accessId: text("accessId").primaryKey(),
+	accountId: text("accountId").notNull().references(() => account.accountId),
+	groupId: text("groupId").notNull().references(() => group.groupId),
+
+
+	accessCanView: integer("accessCanView", {mode: "boolean"}),
+	accessCanCreate: integer("accessCanCreate", {mode: "boolean"}),
+	accessCanDelete: integer("accessCanDelete", {mode: "boolean"}),
+	accessCanExport: integer("accessCanExport", {mode: "boolean"}),
+	accessCanRestore: integer("accessCanRestore", {mode: "boolean"}),
+
+
+	accessCreatedAt:text("accessCreatedAt"),
+	accessUpdatedAt : text("accessUpdatedAt"),
+	accessDeletedAt: text("accessDeletedAt"),
+})
+
+
+export const session = sqliteTable("session", {
+	sessionId: text("sessionId").primaryKey(),
+
+	sessionToken: text("sessionToken"),
+	sessionCreatedAt: text("sessionCreatedAt"),
+	sessionUpdatedAt : text("sessionUpdatedAt"),
+	sessionDeletedAt: text("sessionDeletedAt"),
+
+	accountId: text("accountId").notNull().references(() => account.accountId),
+})
+
+
+// export const token = sqliteTable("token", {
+// 	tokenId: text().primaryKey(),
+// 	tokenCreatedAt: text("tokenCreatedAt"),
+// 	tokenExpiresAt: text("tokenExpiresAt"),
+// 	tokenLastUsedAt: text("tokenLastUsedAt"),
+//
+// 	userId: text("userId").notNull().references(() => user.userId),
+//
+// })
+
+
 export const event = sqliteTable("event", {
 	eventId: text("eventId").primaryKey(),
 	eventlabel: text("eventlabel"),
