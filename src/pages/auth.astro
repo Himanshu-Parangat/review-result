@@ -1,0 +1,151 @@
+---
+export const prerender = false;
+const url = new URL(Astro.request.url);
+
+import { config } from "@config";
+import BaseLayout from "@layouts/BaseLayout.astro"
+import { sessionTokenManager, type authStatusType } from "@utils/authUtils";
+const redirectTo = url.searchParams.get("redirectTo") || "/";
+
+
+
+
+let authStatus: authStatusType = null;  
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const username = formData.get("username")?.toString();
+  const password = formData.get("password")?.toString();
+
+  if (!username || !password) {
+		return Astro.redirect(redirectTo);
+  }
+
+  const result = await sessionTokenManager(username, password);
+
+	authStatus = result.status
+
+	if (result.status === "success" && result.token && result.duration) {
+
+			Astro.cookies.set(config.sessionCookieIdentifier, result.token, {
+				path: "/",
+				maxAge: 60 * 60,
+				expires: new Date(result.duration)
+			});
+
+  }
+
+	console.log("result", result)
+
+}
+
+
+---
+
+<BaseLayout title="Login">
+	<div class="h-full flex w-full flex-col items-center">
+		<div class="border-2 border-primary bg-secondary rounded-lg p-10 space-y-6 mt-[5%] w-[90%] lg:max-w-[40%]">
+			<h1 class="text-2xl font-bold text-center mb-1">Login</h1>
+			<h3 class="text-secondary text-sm font-bold text-center mb-8">Please provide the login details.</h3>
+			<form method="POST">
+				<div class="space-y-8">
+
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold capitalize mb-2">User Id</h3>
+
+							<input
+								type="text"
+								name="username"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Payroll Number..." required />
+
+						</div>
+
+
+						<div class="flex-2">
+							<h3 class="text-lg font-semibold mb-2">Password</h3>
+
+							<input
+								type="text"
+								name="password"
+								class="w-full p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-base text-secondary placeholder:text-muted"
+								placeholder="Type your Payroll Number..." required />
+
+						</div>
+
+				</div>
+
+				<div class="mt-8">
+
+					<button
+						class="w-full p-3 rounded-lg font-semibold button-accent text-white active-overlay hover-overlay transition"
+					>
+						Submit
+					</button>
+
+					<div
+						id="status-fail"
+						class="text-center mt-4 px-4 py-2 status-indicator-error border-2 rounded-lg font-bold auto-hide"
+					>
+						&#9888; Invalid Credentials
+					</div>
+
+					<div
+						id="status-success"
+						class="text-center mt-4 px-4 py-2 status-indicator-success border-2 rounded-lg font-bold auto-hide"
+					>
+						&#10003; Authenticated
+					</div>
+
+					<div
+						id="status-locked"
+						class="text-center mt-4 px-4 py-2 status-indicator-warning border-2 rounded-lg font-bold"
+					>
+						&#9888; Account Locked
+					</div>
+
+					<script define:vars={{ authStatus }} is:inline>
+						const fail = document.getElementById("status-fail");
+						const success = document.getElementById("status-success");
+						const locked = document.getElementById("status-locked");
+
+						if (fail) fail.style.display = "none";
+						if (success) success.style.display = "none";
+						if (locked) locked.style.display = "none";
+
+						if (authStatus === "fail" && fail) {
+							fail.style.display = "block";
+							setTimeout(() => {
+								fail.style.display = "none";
+							}, 3000);
+						}
+
+						if (authStatus === "success" && success) {
+							success.style.display = "block";
+							setTimeout(() => {
+								const url = new URL(window.location.href);
+								const redirectTo = url.searchParams.get("redirectTo") || "/";
+								window.location.href = redirectTo;
+							}, 1000);
+						}
+
+						if (authStatus === "locked" && locked) {
+							locked.style.display = "block";
+							// no timeout on 
+						}
+					</script>
+
+
+				</div>
+			</form>
+
+		</div>
+
+
+
+	</div>
+
+
+
+</BaseLayout>
+
