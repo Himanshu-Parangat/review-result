@@ -91,21 +91,17 @@ export const session = sqliteTable("session", {
 	sessionId: text("sessionId").primaryKey(),
 
 	sessionToken: text("sessionToken"),
-	sessionCreatedAt: text("sessionCreatedAt"),
-	sessionUpdatedAt : text("sessionUpdatedAt"),
-	sessionDeletedAt: text("sessionDeletedAt"),
+	sessionExpiresAt: text("sessionExpiresAt"),
 
-	accountId: text("accountId").notNull().references(() => account.accountId),
+	accountId: text("accountId")
+		.notNull()
+		.unique()
+		.references(() => account.accountId),
 })
 
-
-// export const token = sqliteTable("token", {
-// 	tokenId: text().primaryKey(),
-// 	tokenCreatedAt: text("tokenCreatedAt"),
-// 	tokenExpiresAt: text("tokenExpiresAt"),
-// 	tokenLastUsedAt: text("tokenLastUsedAt"),
+// export const trails = sqliteTable("trails",{
+// 	trailsId: text("trailsId").primaryKey()
 //
-// 	userId: text("userId").notNull().references(() => user.userId),
 //
 // })
 
