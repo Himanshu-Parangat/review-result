@@ -1,3 +1,5 @@
+import { parseDuration } from "@utils/TimeUtils";
+
 interface Config {
   /** The public-facing name of the site (e.g., "GJane Doe") */
   name: string;
@@ -31,6 +33,21 @@ interface Config {
 
   /** Argon2 parallelism value */
 	hashComputeParallelism: number;
+
+
+  /** Max Duration for one time account password creation link */
+	createPasswordTokenDuration: number;
+
+  /** Max Duration for one time account password reset link */
+	resetPasswordTokenDuration: number;
+
+
+  /** session key for auth */
+	sessionCookieIdentifier: string;
+
+  /** Max Session Login Duration */
+	sessionCookieDuration: number;
+
 }
 
 
@@ -51,7 +68,13 @@ export const config: Config  = {
 
 	hashMemoryCost: env.HASH_MEMORY_COST || "65536",
 	hashComputeTimeCost: env.HASH_COMPUTE_TIME_COST || "2",
-	hashComputeParallelism: env.HASH_COMPUTE_PARALLELISM || "1"
+	hashComputeParallelism: env.HASH_COMPUTE_PARALLELISM || "1",
+
+	createPasswordTokenDuration: parseDuration(env.CREATE_PASSWORD_TOKEN_DURATION || "1d"),
+	resetPasswordTokenDuration: parseDuration(env.RESET_PASSWORD_TOKEN_DURATION || "1h"),
+
+	sessionCookieIdentifier: env.SESSION_COOKIE_IDENTIFIER || "_workspace_state_",
+	sessionCookieDuration: parseDuration(env.SESSION_COOKIE_DURATION || "45m"),
 }
 
 

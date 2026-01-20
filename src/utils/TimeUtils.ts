@@ -39,3 +39,29 @@ export function friendlyDuration(fromTs: Date | string, toTs: Date | string): st
   return parts.length ? parts.join(" ") : "0 minutes";
 }
 
+
+export function parseDuration(duration: string): number {
+  let totalMs = 0;
+
+  const units = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  };
+
+  const parts = duration.trim().replace(/\s+/g, "").match(/\d+[smhd]/g);
+
+  if (!parts) {
+    throw new Error(`Invalid duration: ${duration}`);
+  }
+
+  for (const part of parts) {
+    const value = Number(part.slice(0, -1));
+    const unit = part.slice(-1);
+
+    totalMs += value * units[unit as keyof typeof units];
+  }
+
+  return totalMs;
+}

@@ -11,6 +11,7 @@ import {  eq, gt, isNull, sql } from "drizzle-orm";
 import ToggleInput from '@components/ToggleInput.astro';
 import RolePicker from '@components/RolePicker.astro';
 import { friendlyDateMessage } from "@utils/TimeUtils";
+import { config } from "@config";
 
 const db = getDb()
 
@@ -28,8 +29,7 @@ if (Astro.request.method === "POST") {
 	if (action === "create") {
 
 		const oneTimeToken = generateId() + generateId()
-		const validity = 30 * 60 * 1000; // 30 min
-		const expiresAt = new Date(Date.now() + validity).toISOString();
+		const expiresAt = new Date(Date.now() + config.createPasswordTokenDuration).toISOString();
 
 		await db.insert(accountToken).values({
 			accountTokenHash: oneTimeToken,
@@ -46,8 +46,7 @@ if (Astro.request.method === "POST") {
 	if (action === "reset") {
 
 		const oneTimeToken = generateId() + generateId()
-		const validity = 30 * 60 * 1000; // 30 min
-		const expiresAt = new Date(Date.now() + validity).toISOString();
+		const expiresAt = new Date(Date.now() + config.resetPasswordTokenDuration).toISOString();
 
 		await db.insert(accountToken).values({
 			accountTokenHash: oneTimeToken,
