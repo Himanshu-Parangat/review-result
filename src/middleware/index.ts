@@ -2,6 +2,8 @@ import { checkCookie } from "@utils/CookieUtil";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { isDbInitialized } from "@db/index";
 import { genrateLog } from "@utils/loggingUtils";
+import { chechSessionToken } from "@utils/authUtils";
+import { config } from "@config";
 
 export const dbCheckMiddleware = defineMiddleware(async (context, next) => {
   const {  url } = context;
@@ -64,4 +66,29 @@ export const routeCheckMiddleware = defineMiddleware(async (context, next) => {
   return next();
 });
 
-export const onRequest = sequence(logMiddleware, dbCheckMiddleware, routeCheckMiddleware);
+
+export const accountsRouteCheckMiddleware = defineMiddleware(async (context, next) => {
+  const { request, url, cookies } = context;
+
+  if (url.pathname.startsWith("/organize")) {
+
+		const sessionCookieToken = cookies.get(config.sessionCookieIdentifier)?.value;
+
+    const auth = await chechSessionToken(sessionCookieToken);
+
+    if (!auth) {
+      return Response.redirect(
+        new URL(
+          `/auth?redirectTo=${encodeURIComponent(url.pathname + url.search)}`,
+          request.url
+        ),
+        302
+      );
+    }
+  }
+
+  return next();
+});
+
+
+export const onRequest = sequence(logMiddleware, dbCheckMiddleware, routeCheckMiddleware, accountsRouteCheckMiddleware);
