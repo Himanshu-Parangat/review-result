@@ -120,23 +120,23 @@ const { tableCaption, tableHeader, tableFooter} = Astro.props as TableProps
 				<tr class="hover-overlay">
 
 					{tableHeader.map((tableHead,index) => (
-						<th class="group border border-primary cursor-pointer select-none" 
+						<th class="group cursor-pointer select-none align-middle text-center" 
 								data-sort="normal" 
 								data-column-index={index}
 								data-content={tableHead}
 								scope={scope}>
 								
-								<button class="flex flex-row items-center gap-2 active-overlay px-4 py-1 font-bold whitespace-nowrap w-full ">
+								<button class="flex flex-row items-center text-center align-middle gap-2 active-overlay px-4 py-1 font-bold whitespace-nowrap w-full hover:border-2 border-primary rounded-lg ">
 									<span>{tableHead}</span>
 										
 										<svg xmlns="http://www.w3.org/2000/svg" 
-												 class="hidden group-data-[sort=descending]:block shrink-0 w-5 h-5 text-primary" 
+												 class="hidden group-data-[sort=ascending]:block shrink-0 w-5 h-5 text-primary" 
 												 fill="none" viewBox="0 0 24 24" stroke="currentColor">
 												<path fill-rule="evenodd" clip-rule="evenodd" d="M17 3.25C17.4142 3.25 17.75 3.58579 17.75 4V17.75L19.4 15.55C19.6485 15.2186 20.1186 15.1515 20.45 15.4C20.7814 15.6485 20.8485 16.1186 20.6 16.45L17.6 20.45C17.4063 20.7083 17.0691 20.8136 16.7628 20.7115C16.4566 20.6094 16.25 20.3228 16.25 20V4C16.25 3.58579 16.5858 3.25 17 3.25ZM7.25 6C7.25 5.58579 7.58579 5.25 8 5.25H13C13.4142 5.25 13.75 5.58579 13.75 6C13.75 6.41421 13.4142 6.75 13 6.75H8C7.58579 6.75 7.25 6.41421 7.25 6ZM5.25 11C5.25 10.5858 5.58579 10.25 6 10.25H13C13.4142 10.25 13.75 10.5858 13.75 11C13.75 11.4142 13.4142 11.75 13 11.75H6C5.58579 11.75 5.25 11.4142 5.25 11ZM3.25 16C3.25 15.5858 3.58579 15.25 4 15.25H13C13.4142 15.25 13.75 15.5858 13.75 16C13.75 16.4142 13.4142 16.75 13 16.75H4C3.58579 16.75 3.25 16.4142 3.25 16Z" fill="currentColor"/>
 										</svg>
 
 										<svg xmlns="http://www.w3.org/2000/svg" 
-												 class="hidden group-data-[sort=ascending]:block shrink-0 w-5 h-5 text-primary" 
+												 class="hidden group-data-[sort=descending]:block shrink-0 w-5 h-5 text-primary" 
 												 fill="none" viewBox="0 0 24 24" stroke="currentColor">
 												<path fill-rule="evenodd" clip-rule="evenodd" d="M16.7628 3.28854C17.0691 3.18645 17.4063 3.29179 17.6 3.55005L20.6 7.55005C20.8485 7.88142 20.7814 8.35152 20.45 8.60005C20.1186 8.84858 19.6485 8.78142 19.4 8.45005L17.75 6.25005V20C17.75 20.4143 17.4142 20.75 17 20.75C16.5858 20.75 16.25 20.4143 16.25 20V4.00005C16.25 3.67723 16.4566 3.39062 16.7628 3.28854ZM13 8.75005H4V7.25005H13V8.75005ZM13 13.75H6V12.25H13V13.75ZM13 18.75H8V17.25H13V18.75Z" fill="currentColor"/>
 										</svg>
@@ -153,7 +153,7 @@ const { tableCaption, tableHeader, tableFooter} = Astro.props as TableProps
 			<tfoot class="bg-tertiary">
 				<tr class="hover-overlay h-6">
 					{tableFooter.map((tableFoot,index) => (
-					<td class="px-4 py-1 font-bold whitespace-nowrap" data-column-index={index} data-content={tableFoot}>{tableFoot}</td>
+					<td class="px-4 py-1 font-bold whitespace-nowrap" data-column-index={index} data-content={tableFoot} style="border: none;">{tableFoot}</td>
 					))
 					}
 				</tr>
@@ -302,9 +302,10 @@ const { tableCaption, tableHeader, tableFooter} = Astro.props as TableProps
 												: new Date(valB).getTime() - new Date(valA).getTime();
 								}
 
-								return newStatus === "ascending" 
-										? valA.localeCompare(valB) 
-										: valB.localeCompare(valA);
+								return newStatus === "ascending"
+									? valA.localeCompare(valB, undefined, { sensitivity: "base" })
+									: valB.localeCompare(valA, undefined, { sensitivity: "base" });
+
 							});
 
 							tableBody.append(...rowsToSort);
