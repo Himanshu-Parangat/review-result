@@ -4,27 +4,111 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 
 import { generateId } from "@utils/MainUtils";
 import { getDb } from "@db/index";
-import { account, accountToken, user } from "@db/schema";
-import {  eq, gt, isNull, sql } from "drizzle-orm";
+import { access, account, accountToken, group, user } from "@db/schema";
+import { eq, gt, isNotNull, isNull, sql, type InferSelectModel } from "drizzle-orm";
 
 
 import ToggleInput from '@components/ToggleInput.astro';
 import RolePicker from '@components/RolePicker.astro';
 import { friendlyDateMessage } from "@utils/TimeUtils";
 import { config } from "@config";
+import TableView from "@components/TableView.astro";
 
 const db = getDb()
 
-const accounts = db.select()
+const allAccountsWithUser = db.select({
+	account: account,
+	user: user,
+})
 	.from(account)
 	.leftJoin(user, eq(account.userPayroll, user.userPayroll))
 	.where(isNull(account.accountDeletedAt)).all()
+
+const allGroups = db.select().from(group).where(isNull(group.groupDeletedAt)).all();
+const allAccess = db.select().from(access).where(isNotNull(access.accessAssignedAt)).all();
+
+
+
+type Account = InferSelectModel<typeof account>;
+type User = InferSelectModel<typeof user>;
+type Group = InferSelectModel<typeof group>;
+type Access = InferSelectModel<typeof access>;
+
+
+
+export type AccountsEntry = {
+	accountId : Account["accountId"];
+	accountUserName: Account["accountUserName"];
+	accountCreatedAt: Account["accountCreatedAt"];
+	accountUpdatedAt: Account["accountUpdatedAt"];
+	accountIsActive: Account["accountIsActive"];
+
+	userPayroll: User["userPayroll"] | null;
+	userName: User["userName"] | null;
+  userDesignation: User["userDesignation"] | null;
+  userDepartment: User["userDepartment"] | null;
+
+	group: {
+		groupId: Group["groupId"];
+		groupName: Group["groupName"];
+		groupDescription: Group["groupDescription"];
+		accessId: Access["accessId"] | null;
+    accessCanView: Access["accessCanView"];
+    accessCanCreate: Access["accessCanCreate"];
+    accessCanDelete: Access["accessCanDelete"];
+    accessCanExport: Access["accessCanExport"];
+    accessCanRestore: Access["accessCanRestore"];
+	}[]
+
+
+}
+
+const accountWithGroupsAccess: AccountsEntry[] = allAccountsWithUser.map((entry) :AccountsEntry => ({
+
+	accountId : entry.account.accountId,
+	accountUserName: entry.account.accountUserName,
+	accountCreatedAt: entry.account.accountCreatedAt,
+	accountUpdatedAt: entry.account.accountUpdatedAt,
+	accountIsActive: entry.account.accountIsActive,
+
+	userPayroll: entry.user?.userPayroll ?? null,
+	userName: entry.user?.userName ?? null,
+	userDesignation : entry.user?.userDesignation ?? null,
+	userDepartment: entry.user?.userDepartment ?? null,
+
+	group: allGroups.map(group => {
+
+		const matchingAccess = allAccess.find(account =>
+			account.accountId === entry.account.accountId &&
+			account.groupId === group.groupId
+		)
+
+		return {
+			groupId: group.groupId,
+			groupName: group.groupName,
+			groupDescription: group.groupDescription,
+
+			accessId : matchingAccess?.accessId || null,
+			accessCanView: matchingAccess?.accessCanView || false,
+			accessCanCreate: matchingAccess?.accessCanCreate || false,
+			accessCanDelete: matchingAccess?.accessCanDelete || false,
+			accessCanExport: matchingAccess?.accessCanExport || false,
+			accessCanRestore: matchingAccess?.accessCanRestore || false,
+		}
+
+	})
+
+}))
 
 
 if (Astro.request.method === "POST") {
 	const formData = await Astro.request.formData();
 	const action = formData.get("action") as string;
 	const userId = formData.get("userId") as string;
+	const accountId = formData.get("accountId") as string;
+
+
+
 
 	if (action === "create") {
 
@@ -83,10 +167,111 @@ if (Astro.request.method === "POST") {
 	}
 
 
+	if (action === "groupAccess") {
+
+		const accessList: Access[] = []
+
+		function processGroupAndAcess(): Access[] {
+			[...formData].filter(([key,value]) => 
+					key.startsWith("access[") && value === "on"
+				).map(([key]) => {
+						const [groupId,accessType] = key
+							.slice(6)
+							.slice(1,-1)
+							.split("][")
+					return {
+						groupId : groupId,
+						accountId: accountId,
+						accessType: accessType,
+						[accessType]:true
+					}
+				}).forEach(item => {
+					let entry = accessList.find(existing => existing.groupId === item.groupId)
+
+					if (!entry){
+						entry = {
+							accountId: accountId,
+							accessId: generateId(),
+							groupId: item.groupId,
+
+							accessCanView: false,
+							accessCanCreate: false,
+							accessCanDelete: false,
+							accessCanExport: false,
+							accessCanRestore: false,
+
+							accessAssignedAt: new Date().toString(),
+						}
+
+						accessList.push(entry)
+
+					}
+					if (item.accessType === 'all') {
+						entry.accessCanView = true
+						entry.accessCanCreate = true
+						entry.accessCanDelete = true
+						entry.accessCanExport = true
+						entry.accessCanRestore = true
+						return
+					}
+
+					if (item.accessCanView) entry.accessCanView = true
+					if (item.accessCanCreate) entry.accessCanCreate = true
+					if (item.accessCanDelete) entry.accessCanDelete = true
+					if (item.accessCanExport) entry.accessCanExport = true
+					if (item.accessCanRestore) entry.accessCanRestore = true
+				})
+			return accessList
+
+		} 
+		const accessValue: Access[] = processGroupAndAcess()
+
+		console.log(accessValue)
+		db.transaction((tx) => {
+
+			tx.delete(access)
+				.where(
+					eq(access.accountId, accountId)
+				).run();
+
+			if (accessValue.length > 0){
+				tx.insert(access).values(accessValue).run();
+			}
+
+		})
+
+		return Astro.redirect("/admin/manage/account?accessControl=1");
+	}
+
+
+	if (action === "groupCreate") {
+
+		const groupName = formData.get("groupName") as string;
+		const groupDescription = formData.get("groupDescription") as string;
+
+		if (groupName && groupDescription){
+
+			await db.insert(group).values({
+				groupId: generateId(),
+				groupName: groupName,
+				groupDescription: groupDescription,
+				groupCreatedAt: new Date().toISOString()
+			}).returning();
+
+			return Astro.redirect("/admin/manage/account?groupCreate=1");
+
+		}
+
+		console.log(formData)
+
+		return Astro.redirect("/admin/manage/account");
+	}
+
+
+
 }
 
 
-const allgroups: string[] =  ["Admin", "Health", "HR Human Resource", "Safety", "Training"];
 const accountTokens = db.select().from(accountToken)
     .where(
 			gt(accountToken.accountTokenExpireAt, new Date().toISOString())
@@ -102,7 +287,7 @@ const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').l
 <BaseLayout title="Manage Account">
 
 	<div class="w-full px-[3%] overflow-auto h-full">
-		<div class="flex flex-col bg-secondary border-2 border-primary rounded-lg h-full px-8 py-2 items-center ">
+		<div class="flex flex-col bg-secondary border-2 border-primary rounded-lg h-full w-full px-8 py-2 items-center">
 			<h1 class="text-xl font-bold items-center">Manage Account</h1>
 			<div class="border-b-2 border-primary w-full mt-2"></div>
 
@@ -126,119 +311,78 @@ const resetCount = accountTokens.filter(t => t.accountTokenAction === 'reset').l
 
 				<div class="border-b-2 border-primary w-full "></div>
 
-				<!-- <table class="table-auto w-full border-collapse min-w-max mt-2"> -->
-				<!-- 	<thead> -->
-				<!-- 		<tr class="hover-overlay border-2 border-primary bg-tertiary"> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account Id</th> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">User Name</th> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Is Active</th> -->
-				<!-- 			<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Created At</th> -->
-				<!-- 		</tr> -->
-				<!-- 	</thead> -->
-				<!-- 	<tbody> -->
-				<!-- 			<tr class="border-2 border-primary hover-overlay"> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"1"}</td> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"qrreg5bf8zdsk1guytxu9m8oc"}</td> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"testuser1"}</td> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"92004321"}</td> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap"><ToggleInput name={"sd"} checked={false} /></td> -->
-				<!-- 				<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{"Sat, Jan 10, 2026, 5:16 PM"}</td> -->
-				<!-- 			</tr> -->
-				<!-- 	</tbody> -->
-				<!-- </table> -->
 			</div>
 
+			<TableView
+				tableCaption="Mange User Group and Access"
+				tableHeader={["Sno", "Payroll","Name","Department", "Username", "Is Active", "Created At", "Updated At", "Group", "Password", "Account"]}
+				tableFooter={["", ""," ","", "", "", "", "", "", "", ""]}
+			>
 
-			<div class="overflow-scroll w-full mt-4">
+				{accountWithGroupsAccess.map((entry, index) => 
+					<tr class="border-2 border-primary hover-overlay">
+						<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
+						<td data-type="number" data-content={entry.userPayroll || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userPayroll || "Missing"}</td>
+						<td data-type="string" data-content={entry.userName || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userName || "Missing"}</td>
+						<td data-type="string" data-content={entry.userDepartment || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.userDepartment || "Missing"}</td>
+						<td data-type="string" data-content={entry.accountUserName || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.accountUserName || "Some User"}</td>
+						<td data-type="boolean" data-ignore-search="true" data-content={entry.accountIsActive} class="px-4 py-2 text-base text-primary whitespace-nowrap">
 
-				<div class="overflow-x-auto">
-					<table class="table-auto w-full border-collapse min-w-max">
-						<thead>
-							<tr class="hover-overlay border-2 border-primary bg-tertiary">
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Sno</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Payroll</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Name</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Department</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Username</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Is Active</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Created At</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Updated At</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Group</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Password</th>
-								<th class="px-4 py-2 text-left font-semibold whitespace-nowrap">Account</th>
-							</tr>
-						</thead>
-						<tbody>
-							{accounts.map((entry, index) => 
-								<tr class="border-2 border-primary hover-overlay">
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.account.userPayroll || "Missing"}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.user?.userName || "Missing"}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.user?.userDepartment || "Missing"}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.account.accountUserName || "Some User"}</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+							{entry.accountId ?
+								<form method="post">
+									<input type="hidden" name="action" value="toggleStatus" />
+									<input type="hidden" name="userId" value={entry.accountId} />
+								<!-- do submit -->
+								<ToggleInput
+									name={entry.accountId}
+									checked={entry.accountIsActive}
+									onclick={`return confirm('Are you sure you want to ${entry.accountIsActive ? 'disable' : 'enable'} this account?') && this.form.submit()`}
+								/>
+								</form> :
+							<ToggleInput name={""} checked={entry.accountIsActive || false} disabled={true} />
+							}
+						</td>
+						<td data-type="date" data-content={entry.accountCreatedAt || ""} class="px-4 py-2 text-base text-primary whitespace-nowrap">
+							{entry.accountCreatedAt ? friendlyDateMessage(entry.accountCreatedAt) : "Unavailable"}
+						</td>
+						<td data-type="date" data-content={entry.accountUpdatedAt || ""} class="px-4 py-2 text-base text-primary whitespace-nowrap">
+							{entry.accountUpdatedAt ? friendlyDateMessage(entry.accountUpdatedAt) : "Never updated"}
+						</td>
+						<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						<RolePicker groupsList={entry.group} accountId={entry.accountId}/>
+						</td>
+						<td class=" p-1 items-center justify-center">
+						{entry.accountId ?
+							<form method="post">
+								<input type="hidden" name="action" value="reset" />
+								<input type="hidden" name="userId" value={entry.accountId} />
+								<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Reset</button>
+							</form> :
 
-									{entry.account.accountId ?
-										<form method="post">
-											<input type="hidden" name="action" value="toggleStatus" />
-											<input type="hidden" name="userId" value={entry.account.accountId} />
-										<!-- do submit -->
-										<ToggleInput
-											name={entry.account.accountId}
-											checked={entry.account.accountIsActive}
-											onclick={`return confirm('Are you sure you want to ${entry.account.accountIsActive ? 'disable' : 'enable'} this account?') && this.form.submit()`}
-										/>
-										</form> :
+							<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
 
-									<ToggleInput name={""} checked={entry.account.accountIsActive || false} disabled={true} />
-
-									}
-									</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-										{entry.account.accountCreatedAt ? friendlyDateMessage(entry.account.accountCreatedAt) : ""}
-									</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-										{entry.account.accountUpdatedAt ? friendlyDateMessage(entry.account.accountUpdatedAt) : ""}
-									</td>
-									<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
-										<RolePicker groupsList={allgroups}/>
-									</td>
-									<td class=" p-1 ">
-									{entry.account.accountId ?
-										<form method="post">
-											<input type="hidden" name="action" value="reset" />
-											<input type="hidden" name="userId" value={entry.account.accountId} />
-											<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Reset</button>
-										</form> :
-
-										<button type="submit" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
-
-									}
-									</td>
+						}
+						</td>
 
 
-									<td class=" p-1 ">
-									{entry.account.accountId ?
-										<form method="post"
-											onsubmit="return confirm('Are you sure you want to delete the account')"
-										>
-											<input type="hidden" name="action" value="delete" />
-											<input type="hidden" name="userId" value={entry.account.accountId} />
-											<button type="submit" class="bg-(--color-button-error) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Delete</button>
-										</form> :
+						<td data-ignore-search="true" class=" p-1 ">
+						{entry.accountId ?
+							<form method="post"
+								onsubmit="return confirm('Are you sure you want to delete the account')"
+							>
+								<input type="hidden" name="action" value="delete" />
+								<input type="hidden" name="userId" value={entry.accountId} />
+								<button type="submit" class="bg-(--color-button-error) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Delete</button>
+							</form> :
 
-										<button type="reset" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
+							<button type="reset" class="bg-(--color-button-warning) hover-overlay active-overlay px-4 py-1 rounded-lg text-white text-lg whitespace-nowrap border-2 border-primary ">Unavailable</button>
 
-									}
-									</td>
-								</tr>
-							)}
-						</tbody>
-					</table>
-				</div>
-			</div>
+						}
+						</td>
+					</tr>
+				)}
+
+			</TableView>
 		</div>
 	</div>
 
