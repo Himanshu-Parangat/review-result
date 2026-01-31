@@ -1,99 +1,302 @@
 ---
-interface Props {
-  groupsList: string[];
-}
 import ToggleInput from '@components/ToggleInput.astro';
-const { groupsList } = Astro.props as Props;
+
+import { access, account, group } from "@db/schema";
+import { type InferSelectModel } from "drizzle-orm";
+
+type Group = InferSelectModel<typeof group>;
+type Access = InferSelectModel<typeof access>;
+type Account = InferSelectModel<typeof account>;
+
+interface RoleGroup {
+	groupId: Group["groupId"];
+	groupName: Group["groupName"];
+	groupDescription: Group["groupDescription"];
+	accessId: Access["accessId"] | null;
+	accessCanView: Access["accessCanView"];
+	accessCanCreate: Access["accessCanCreate"];
+	accessCanDelete: Access["accessCanDelete"];
+	accessCanExport: Access["accessCanExport"];
+	accessCanRestore: Access["accessCanRestore"];
+}
+
+interface Props {
+  groupsList: RoleGroup[];
+	accountId: Account["accountId"];
+}
+
+const { groupsList, accountId } = Astro.props as Props;
+
+
+const popoverId = "accessControl-" + accountId  
+
+
+type Permission =
+  keyof Pick<
+    Access,
+    | "accessCanView"
+    | "accessCanCreate"
+    | "accessCanDelete"
+    | "accessCanExport"
+    | "accessCanRestore"
+		>
+
+
+export function accessField(
+  groupId: Group["groupId"],
+  permission: Permission
+): `access[${Group["groupId"]}][${Permission}]` {
+  return `access[${groupId}][${permission}]`;
+}
+
+
 ---
+<div class={ "role-picker-" + accountId } data-role-picker={accountId}>
+	<button
+		type="button"
+		class="selectRoleButton inline-flex border-2 border-primary bg-tertiary rounded-lg py-2 px-3 text-secondary text-left hover-overlay active-overlay"
+	>
+		Select Role
+	</button>
 
-<button
-  type="button"
-  popovertarget="accessControl"
-  class="inline-flex border-2 border-primary bg-tertiary rounded-lg py-2 px-3 text-secondary text-left"
->
-  Select Role
-</button>
 
-<div 
-  popover 
-  id="accessControl" 
-  class="bg-secondary border-2 border-primary  left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 m-0 p-4 rounded-lg text-primary "
->
-    <div class="text-lg flex flex-row gap-2">
-        <input 
-          type="text" 
-          data-group-search 
-          class="flex-1 p-2 focus:outline-none placeholder:font-bold bg-transparent" 
-          placeholder="Search Groups..."
-        >
-        <div>
-            <button class="px-4 py-1 border-2 border-primary rounded-lg active-overlay">New Group</button>
-            <button 
-              popovertarget="accessControl" 
-              popovertargetaction="hide" 
-              class="button-success px-4 py-1 border-2 rounded-lg active-overlay"
-            >
-              Done
-            </button>
-        </div>
-    </div>
-    
-    <div class="border-b-2 border-primary w-full mt-2"></div>
-    
-    <div class="overflow-x-auto"> <table class="table-auto w-full border-collapse min-w-max mt-2">
-            <thead>
-                <tr class="border-2 border-primary bg-tertiary">
-                    <th class="px-4 py-2 text-left font-semibold">Sno</th>
-                    <th class="px-4 py-2 text-left font-semibold">Group Name</th>
-                    <th class="px-4 py-2 text-left font-semibold">Group Description</th>
-                    <th class="px-4 py-2 text-left font-semibold">Full</th>
-                    <th class="px-4 py-2 text-left font-semibold">View</th>
-                    <th class="px-4 py-2 text-left font-semibold">Create</th>
-                    <th class="px-4 py-2 text-left font-semibold">Delete</th>
-                    <th class="px-4 py-2 text-left font-semibold">Restore</th>
-                    <th class="px-4 py-2 text-left font-semibold">Export</th>
-                </tr>
-            </thead>
-            <tbody>
-                {groupsList.map((group, index) => (
-                    <tr 
-                      class="border-2 border-primary hover:bg-black/5" 
-                      data-group-row 
-                      data-group-name={group.toLowerCase()}
-                    >
-                        <td class="px-4 py-2">{index + 1}</td>
-                        <td class="px-4 py-2 font-bold">{group}</td>
-                        <td class="px-4 py-2">{group} Description</td>
-                        <td class="px-4 py-2"><ToggleInput name='full' /></td>
-                        <td class="px-4 py-2"><ToggleInput name='view' /></td>
-                        <td class="px-4 py-2"><ToggleInput name='create' /></td>
-                        <td class="px-4 py-2"><ToggleInput name='delete' /></td>
-                        <td class="px-4 py-2"><ToggleInput name='restore' /></td>
-                        <td class="px-4 py-2"><ToggleInput name='export' /></td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
+	<div 
+		popover 
+		class="rolePickerModal bg-secondary border-2 border-primary rounded-lg text-primary fixed inset-0 w-[92vw] overflow-hidden max-h-[60vh] left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 p-4"
+	>
+
+			<form class="groupCreateForum" method="post">
+				<div class="w-full flex flex-row gap-2 flex-wrap mb-2">
+
+					<input 
+						type="text" 
+						class="groupNameInput flex-1 p-2 focus:outline-none placeholder:font-bold bg-transparent border-2 border-primary rounded-lg" 
+						name="groupName"
+						placeholder="Type Group Name"
+						required
+					> 
+
+					<input 
+						type="text" 
+						class="groupDescriptionInput flex-1/2 p-2 focus:outline-none placeholder:font-bold bg-transparent border-2 border-primary rounded-lg" 
+						style="display: none;"
+						name="groupDescription"
+						placeholder="Type Group Description"
+						required
+					> 
+
+					<input type="hidden" name="action" value="groupCreate">
+					<div class="flex flex-row gap-2 shrink-0">
+							<button class="createGroupButton py-2 px-4 border-2 border-primary rounded-lg font-semibold hover-overlay active-overlay">Create Group</button>
+							<button class="doneButton py-2 px-4 border-2 border-primary rounded-lg font-semibold hover-overlay active-overlay button-success text-white ">Done</button>
+					</div>
+				</div>
+			</form>
+
+
+			<!-- <div class="border-b-2 border-primary w-full mt-2"></div> -->
+				
+				<div class="w-full overflow-auto rounded-lg">
+					<form class="groupAccessForum" method="post" >
+						<input type="hidden" name="action" value="groupAccess" >
+						<input type="hidden" name="accountId" value={accountId} >
+
+						<table class="table-auto w-full border-collapse min-w-max mt-2 rounded-lg">
+							<thead>
+								<tr class="border-2 border-primary bg-tertiary">
+									<th class="px-4 py-2 text-left font-semibold">Sno</th>
+									<th class="px-4 py-2 text-left font-semibold">Group Name</th>
+									<th class="px-4 py-2 text-left font-semibold">Group Description</th>
+									<th class="px-4 py-2 text-left font-semibold">Full</th>
+									<th class="px-4 py-2 text-left font-semibold">View</th>
+									<th class="px-4 py-2 text-left font-semibold">Create</th>
+									<th class="px-4 py-2 text-left font-semibold">Delete</th>
+									<th class="px-4 py-2 text-left font-semibold">Restore</th>
+									<th class="px-4 py-2 text-left font-semibold">Export</th>
+								</tr>
+							</thead>
+							<tbody class="transition ease-in-out">
+							{groupsList.map((group, index) => 
+									<tr 
+										class="border-2 border-primary hover:bg-black/5 transition-all duration-200 ease-out" 
+										data-group-row 
+										data-group-name={group.groupName}
+									>
+										<td class="px-4 py-2">{index + 1}</td>
+										<td class="px-4 py-2 font-bold groupNameColumn">{group.groupName}</td>
+										<td class="px-4 py-2 groupDescriptionColumns">{group.groupDescription}</td>
+										<td class="px-4 py-2">
+										<ToggleInput name={`access[${group.groupId}][all]`} checked={
+													group.accessCanView &&
+													group.accessCanCreate &&
+													group.accessCanDelete &&
+													group.accessCanRestore &&
+													group.accessCanExport || false} />
+										</td>
+										<td class="px-4 py-2"><ToggleInput name={accessField(group.groupId, 'accessCanView')} checked={group.accessCanView || false} /></td>
+										<td class="px-4 py-2"><ToggleInput name={accessField(group.groupId, 'accessCanCreate')} checked={group.accessCanCreate || false} /></td>
+										<td class="px-4 py-2"><ToggleInput name={accessField(group.groupId, 'accessCanDelete')} checked={group.accessCanDelete || false} /></td>
+										<td class="px-4 py-2"><ToggleInput name={accessField(group.groupId, 'accessCanRestore')} checked={group.accessCanRestore || false} /></td>
+										<td class="px-4 py-2"><ToggleInput name={accessField(group.groupId, 'accessCanExport')} checked={group.accessCanExport || false} /></td>
+									</tr>
+							)}
+							</tbody>
+						</table>
+					</form>
+				</div>
+	</div>
+
+	<script lang="ts" define:vars={{accountId}} is:inline>
+
+		const container = document.querySelector(".role-picker-" + accountId);
+
+		const root = {
+			selectRoleButton: container.querySelector(".selectRoleButton"), 
+			rolePickerModal: container.querySelector(".rolePickerModal"),
+
+			createGroupButton: container.querySelector(".createGroupButton"),
+			doneButton : container.querySelector(".doneButton"),
+
+			groupNameInput: container.querySelector(".groupNameInput"),
+			groupDescriptionInput: container.querySelector(".groupDescriptionInput"),
+
+			groupCreateForum: container.querySelector(".groupCreateForum"),
+			groupAccessForum: container.querySelector(".groupAccessForum"),
+
+			grouptableBody: container.querySelector("tbody"),
+			grouptableRows: container.querySelectorAll("tr"),
+		}
+
+		if (root){
+
+			const Operation = Object.freeze({
+				GROUP_CREATE: "groupCreate",
+				GROUP_ACCESS: "groupAccess",
+			});
+
+			let currentOperation = Operation.GROUP_ACCESS;
+
+
+			function handleSelectRoleClick(event) {
+				event.preventDefault();
+				root.rolePickerModal.togglePopover();
+			}
+
+
+			function handleCreateGroupButtonClick(event) {
+				event.preventDefault()
+				root.groupDescriptionInput.style.display = "block";
+				root.createGroupButton.style.display = "none";
+
+				currentOperation = Operation.GROUP_CREATE
+			}
+
+			function handleForumSubmission(event){
+				event.preventDefault()
+
+				switch (currentOperation) {
+					case Operation.GROUP_CREATE:
+							const name = root.groupNameInput.value.trim();
+							const description = root.groupDescriptionInput.value.trim();
+
+							if (!name || !description) {
+								alert("Please provide both group name and description");
+								return;
+							}
+						root.groupCreateForum.requestSubmit();
+						break;
+
+					case Operation.GROUP_ACCESS:
+						root.groupAccessForum.requestSubmit();
+						break;
+				}
+				root.rolePickerModal.togglePopover();
+			}
+
+			function toggleGroupCreationAndAccess(){
+				root.selectRoleButton.addEventListener("click", handleSelectRoleClick);
+				root.createGroupButton.addEventListener("click", handleCreateGroupButtonClick)
+				root.doneButton.addEventListener("click", handleForumSubmission)
+			}
+
+
+			toggleGroupCreationAndAccess()
+
+			const searchContent = Array.from(root.grouptableRows).slice(1,3)
+				.map((row,index) => {
+					const groupName = row.querySelector(".groupNameColumn");
+					const groupDescription = row.querySelector(".groupDescriptionColumns");
+
+					const searchContent = (groupName?.textContent.trim() ?? "") +" "+ (groupDescription?.textContent.trim() ?? "");
+
+					return [index + 1,searchContent];
+				})
+
+			let searchDebounceTime;
+			root.groupNameInput.addEventListener("input", (e) => {
+				clearTimeout(searchDebounceTime);
+
+				searchDebounceTime = setTimeout(()=>{
+					const querry = (e.target.value).toLowerCase()
+
+					const entryScoreCalculate = () => {
+						return searchContent.map(entry => {
+
+							const entryIndex = entry[0]
+							const searchContent = entry[1].toLowerCase()
+
+
+							// for exact match
+							const exactMachScore = searchContent.includes(querry) ? 10 : 0
+
+							// for fuzzyMatches
+							let lastIndex = -1
+							const fuzzyMatchScore = [...querry].map(character => {
+								const foundIndex = searchContent.indexOf(character, lastIndex + 1);
+
+								if (foundIndex !== -1) {
+									lastIndex = foundIndex;
+									return 1;
+								}
+
+								return 0;
+							}).reduce((sum,value) => sum + value,0);
+
+
+							const entryScore = exactMachScore + fuzzyMatchScore
+
+							return {entryIndex,entryScore}
+						})
+					}
+
+					const score = entryScoreCalculate()
+					const rowWithScores = score.map(entry => ({
+						row : root.grouptableRows[entry.entryIndex],
+						score: entry.entryScore
+					}))
+
+					rowWithScores.sort((a,b) => b.score - a.score)
+						.forEach(({row, score}) => {
+
+							row.classList.remove("text-accent", "underline");
+
+						if (score > 10) {
+								row.classList.add("text-accent", "underline");
+						}
+
+						row.style.display = score === 0 ? "none" : "";
+
+						root.grouptableBody.appendChild(row);
+					})
+
+					console.log("for queerry [", querry, "] score is:", entryScoreCalculate())
+
+				}, 200)
+			})
+
+
+		}
+
+	</script>
+
 </div>
-
-<script>
-  const initSearch = () => {
-    const searchInput = document.querySelector('[data-group-search]') as HTMLInputElement;
-    const rows = document.querySelectorAll('[data-group-row]') as NodeListOf<HTMLElement>;
-
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const target = e.target as HTMLInputElement;
-        const value = target.value.toLowerCase();
-        
-        rows.forEach(row => {
-          const name = row.dataset.groupName || '';
-          row.style.display = name.includes(value) ? '' : 'none';
-        });
-      });
-    }
-  };
-
-  initSearch();
-</script>
