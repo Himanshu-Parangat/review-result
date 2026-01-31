@@ -80,10 +80,7 @@ export const access = sqliteTable("access", {
 	accessCanExport: integer("accessCanExport", {mode: "boolean"}),
 	accessCanRestore: integer("accessCanRestore", {mode: "boolean"}),
 
-
-	accessCreatedAt:text("accessCreatedAt"),
-	accessUpdatedAt : text("accessUpdatedAt"),
-	accessDeletedAt: text("accessDeletedAt"),
+	accessAssignedAt :text("accessAssignedAt"),
 })
 
 

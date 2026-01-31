@@ -1,0 +1,1 @@
+ALTER TABLE `access` RENAME COLUMN "accessCreatedAt" TO "accessAssignedAt";
