@@ -1,0 +1,305 @@
+
+---
+export const prerender = false
+import { getDb } from "@db/index"
+import { dbIdentity, event } from "@db/schema"
+import TwoFlexibleColumnLayout from "@layouts/TwoFlexibleColumnLayout.astro"
+import { generateId } from "@utils/MainUtils"
+import {  normalizeDateTime } from "@utils/TimeUtils"
+import { and, eq, isNull, sql } from "drizzle-orm"
+
+
+type ViewMode = "card" | "table";
+
+const url = new URL(Astro.request.url);
+const viewParam = url.searchParams.get("view");
+
+const view: ViewMode =
+  viewParam === "card" || viewParam === "table"
+    ? viewParam
+    : "card";
+
+if (viewParam !== view) {
+  url.searchParams.set("view", view);
+  return Astro.redirect(url.toString(), 301);
+}
+
+const db = getDb()
+
+const GetDbIdentity = function(){
+		const identity = db
+			.select({ dbId: dbIdentity.dbId })
+			.from(dbIdentity)
+			.limit(1)
+			.get();
+
+		if (!identity?.dbId) throw new Error("Missing DB Identity");
+		return identity?.dbId || ""
+
+}
+
+const CurrentdbIdentity = GetDbIdentity()
+
+const GetAllEvents = function () {
+	const events = db
+		.select()
+		.from(event)
+		.where(and(
+			eq(event.dbId, CurrentdbIdentity),
+			isNull(event.eventDeletedAt)
+		))
+		.all();
+
+	return events;
+};
+
+const Events = GetAllEvents()
+
+
+
+if (Astro.request.method === "POST") {
+	const formData = await Astro.request.formData();
+
+	const action = formData.get("action") as string;
+	const eventId = formData.get("eventId") as string | null;
+	const eventTitle = formData.get("eventTitle") as string;
+	const eventDescription = formData.get("eventDescription") as string;
+
+	const eventScheduledStartAt = normalizeDateTime(
+		(formData.get("eventScheduledStartAt") as string) || new Date().toISOString()
+	).toISOString();
+
+	const eventScheduledEndAt = normalizeDateTime(
+		(formData.get("eventScheduledEndAt") as string) || 
+		new Date(new Date(eventScheduledStartAt).getTime() + 60 * 60 * 1000).toISOString()
+	).toISOString();
+
+
+
+	if (action === "create") {
+
+			await db.insert(event).values({
+			eventId: generateId(),
+			eventlabel: "",
+			eventTitle: eventTitle,
+			eventCreatedAt: new Date().toISOString(),
+			eventDescription: eventDescription,
+			eventScheduledStartAt: eventScheduledStartAt ,
+			eventScheduledEndAt: eventScheduledEndAt,
+			eventIsPinned: false,
+			dbId: CurrentdbIdentity,
+			
+
+		}).returning();
+
+		return Astro.redirect(`/admin/event?submitted=1`);
+
+
+	} 
+
+	if (action === "update") {
+
+		if (!eventId) return
+
+		await db.update(event).set({
+			eventTitle: eventTitle,
+			eventUpdatedAt: new Date().toISOString(),
+			eventlabel: "",
+			eventDescription: eventDescription,
+			eventScheduledStartAt: eventScheduledStartAt ,
+			eventScheduledEndAt: eventScheduledEndAt,
+		}).where(and(
+			eq(event.eventId, eventId),
+			eq(event.dbId, CurrentdbIdentity),
+			isNull(event.eventDeletedAt)
+		))
+
+		return Astro.redirect(`/admin/event?updated=1`);
+
+	}
+
+	if (action === "delete") {
+
+		if (!eventId) return
+
+		await db 
+		.update(event)
+		.set({eventDeletedAt: new Date().toISOString()})
+		.where(
+			and(
+				eq(event.eventId, eventId),
+				eq(event.dbId, CurrentdbIdentity),
+				isNull(event.eventDeletedAt)
+			)
+		);
+
+
+		return Astro.redirect(`/admin/event?deleted=1`);
+	}
+
+
+	if (action === "togglePin") {
+
+		if (!eventId) return
+
+		await db.update(event)
+		.set({
+			eventIsPinned: sql`NOT ${event.eventIsPinned}`
+		})
+		.where(and(
+			eq(event.eventId, eventId),
+			eq(event.dbId, CurrentdbIdentity),
+			isNull(event.eventDeletedAt)
+			)
+		);
+
+		return Astro.redirect(`/admin/event?toggle=1`);
+	}
+
+
+}
+
+import EventEntry from "@components/EventEntry.astro"
+---
+
+	<TwoFlexibleColumnLayout>
+		<div slot="max-slot" class="bg-secondary border-2 border-primary rounded-xl px-6 py-4 h-full flex flex-col items-center break-all ">
+			<h1 class="text-xl font-bold items-center">Event View</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+			<div class="flex-1 flex flex-col w-full mt-2 px-2 lg:overflow-y-auto">
+				<EventEntry Events={Events}/>
+			</div>
+		</div>
+
+		<div slot="min-slot" class="bg-secondary border-2 border-primary rounded-xl px-6 py-4 h-full flex flex-col items-center break-all">
+			<h1 class="text-xl font-bold items-center">Event create</h1>
+			<div class="border-b-2 border-primary w-full mt-2"></div>
+				<div class="flex-1 flex flex-col w-full mt-2 px-4 lg:overflow-y-auto">
+					<form method="post" class="flex-1 flex flex-col min-h-0">
+
+					<input type="hidden" name="eventId" >
+					<input type="hidden" name="action" value="create">
+
+					<div class="flex-1 flex flex-col w-full  lg:overflow-y-auto min-h-0">
+						<h3 class="text-lg font-semibold mt-2">Event Title</h3>
+						<input
+							type="text"
+							name="eventTitle"
+							class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+							placeholder="Type your title here..." required />
+
+
+						<h3 class="text-lg font-semibold mt-2">Event Description</h3>
+
+						<textarea 
+							name="eventDescription"
+							rows="4"
+							class="w-full min-h-[14%] mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+							placeholder="Type your answer here..." required></textarea>
+
+
+						<h3 class="text-lg font-semibold mt-2">Event Start</h3>
+
+						<input
+							type="datetime-local"
+							name="eventScheduledStartAt"
+							class="w-full mt-2 p-3 border-2 border-primary bg-tertiary rounded-lg focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+							placeholder="Type your title here..." required />
+
+
+						<h3 class="text-lg font-semibold mt-2">Duration Presets</h3>
+						<div id="quickPresets" class="flex gap-2 mt-2">
+							<button type="button" data-minutes="60" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">1h</button>
+							<button type="button" data-minutes="90" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">1 &frac12;h</button>
+							<button type="button" data-minutes="30" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">30min</button>
+							<button type="button" data-minutes="25" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">25min</button>
+							<button type="button" data-minutes="5" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">5min</button>
+							<button type="button" data-minutes="1440" class="w-18 h-9 text-lg bg-tertiary border-2  border-primary rounded-lg active-overlay hover-overlay">1day</button>
+						</div>
+
+						<h3 class="text-lg font-semibold mt-2">Event End</h3>
+
+						<input
+							type="datetime-local"
+							name="eventScheduledEndAt"
+							class="w-full mt-2 p-3 border-2 border-primary rounded-lg bg-tertiary focus:ring-2 focus:ring-accent focus:outline-none text-lg text-secondary placeholder:text-muted"
+							placeholder="Type your title here..." required />
+
+
+						<div id="editModeIndicator" class=" hidden w-auto shrink mt-4  justify-center">
+							<div class="flex flex-row gap-2 items-center justify-center border-2 p-2 border-primary rounded-lg ">
+								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+									<circle cx="12" cy="12" r="10"/>
+									<line x1="12" y1="8" x2="12" y2="12"/>
+									<line x1="12" y1="16" x2="12.01" y2="16"/>
+								</svg>
+								<p>Editing an existing Entry</p>
+								<button class=" border-2 text-secondary rounded-full text-primary hover:text-(--color-text-error) flex items-center h-6 w-6 active-overlay hover-overlay">
+										<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+											<line x1="9" y1="9" x2="15" y2="15"/>
+											<line x1="15" y1="9" x2="9" y2="15"/>
+										</svg>
+								</button>
+							</div>
+						</div>
+
+					</div>
+
+					<button
+						id="doEntry"
+						type="submit"
+						class="shrink-0 w-full h-12 text-center mt-4 mb-2 rounded-lg font-semibold button-accent text-white active-overlay hover-overlay transition"
+					>
+						Schedule
+					</button>
+
+					</form>
+
+
+		    </div>
+
+			<script is:inline>
+				document.addEventListener('DOMContentLoaded', () => {
+					const startInput = document.querySelector('input[name="eventScheduledStartAt"]');
+					const endInput = document.querySelector('input[name="eventScheduledEndAt"]');
+					const presetButtons = document.querySelectorAll('#quickPresets button');
+					
+					let hasAutoFilled = false;
+					startInput.addEventListener('focus', () => {
+						if (!hasAutoFilled && !startInput.value) {
+							const now = new Date();
+							startInput.value = toDatetimeLocal(now);
+							hasAutoFilled = true;
+						}
+					});
+					
+					presetButtons.forEach(btn => {
+						btn.addEventListener('click', () => {
+							const minutes = parseInt(btn.dataset.minutes);
+							const startTime = startInput.value ? new Date(startInput.value) : new Date();
+							const endTime = new Date(startTime.getTime() + minutes * 60 * 1000);
+							endInput.value = toDatetimeLocal(endTime);
+						});
+					});
+					
+					startInput.addEventListener('change', () => {
+						if (endInput.value && new Date(endInput.value) < new Date(startInput.value)) {
+							endInput.value = startInput.value;
+						}
+					});
+					
+					endInput.addEventListener('blur', () => {
+						if (startInput.value && endInput.value && new Date(endInput.value) < new Date(startInput.value)) {
+							alert("End time cannot be before start time!");
+							endInput.value = '';
+						}
+					});
+					
+					function toDatetimeLocal(date) {
+						const pad = (n) => String(n).padStart(2, '0');
+						return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+					}
+				});
+			</script>
+		</div>
+	</TwoFlexibleColumnLayout>
