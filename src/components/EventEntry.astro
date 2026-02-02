@@ -1,0 +1,678 @@
+---
+import ViewLayout from "@layouts/ViewLayout.astro";
+import TableView from "@components/TableView.astro";
+import { normalizeDateTime, friendlyDateMessage, friendlyDuration } from "@utils/TimeUtils";
+import { type InferSelectModel } from "drizzle-orm";
+import { event } from "@db/schema";
+import Timestamp from "@components/Timestamp.astro";
+
+
+type Event = InferSelectModel<typeof event>;
+
+
+interface Props {
+  Events: Event[];
+}
+
+const { Events } = Astro.props as Props;
+
+---
+
+<ViewLayout>
+	<div slot="card" class="mt-2 px-2">
+		{Events  .sort((a, b) => Number(b.eventIsPinned) - Number(a.eventIsPinned))
+		.map((entry, index) => 
+			<div class=" flex flex-col  min-w-0 p-4 border-2 border-primary bg-tertiary rounded-lg overflow-y-auto hover:scale-[1.02]">
+				<details class="group/settings flex-1 w-full">
+					<summary class="list-none cursor-pointer flex items-start justify-between">
+						<div class="flex-1">
+							<div class="flex flex-row gap-4"> 
+								<div class="shrink-0 text-primary text-lg  bg-accent flex justify-center items-center rounded-lg w-10 h-10 ">{index +1}</div>
+								<div class="flex-1 space-y-1">
+									<h1 class="text-2xl">{entry.eventTitle}</h1>
+									<h2 class="text-lg text-secondary">{entry.eventDescription}</h2>
+
+									<div class=" flex flex-wrap mt-4">
+										<div class="flex-1">
+											<h3 class="text-secondary text-lg flex flex-row items-center whitespace-nowrap">
+
+												<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 128 128" stroke="currentColor" role="img" aria-label="countdown icon">
+													<circle cx="64" cy="64" r="36" fill="none"  stroke-width="8"/>
+													<rect x="58" y="20" width="12" height="10" rx="3" />
+													<rect x="88" y="38" width="10" height="6" rx="2" />
+													<line x1="64" y1="64" x2="64" y2="40"  stroke-width="8" stroke-linecap="round"/>
+												</svg>
+
+
+											Status <span class="pl-2 text-primary font-bold">
+												{entry.eventScheduledStartAt && entry.eventScheduledEndAt && (
+													<Timestamp
+														startTime={entry.eventScheduledStartAt}
+														endTime={entry.eventScheduledEndAt}
+														eventName="Event"
+													/>
+												)}
+											</span>
+											</h3>
+
+											<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row items-center">
+												<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 128 128" role="img" stroke="currentColor" aria-label="duration icon">
+													<circle cx="64" cy="52" r="36" fill="none"  stroke-width="8" />
+													<line x1="64" y1="52" x2="64" y2="32"  stroke-width="8" stroke-linecap="round"/>
+													<line x1="64" y1="52" x2="84" y2="68"  stroke-width="6" stroke-linecap="round"/>
+												</svg>
+
+											Duration <span class="text-primary font-bold ml-2">{entry.eventScheduledStartAt && entry.eventScheduledEndAt ?
+												friendlyDuration(normalizeDateTime(entry.eventScheduledStartAt),normalizeDateTime(entry.eventScheduledEndAt)) : "Unavailable"}</span>
+											</h3>
+										</div>
+
+										<div class="flex-1">
+											<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row">
+
+												<svg class="w-8 h-8" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+													<rect x="4" y="6" width="22" height="20" rx="2" stroke-width="2"/>
+													<line x1="4" y1="11" x2="26" y2="11" stroke-width="2"/>
+													<line x1="9" y1="6" x2="9" y2="3" stroke-width="2" stroke-linecap="round"/>
+													<line x1="21" y1="6" x2="21" y2="3" stroke-width="2" stroke-linecap="round"/>
+													<text x="15" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">S</text>
+												</svg>
+
+											Starting In <span class="text-primary ml-2">{entry.eventScheduledStartAt ?
+												friendlyDateMessage(normalizeDateTime(entry.eventScheduledStartAt)): "Unavailable"}</span>
+											</h3>
+
+											<h3 class="text-secondary text-lg whitespace-nowrap flex flex-row">
+
+												<svg class="w-8 h-8" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+													<rect x="4" y="6" width="22" height="20" rx="2" stroke-width="2"/>
+													<line x1="4" y1="11" x2="26" y2="11" stroke-width="2"/>
+													<line x1="9" y1="6" x2="9" y2="3" stroke-width="2" stroke-linecap="round"/>
+													<line x1="21" y1="6" x2="21" y2="3" stroke-width="2" stroke-linecap="round"/>
+													<text x="15" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">E</text>
+												</svg>
+
+												Ending In <span class="text-primary ml-2">{entry.eventScheduledEndAt ?  friendlyDateMessage(normalizeDateTime(entry.eventScheduledEndAt)): "Unavailable"}</span>
+											</h3>
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+						</div>
+
+
+						<svg xmlns="http://www.w3.org/2000/svg" 
+							class="shrink-0 w-8 h-8 text-primary transition-transform duration-200 group-open/settings:rotate-60" 
+							 fill="none" 
+							 viewBox="0 0 24 24" 
+							 stroke="currentColor">
+						<path stroke-linecap="round" 
+									stroke-linejoin="round" 
+									stroke-width="1" 
+									d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+						<path stroke-linecap="round" 
+									stroke-linejoin="round" 
+									stroke-width="1" 
+									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+						</svg>
+					</summary>
+
+					<!-- Description shown only when open -->
+					<p class="mt-2 text-sm text-secondary">
+
+					<div class="flex lg:flex-row flex-col flex-wrap gap-3 justify-between ml-14 mt-6">
+						<div class="flex flex-row gap-3 ">
+							<button class="edit-event-btn group text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 button-nutral active-overlay hover-overlay"
+								data-event-id={entry.eventId}
+								data-event-title={entry.eventTitle}
+								data-event-description={entry.eventDescription}
+								data-event-start={entry.eventScheduledStartAt}
+								data-event-end={entry.eventScheduledEndAt}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+									<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+								</svg>
+								<span class="group-hover:block hidden">
+									Edit
+								</span>
+							</button>
+
+							<button class="delete-event-btn group text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center gap-2 button-nutral hover:bg-(--color-button-error) hover:text-white active-overlay hover-overlay"
+								data-event-id={entry.eventId}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="3 6 5 6 21 6"/>
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+									<line x1="10" y1="11" x2="10" y2="17"/>
+									<line x1="14" y1="11" x2="14" y2="17"/>
+								</svg>
+								<span class="group-hover:block hidden ">
+									Delete
+								</span>
+							</button>
+
+							<button
+								class="group pin-event-btn text-lg font-semibold px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center gap-2 button-nutral active-overlay hover-overlay"
+								data-event-id={entry.eventId}
+							>
+								{entry.eventIsPinned? (
+									<>
+										<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+											viewBox="0 0 24 24" fill="currentColor" class="text-primary">
+											<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+										</svg>
+										<span class="group-hover:block hidden">Unpin</span>
+									</>
+								) : (
+									<>
+										<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor"
+											stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+										</svg>
+										<span class="group-hover:block hidden">Pin</span>
+									</>
+								)}
+
+							</button>
+
+							<button
+								class="copy-invite group text-lg font-semibold px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 transition-transform button-nutral text-primary active-overlay hover-overlay "
+								data-event-id={entry.eventId}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+									<rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+								</svg>
+								<span class="hidden group-hover:inline-flex whitespace-nowrap">Copy Invite</span>
+							</button>
+
+						</div>
+
+
+
+						<div class="flex flex-row gap-3">
+							<!-- <button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"> -->
+							<!-- 	<svg xmlns="http://www.w3.org/2000/svg"  -->
+							<!-- 		class="shrink-0 w-5 h-5 text-primary mr-2"  -->
+							<!-- 		fill="none" viewBox="0 0 24 24" stroke="currentColor"> -->
+							<!-- 		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"  -->
+							<!-- 				d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /> -->
+							<!-- 		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"  -->
+							<!-- 				d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /> -->
+							<!-- 	</svg> -->
+							<!-- 	<span> -->
+							<!-- 		preview -->
+							<!-- 	</span> -->
+							<!-- </button> -->
+
+
+							<!-- <button class="text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2"> -->
+							<!-- 	<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> -->
+							<!-- 		<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/> -->
+							<!-- 		<path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/> -->
+							<!-- 		<path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/> -->
+							<!-- 		<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/> -->
+							<!-- 	</svg> -->
+							<!-- 	<span class="inline-flex whitespace-nowrap">Start Now</span> -->
+							<!-- </button> -->
+
+
+
+							<a href={`/admin/event/register/${entry.eventId}`}>
+								<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+
+									<svg xmlns="http://www.w3.org/2000/svg" 
+										class="shrink-0 w-6 h-6 text-primary mr-2" 
+										fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+												d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+												d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+									</svg>
+
+
+									<span>
+										Registered
+									</span>
+								</button>
+							</a>
+
+							<a href={`/admin/event/quize/${entry.eventId}`}>
+								<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+									<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"/>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+										<line x1="12" y1="17" x2="12.01" y2="17"/>
+									</svg>
+									<span>
+										Quize
+									</span>
+								</button>
+							</a>
+
+
+							<a href={`/admin/event/response/${entry.eventId}`}>
+								<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+										<line x1="9" y1="10" x2="15" y2="10"/>
+										<line x1="12" y1="7" x2="12" y2="13"/>
+									</svg>
+									<span>
+										Response
+									</span>
+								</button>
+							</a>
+						</div>
+
+					</div>
+					</p>
+				</details>
+
+
+			</div>
+		)}
+
+
+	</div>
+
+	<div slot="table">
+		<TableView
+			tableCaption="Manage Event"
+			tableHeader={["Sno", "Title", "Description","Status","Duration", "Event Start", "Event End", "Edit", "Delete", "Pin", "Invite", "Register", "Quize", "Response"]}
+			tableFooter={["", "","","","","","","", "", "","","","",""]}
+		>
+			{Events  .sort((a, b) => Number(b.eventIsPinned) - Number(a.eventIsPinned))
+			.map((entry, index) => 
+				<tr class="border-2 border-primary hover-overlay">
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">{index + 1}</td>
+					<td data-type="string" data-content={entry.eventTitle || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.eventTitle || "Missing"}</td>
+					<td data-type="string" data-content={entry.eventDescription || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.eventDescription || "Missing"}</td>
+
+					<td data-type="string" class="hover-overlay">
+						<span class="pl-2 text-primary font-bold px-2 ">
+							{entry.eventScheduledStartAt && entry.eventScheduledEndAt && (
+								<Timestamp
+									startTime={entry.eventScheduledStartAt}
+									endTime={entry.eventScheduledEndAt}
+									eventName="Event"
+								/>
+							)}
+						</span>
+
+					</td>
+					<td
+						data-type="string"
+						data-content={
+							entry.eventScheduledStartAt && entry.eventScheduledEndAt
+								? friendlyDuration(
+										normalizeDateTime(entry.eventScheduledStartAt),
+										normalizeDateTime(entry.eventScheduledEndAt)
+									)
+								: "Unavailable"
+						}
+						class="px-4 py-2 text-base text-primary whitespace-nowrap"
+					>
+						{entry.eventScheduledStartAt && entry.eventScheduledEndAt
+							? friendlyDuration(
+									normalizeDateTime(entry.eventScheduledStartAt),
+									normalizeDateTime(entry.eventScheduledEndAt)
+								)
+							: "Unavailable"}
+					</td>
+
+					<td data-type="date" data-content={entry.eventScheduledStartAt || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.eventScheduledStartAt? friendlyDateMessage(entry.eventScheduledStartAt) : "Unavailable"}</td>
+					<td data-type="date" data-content={entry.eventScheduledEndAt || "Missing"} class="px-4 py-2 text-base text-primary whitespace-nowrap">{entry.eventScheduledEndAt? friendlyDateMessage(entry.eventScheduledEndAt) : "Unavailable"}</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						<button class="edit-event-btn group text-lg font-semibold  px-3 py-2 border-2 border-primary rounded-lg flex flex-row items-center gap-2 button-nutral active-overlay hover-overlay"
+							data-event-id={entry.eventId}
+							data-event-title={entry.eventTitle}
+							data-event-description={entry.eventDescription}
+							data-event-start={entry.eventScheduledStartAt}
+							data-event-end={entry.eventScheduledEndAt}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+								<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+							</svg>
+							<span class="group-hover:block hidden">
+								Edit
+							</span>
+						</button>
+					</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						<button class="delete-event-btn group text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center gap-2 button-nutral hover:bg-(--color-button-error) hover:text-white active-overlay hover-overlay"
+							data-event-id={entry.eventId}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="3 6 5 6 21 6"/>
+								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+								<line x1="10" y1="11" x2="10" y2="17"/>
+								<line x1="14" y1="11" x2="14" y2="17"/>
+							</svg>
+							<span class="group-hover:block hidden ">
+								Delete
+							</span>
+						</button>
+					</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+
+						<button
+							class="group pin-event-btn text-lg font-semibold px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center gap-2 button-nutral active-overlay hover-overlay"
+							data-event-id={entry.eventId}
+						>
+							{entry.eventIsPinned? (
+								<>
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+										viewBox="0 0 24 24" fill="currentColor" class="text-primary">
+										<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+									</svg>
+									<span class="group-hover:block hidden">Unpin</span>
+								</>
+							) : (
+								<>
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+										viewBox="0 0 24 24" fill="none" stroke="currentColor"
+										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M16 4v7l2 3v2h-5v6l-1 2-1-2v-6H6v-2l2-3V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2z"/>
+									</svg>
+									<span class="group-hover:block hidden">Pin</span>
+								</>
+							)}
+
+						</button>
+					</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+
+						<button
+							class="copy-invite group text-lg font-semibold px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 transition-transform button-nutral text-primary active-overlay hover-overlay"
+							data-event-id={entry.eventId}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+								<rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+							</svg>
+							<span class="hidden group-hover:inline-flex whitespace-nowrap">Copy Invite</span>
+						</button>
+					</td>
+
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+
+						<a href={`/admin/event/register/${entry.eventId}`}>
+							<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+
+								<svg xmlns="http://www.w3.org/2000/svg" 
+									class="shrink-0 w-6 h-6 text-primary mr-2" 
+									fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+											d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+											d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+								</svg>
+
+
+								<span>
+									Registered
+								</span>
+							</button>
+						</a>
+					</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						<a href={`/admin/event/quize/${entry.eventId}`}>
+							<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+								<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<circle cx="12" cy="12" r="10"/>
+									<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+									<line x1="12" y1="17" x2="12.01" y2="17"/>
+								</svg>
+								<span>
+									Quize
+								</span>
+							</button>
+						</a>
+					</td>
+
+					<td class="px-4 py-2 text-base text-primary whitespace-nowrap">
+						<a href={`/admin/event/response/${entry.eventId}`}>
+							<button class="text-lg font-semibold  px-3 py-2 border-2  border-primary rounded-lg flex flex-row items-center justify-center gap-2 button-nutral active-overlay hover-overlay">
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+									<line x1="9" y1="10" x2="15" y2="10"/>
+									<line x1="12" y1="7" x2="12" y2="13"/>
+								</svg>
+								<span>
+									Response
+								</span>
+							</button>
+						</a>
+					</td>
+
+				</tr>
+				)}
+		</TableView>
+
+	</div>
+</ViewLayout>
+
+<style>
+	.pop {
+		transform: scale(1.12);
+		transition: transform 150ms;
+	}
+</style>
+
+<style>
+	.pop {
+		transform: scale(1.12);
+		transition: transform 150ms;
+	}
+</style>
+
+<script>
+  document.addEventListener('click', (e: MouseEvent) => {
+		const target = e.target;
+		if (!target){return}
+		if (!(target instanceof Element)) return;
+
+
+		const button = target.closest<HTMLButtonElement>('.copy-invite');
+    if (!button) return;
+
+    const eventId = button.dataset.inviteId;
+    const url = `${window.location.origin}/register/${eventId}`;
+
+    navigator.clipboard.writeText(url);
+
+    const span = button.querySelector('span');
+    if (!span) return;
+
+    const original = span.textContent;
+    span.textContent = 'Copied!';
+    button.classList.add('pop');
+
+    setTimeout(() => {
+      button.classList.remove('pop');
+      span.textContent = original;
+    }, 700);
+  });
+</script>
+
+<!-- Update Timestamp -->
+
+<script is:inline>
+	(function() {
+		function formatTimeParts(diff) {
+			const absDiff = Math.abs(diff);
+			const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+			const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+			const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+			
+			if (days > 0) {
+				return `${days}d ${hours}h`;
+			} else if (hours > 0) {
+				return `${hours}h ${minutes}m`;
+			} else if (minutes > 0) {
+				return `${minutes}m ${seconds}s`;
+			} else {
+				return `${seconds}s`;
+			}
+		}
+		
+		function updateTimestamp(element) {
+			const startDate = new Date(element.dataset.start).getTime();
+			const endDate = new Date(element.dataset.end).getTime();
+			const eventName = element.dataset.event || "Event";
+			const now = new Date().getTime();
+			const diffToStart = startDate - now;
+			const diffToEnd = endDate - now;
+			
+			if (diffToStart > 60000) {
+				element.textContent = `Starts in ${formatTimeParts(diffToStart)}`;
+			} else if (diffToStart > 0 && diffToStart <= 60000) {
+				element.textContent = `Starting now!`;
+			} else if (diffToEnd > 60000) {
+				element.textContent = `Ongoing (${formatTimeParts(diffToEnd)} left)`;
+			} else if (diffToEnd > 0 && diffToEnd <= 60000) {
+				element.textContent = `Ending now!`;
+			} else {
+				element.textContent = `Ended ${formatTimeParts(diffToEnd)} ago`;
+			}
+		}
+		
+		function initTimestamps() {
+			const timestamps = document.querySelectorAll('.countdown-timestamp');
+			
+			timestamps.forEach(element => {
+				updateTimestamp(element);
+				
+				const scheduleEntry = element.closest('.p-4.border-2.border-primary');
+				
+				if (scheduleEntry) {
+					let intervalId = null;
+					
+
+					scheduleEntry.addEventListener('mouseenter', () => {
+						updateTimestamp(element); // Update immediately
+						intervalId = setInterval(() => updateTimestamp(element), 1000);
+					});
+					
+
+					scheduleEntry.addEventListener('mouseleave', () => {
+						if (intervalId) {
+							clearInterval(intervalId);
+							intervalId = null;
+						}
+					});
+				}
+			});
+		}
+		
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initTimestamps);
+		} else {
+			initTimestamps();
+		}
+		
+		document.addEventListener('astro:page-load', initTimestamps);
+	})();
+</script>
+
+
+<!-- action buttons Edit  -->
+
+<script is:inline>
+
+	function toDatetimeLocal(isoString) {
+		const date = new Date(isoString);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		return `${year}-${month}-${day}T${hours}:${minutes}`;
+	}
+
+
+	document.addEventListener('DOMContentLoaded', () => {
+		const editButtons = document.querySelectorAll('.edit-event-btn');
+		
+		editButtons.forEach(button => {
+			button.addEventListener('click', (e) => {
+				e.preventDefault();
+				
+
+				const eventId = button.getAttribute('data-event-id');
+				const eventTitle = button.getAttribute('data-event-title');
+				const eventDescription = button.getAttribute('data-event-description');
+				const eventStart = button.getAttribute('data-event-start');
+				const eventEnd = button.getAttribute('data-event-end');
+				
+
+				document.querySelector('input[name="eventId"]').value = eventId;
+				document.querySelector('input[name="action"]').value = "update";
+				document.querySelector('input[name="eventTitle"]').value = eventTitle;
+				document.querySelector('textarea[name="eventDescription"]').value = eventDescription;
+				document.querySelector('input[name="eventScheduledStartAt"]').value = toDatetimeLocal(eventStart);
+				document.querySelector('input[name="eventScheduledEndAt"]').value = toDatetimeLocal(eventEnd);
+				
+				document.getElementById('doEntry').textContent = 'Re-Schedule';
+				document.getElementById('editModeIndicator').classList.remove('hidden');
+
+				document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		});
+	});
+
+</script>
+
+
+<!-- action buttons delete / pin  -->
+<script is:inline>
+	document.addEventListener('DOMContentLoaded', () => {
+		const deleteButtons = document.querySelectorAll('.delete-event-btn');
+		const pinButtons = document.querySelectorAll('.pin-event-btn');
+
+
+		const form = document.querySelector('form');
+		const eventIdInput = form.querySelector('input[name="eventId"]');
+		const actionInput = form.querySelector('input[name="action"]');
+
+		deleteButtons.forEach(button => {
+			button.addEventListener('click', () => {
+				const eventId = button.dataset.eventId;
+
+				if (!confirm('Are you sure you want to delete this event?')) return;
+
+				eventIdInput.value = eventId;
+				actionInput.value = "delete";
+
+				form.submit();
+			});
+		});
+
+
+
+
+		pinButtons.forEach(button => {
+			button.addEventListener('click', () => {
+				const eventId = button.dataset.eventId;
+
+				eventIdInput.value = eventId;
+				actionInput.value = "togglePin";
+				form.submit();
+			});
+		});
+
+	});
+</script>
