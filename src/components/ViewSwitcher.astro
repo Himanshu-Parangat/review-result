@@ -1,0 +1,56 @@
+---
+const views = ["card","table"] 
+---
+
+<div class="relative hover-overlay rounded-lg">
+	<select id="view-dropdown" class="text-base bg-secondary pl-9 py-2 border-2 border-primary rounded-lg">
+		{views.map(view => (
+			<option class="text-base text-primary bg-primary" value={view} selected={false}>{view.replace(/^\w/, c => c.toUpperCase()) }</option>
+		))}
+	</select>
+
+	<svg 
+		version="1.1" 
+		xmlns="http://www.w3.org/2000/svg" 
+		viewBox="0 0 48 48" 
+		fill="currentColor" 
+		class="absolute w-15 h-15 transform top-1/4 left-3 pointer-events-none"
+	>
+		<path 
+			fill-rule="evenodd" 
+			d="M1.547.309c-.289.075-.531.22-.774.464C.524 1.022.416 1.198.316 1.52l-.063.2L.253 8l0 6.28.063.2c.1.322.208.498.457.747.249.249.425.357.747.457l.2.063 6.28 0 6.28 0 .2-.063c.322-.1.498-.208.747-.457.249-.249.357-.425.457-.747l.063-.2V8l0-6.28-.063-.2c-.1-.322-.208-.498-.457-.747-.247-.248-.488-.391-.786-.466-.234-.059-2.667-.058-2.894.002M14.17 1.83l.07.071v1.423 1.423H8 1.76V3.324 1.901l.07-.071.071-.07H8l6.099 0 .071.07M4.747 10.267v4l-1.344 0c-.738 0-1.38-.008-1.426-.017-.046-.009-.113-.047-.15-.084l-.067-.067V10.183 6.267h1.493 1.494v4Zm9.493-.084v3.916l-.067.067c-.037.037-.104.075-.15.084-.046.009-1.809.017-3.92.017H6.267v-4-4h3.986 3.987v3.916Z" 
+		/>
+	</svg>
+
+	<script is:inline>
+  const allowedViews = ["card", "table"];
+  const select = document.getElementById("view-dropdown");
+
+  if (select) {
+    const url = new URL(window.location.href);
+    const paramView = url.searchParams.get("view");
+    const storedView = localStorage.getItem("view");
+
+    if (allowedViews.includes(paramView)) {
+      select.value = paramView;
+      localStorage.setItem("view", paramView);
+    }
+    else if (!paramView && allowedViews.includes(storedView)) {
+      select.value = storedView;
+    }
+
+    select.addEventListener("change", (e) => {
+      const nextView = e.target.value;
+      if (!allowedViews.includes(nextView)) return;
+
+      localStorage.setItem("view", nextView);
+
+      url.searchParams.set("view", nextView);
+      window.location.href = url.toString();
+    });
+  }
+</script>
+
+
+
+</div>

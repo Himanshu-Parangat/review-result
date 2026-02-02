@@ -27,6 +27,7 @@ const navConfig = [
 const activeNav =
 	navConfig.find((section) => section.match(pathname))?.links ?? [];
 
+const supportMultiView = Astro.url.searchParams.get("view");
 ---
 <nav class="flex flex-row flex-wrap justify-between px-4 py-1 mb-2 mt-1 rounded-b-lg gap-2">
 	<div>
@@ -47,6 +48,7 @@ const activeNav =
 	</div>
 
 	<div class="flex flex-row lg:gap-2 items-center justify-center gap-1">
+		{supportMultiView && <ViewSwitcher />}
 		<ThemeSwitcher />
 		<TextSizeSwitcher />
 		{pathname.startsWith("/admin") && <Status />}

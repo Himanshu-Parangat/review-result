@@ -1,0 +1,19 @@
+---
+const allowedViews = ["card", "table"];
+
+const rawView = Astro.url.searchParams.get("view");
+const view =
+  rawView && allowedViews.includes(rawView)
+    ? rawView
+    : null;
+---
+
+
+{view === "card" && (
+  <div set:html={Astro.slots.render("card")} />
+)}
+
+{view === "table" && (
+  <div set:html={Astro.slots.render("table")} />
+)}
+
