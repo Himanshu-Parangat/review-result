@@ -1,0 +1,116 @@
+---
+const { title } = Astro.props
+import BaseLayout from "./BaseLayout.astro"
+
+---
+<BaseLayout title={title}>
+  <div id="swap-layout-target" class="w-full h-full  px-[5%] flex lg:flex-row flex-col ">
+
+		<div class="lg:flex-3 min-w-0 has-[>_div.hidden]:hidden">
+			<slot name="max-slot"/>
+		</div>
+
+		<div class="relative group shrink-0 group lg:w-4 w-full lg:h-full h-4">
+			<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:opacity-100 group-hover:delay-600   group-hover:scale-100 lg:opacity-0">
+				<button id="swap-layout" class="bg-secondary text-primary flex justify-center items-center rounded-lg w-10 h-10 border-2 border-primary  active-overlay hover-overlay">
+					<svg  xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none">
+						<path d="M18 5L15 2M18 5L15 8M18 5H10C8 5 6 7 6 9V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path d="M6 19L9 16M6 19L9 22M6 19H14C16 19 18 17 18 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+		</div>
+
+
+		<div class="lg:flex-2 min-w-0 has-[>_div.hidden]:hidden ">
+			<slot name="min-slot"/>
+		</div>
+
+	</div>
+
+	<script is:inline>
+		document.addEventListener("DOMContentLoaded", () => {
+			const button = document.getElementById("swap-layout");
+			const target = document.getElementById("swap-layout-target");
+
+			if (!(button instanceof HTMLButtonElement)) return;
+			if (!(target instanceof HTMLElement)) return;
+
+
+			const storageKey = `layout-swap:${location.pathname}`;
+
+
+			const A = ["flex-col", "lg:flex-row", "justify-center"]; // Default
+			const B = ["flex-col-reverse", "lg:flex-row-reverse", "justify-end"]; // Reversed
+
+			function applyLayout(state) {
+				target.classList.remove(...A, ...B);
+
+				if (state === "reversed") {
+					target.classList.add(...B);
+				} else {
+					target.classList.add(...A);
+				}
+			}
+
+			function getCurrentState() {
+				return B.every(cls => target.classList.contains(cls))
+					? "reversed"
+					: "normal";
+			}
+
+
+			const savedState = localStorage.getItem(storageKey);
+			if (savedState === "reversed" || savedState === "normal") {
+				applyLayout(savedState);
+			}
+
+			button.addEventListener("click", (e) => {
+				e.preventDefault();
+
+				target.setAttribute("data-transitioning", "true");
+				target.style.opacity = "0";
+				target.style.transform = "scale(0.98)";
+
+				setTimeout(() => {
+					const nextState =
+						getCurrentState() === "normal" ? "reversed" : "normal";
+
+					applyLayout(nextState);
+
+
+					localStorage.setItem(storageKey, nextState);
+
+					target.style.opacity = "1";
+					target.style.transform = "scale(1)";
+
+					setTimeout(() => {
+						target.removeAttribute("data-transitioning");
+					}, 400);
+				}, 300);
+			});
+		});
+	</script>
+
+
+	<style>
+  #swap-layout-target {
+    transition: opacity 200ms ease-in-out, transform 200ms ease-in-out;
+  }
+  
+  [data-transitioning="true"] {
+    pointer-events: none;
+  }
+
+	/* If the 1st child is hidden OR its immediate child is hidden, hide the divider */
+	#swap-layout-target:has(> div:nth-child(1).hidden, > div:nth-child(1) > .hidden) > div:nth-child(2) {
+			display: none;
+	}
+
+	/* If the 3rd child is hidden OR its immediate child is hidden, hide the divider */
+	#swap-layout-target:has(> div:nth-child(3).hidden, > div:nth-child(3) > .hidden) > div:nth-child(2) {
+			display: none;
+	}
+</style>
+
+</BaseLayout>
