@@ -3,11 +3,12 @@
 	"scripts": {
 		"check": "bunx biome check",
 		"check:fix": "bunx biome check --write",
-		"dev": "bun --hot src/index.ts",
+		"dev": "bun --env-file=.env.development --hot src/index.ts",
 		"format": "bunx biome format",
 		"format:fix": "bunx biome format --write",
 		"lint": "bunx biome lint",
-		"lint:fix": "bunx biome lint --write"
+		"lint:fix": "bunx biome lint --write",
+		"start": "bun --env-file=.env.production src/index.ts"
 	},
 	"dependencies": {
 		"hono": "^4.13.13",
