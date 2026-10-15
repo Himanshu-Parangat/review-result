@@ -1,0 +1,21 @@
+{
+	"name": "review-result",
+	"scripts": {
+		"check": "bunx biome check",
+		"check:fix": "bunx biome check --write",
+		"dev": "bun --hot src/index.ts",
+		"format": "bunx biome format",
+		"format:fix": "bunx biome format --write",
+		"lint": "bunx biome lint",
+		"lint:fix": "bunx biome lint --write"
+	},
+	"dependencies": {
+		"hono": "^4.13.13",
+		"zod": "^4.6.7"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.15",
+		"@types/bun": "latest",
+		"typescript": "^7.0.2"
+	}
+}

@@ -1,0 +1,84 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+				"useSortedPackageJson": "on"
+			}
+		},
+		"enabled": true
+	},
+
+	"files": {
+		"ignoreUnknown": false
+	},
+
+	"formatter": {
+		"attributePosition": "auto",
+		"bracketSpacing": true,
+		"enabled": true,
+		"expand": "auto",
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 100
+	},
+
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "always",
+			"bracketSameLine": false,
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"quoteStyle": "double",
+			"semicolons": "always",
+			"trailingCommas": "all"
+		}
+	},
+
+	"json": {
+		"formatter": {
+			"trailingCommas": "none"
+		}
+	},
+
+	"linter": {
+		"domains": {
+			"project": "recommended",
+			"test": "recommended"
+		},
+		"enabled": true,
+
+		"rules": {
+			"complexity": "warn",
+
+			"correctness": "error",
+			"performance": "warn",
+			"preset": "all",
+			"security": "error",
+
+			"style": {
+				"noDefaultExport": "warn",
+				"preset": "all",
+				"useAsConstAssertion": "warn",
+
+				"useConst": "error",
+				"useDefaultParameterLast": "warn",
+				"useEnumInitializers": "warn",
+				"useExplicitLengthCheck": "warn",
+				"useImportType": "error",
+				"useNodejsImportProtocol": "error",
+				"useTemplate": "warn"
+			},
+			"suspicious": "error"
+		}
+	},
+
+	"vcs": {
+		"clientKind": "git",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}
