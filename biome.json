@@ -52,7 +52,9 @@
 		"enabled": true,
 
 		"rules": {
-			"complexity": "warn",
+			"complexity": {
+				"useLiteralKeys": "off"
+			},
 
 			"correctness": "error",
 			"performance": "warn",

@@ -1,5 +1,9 @@
 {
+	"$schema": "https://json.schemastore.org/package.json",
 	"name": "review-result",
+	"version": "0.1.0",
+	"description": "scheduling assessments, conducting interactive structured evaluations, and reviewing assessment results.",
+
 	"scripts": {
 		"check": "bunx biome check",
 		"check:fix": "bunx biome check --write",

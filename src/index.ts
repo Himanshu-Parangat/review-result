@@ -1,12 +1,13 @@
+import { config } from "@src/config";
 import { Hono } from "hono";
-import { env } from "./env";
 
 const app = new Hono();
 
 app.get("/", (c) => c.text("Hello Hono!"));
 
+// biome-ignore lint/style/noDefaultExport: Required by bun
 export default {
-	port: env.PORT,
-	hostname: env.HOST,
+	port: config.port,
+	hostname: config.host,
 	fetch: app.fetch,
 };
