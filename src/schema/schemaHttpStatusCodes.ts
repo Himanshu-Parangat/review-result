@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "@hono/zod-openapi";
 
 const httpStatusSchema = z.enum({
 	ok: 200,

@@ -1,5 +1,5 @@
 import packageJson from "@src/../package.json" with { type: "json" };
-import { configSchema } from "@src/schema/config.schema";
+import { configSchema } from "@src/schema/schemaConfig";
 
 const { env } = import.meta;
 

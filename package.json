@@ -4,14 +4,15 @@
 	"version": "0.1.0",
 	"description": "scheduling assessments, conducting interactive structured evaluations, and reviewing assessment results.",
 	"scripts": {
-		"check": "bunx biome check",
-		"check:fix": "bunx biome check --write",
+		"check": "bunx biome check && tsc --noEmit",
+		"check:fix": "bunx biome check --write && tsc --noEmit",
 		"dev": "bun --env-file=.env.development --hot src/index.ts",
 		"format": "bunx biome format",
 		"format:fix": "bunx biome format --write",
 		"lint": "bunx biome lint",
 		"lint:fix": "bunx biome lint --write",
-		"start": "bun --env-file=.env.production src/index.ts"
+		"start": "bun --env-file=.env.production src/index.ts",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@hono/zod-openapi": "^1.6.3",

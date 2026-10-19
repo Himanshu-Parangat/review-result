@@ -1,7 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { config } from "@src/config";
-import { healthRouter } from "@src/routes/health";
+import { healthRouter } from "@src/modules/health/healthRoutes";
 
 const app = new OpenAPIHono({ strict: false });
 

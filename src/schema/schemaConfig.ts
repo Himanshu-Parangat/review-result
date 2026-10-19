@@ -1,5 +1,5 @@
-import type { ValidConstraints } from "@src/schema/types";
-import z from "zod";
+import { z } from "@hono/zod-openapi";
+import type { ValidConstraints } from "@src/shared/types";
 
 const SEMVER_REGEX = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
