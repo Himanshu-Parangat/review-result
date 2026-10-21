@@ -27,6 +27,7 @@
 	},
 
 	"javascript": {
+		"globals": ["Bun"],
 		"formatter": {
 			"arrowParentheses": "always",
 			"bracketSameLine": false,
