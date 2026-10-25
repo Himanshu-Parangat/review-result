@@ -1,5 +1,8 @@
-import { createRoute, type RouteHandler, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono, type RouteHandler, z } from "@hono/zod-openapi";
 import { httpStatusCode } from "@src/schema/schemaHttpStatusCodes";
+import { pairRegister } from "@src/shared/schemaHelper";
+
+const healthRoute = new OpenAPIHono();
 
 const healthResponseSchema = z.object({
 	status: z.literal("ok"),
@@ -20,4 +23,9 @@ const getHealthDefinition = createRoute({
 
 type GetHealthRoute = RouteHandler<typeof getHealthDefinition>;
 
-export { type GetHealthRoute, getHealthDefinition };
+const getHealthHandler: GetHealthRoute = (c) =>
+	c.json({ status: "ok" as const }, httpStatusCode.ok);
+
+pairRegister(healthRoute, getHealthDefinition, getHealthHandler);
+
+export { healthRoute };

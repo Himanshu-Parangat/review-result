@@ -45,7 +45,7 @@ function preparePrettyStdoutTransport() {
 function prepareBaseLoggerOptions() {
 	return {
 		level: config.logLevel,
-    levelComparison: "ASC",
+		levelComparison: "ASC",
 		base: {
 			app: config.name,
 			env: config.env,

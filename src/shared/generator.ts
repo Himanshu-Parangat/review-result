@@ -1,13 +1,8 @@
+import { coreConstraints } from "@src/schema/schemaCore";
 import type { ValidConstraints } from "@src/shared/types";
 import { customAlphabet } from "nanoid";
 
 const generatorConstraints = {
-	id: {
-		// biome-ignore lint/security/noSecrets: Not a secret, meant for nanoid custom alphabet
-		allowedCharacter: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-		exactValue: 25,
-	},
-
 	labelShard: {
 		exactValue: 6,
 	},
@@ -21,9 +16,10 @@ const generatorConstraints = {
 	},
 } as const satisfies Record<string, ValidConstraints>;
 
-const nanoid = customAlphabet(generatorConstraints.id.allowedCharacter);
+// biome-ignore lint/security/noSecrets: Not a secret, meant for nanoid custom alphabet
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 
-function generateId(idLength: number = generatorConstraints.id.exactValue) {
+function generateId(idLength: number = coreConstraints.id.exactValue) {
 	return nanoid(Math.max(1, idLength));
 }
 

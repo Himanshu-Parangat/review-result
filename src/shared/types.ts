@@ -1,5 +1,8 @@
 type Prettify<ObjectType extends object> = { [Key in keyof ObjectType]: ObjectType[Key] } & {};
 
+declare const __brand: unique symbol;
+
+type Brand<Type, BrandType extends string> = Type & { [__brand]: BrandType };
 type ValidConstraints = Partial<{
 	minValue: number;
 	maxValue: number;
@@ -9,4 +12,4 @@ type ValidConstraints = Partial<{
 	defaultBooleanValue: boolean;
 }>;
 
-export type { Prettify, ValidConstraints };
+export type { Brand, Prettify, ValidConstraints };
