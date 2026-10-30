@@ -36,14 +36,19 @@ const configConstraints = {
 	},
 } as const satisfies Record<string, ValidConstraints>;
 
+const hostSchema = z.union([z.hostname(), z.ipv4(), z.ipv6()]);
+
+const portSchema = z.coerce
+	.number()
+	.int()
+	.min(configConstraints.port.minValue)
+	.max(configConstraints.port.maxValue);
+
 const configSchema = z.object({
 	env: z.enum(configConstraints.env.allowedLiteralValue),
-	host: z.union([z.hostname(), z.ipv4(), z.ipv6()]),
-	port: z.coerce
-		.number()
-		.int()
-		.min(configConstraints.port.minValue)
-		.max(configConstraints.port.maxValue),
+
+	serverBindHost: hostSchema,
+	serverPort: portSchema,
 
 	name: z.string().min(configConstraints.name.minValue).max(configConstraints.name.maxValue),
 	description: z

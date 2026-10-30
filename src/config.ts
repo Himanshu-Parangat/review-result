@@ -8,8 +8,9 @@ const rawConfig = {
 	description: env["PACKAGE_DESCRIPTION_OVERRIDE"] || packageJson.description,
 	version: env["PACKAGE_VERSION_OVERRIDE"] || packageJson.version,
 	env: env.NODE_ENV,
-	host: env["HOST"],
-	port: env["PORT"],
+	serverBindHost: env["SERVER_BIND_HOST"],
+	serverPort: env["SERVER_PORT"],
+
 	logLevel: env["LOG_LEVEL"],
 	logStdoutEnabled: env["LOG_STDOUT_ENABLED"],
 	logStdoutFormat: env["LOG_STDOUT_FORMAT"],
