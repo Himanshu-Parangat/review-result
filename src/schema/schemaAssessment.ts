@@ -16,7 +16,7 @@ const assessmentConstraints = {
 		maxValue: 455,
 	},
 
-	assessmentIsPined: {
+	assessmentIsPinned: {
 		defaultBooleanValue: false,
 	},
 	assessmentIsActive: {
@@ -46,7 +46,7 @@ const assessmentSchema = z.object({
 
 	assessmentIsPinned: z
 		.boolean()
-		.default(assessmentConstraints.assessmentIsPined.defaultBooleanValue),
+		.default(assessmentConstraints.assessmentIsPinned.defaultBooleanValue),
 	assessmentIsActive: z
 		.boolean()
 		.default(assessmentConstraints.assessmentIsActive.defaultBooleanValue),
