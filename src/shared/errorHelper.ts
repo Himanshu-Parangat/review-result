@@ -1,24 +1,39 @@
-type Result<DataType> = [unknown, null] | [null, DataType];
+type Result<DataType, ErrorType extends Error = Error> =
+	| { success: true; data: DataType }
+	| { success: false; error: ErrorType };
 
-async function safe<DataType>(
+function toError(error: unknown): Error {
+	if (error instanceof Error) {
+		return error;
+	}
+	return new Error(String(error), { cause: error });
+}
+
+async function safe<DataType, ErrorType extends Error = Error>(
 	fn: Promise<DataType> | (() => Promise<DataType>),
-): Promise<Result<DataType>> {
+	mapError?: (err: unknown) => ErrorType,
+): Promise<Result<DataType, ErrorType>> {
+	const toErr = (mapError ?? toError) as (err: unknown) => ErrorType;
 	try {
 		if (typeof fn === "function") {
-			return [null, await fn()];
+			return { success: true, data: await fn() };
 		}
-		return [null, await fn];
+		return { success: true, data: await fn };
 	} catch (err) {
-		return [err, null];
+		return { success: false, error: toErr(err) };
 	}
 }
 
-function safeSync<DataType>(fn: () => DataType): Result<DataType> {
+function safeSync<DataType, ErrorType extends Error = Error>(
+	fn: () => DataType,
+	mapError?: (err: unknown) => ErrorType,
+): Result<DataType, ErrorType> {
+	const toErr = (mapError ?? toError) as (err: unknown) => ErrorType;
 	try {
-		return [null, fn()];
+		return { success: true, data: fn() };
 	} catch (err) {
-		return [err, null];
+		return { success: false, error: toErr(err) };
 	}
 }
 
-export { safe, safeSync };
+export { type Result, safe, safeSync };

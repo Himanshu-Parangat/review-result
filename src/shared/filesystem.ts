@@ -7,13 +7,15 @@ import { safeSync } from "@src/shared/errorHelper";
 function ensureWritableParentDirectory(filePath: string) {
 	const directory = dirname(filePath);
 
-	const [error] = safeSync(() => {
+	const fileOperation = safeSync(() => {
 		mkdirSync(directory, { recursive: true });
 		accessSync(directory, constants.W_OK);
 	});
 
-	if (error !== null) {
-		throw new Error(`Directory "${directory}" is missing or not writable`, { cause: error });
+	if (!fileOperation.success) {
+		throw new Error(`Directory "${directory}" is missing or not writable`, {
+			cause: fileOperation.error,
+		});
 	}
 }
 
