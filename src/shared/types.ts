@@ -10,6 +10,7 @@ type ValidConstraints = Partial<{
 	allowedLiteralValue: readonly [string, ...string[]];
 	allowedCharacter: string;
 	defaultBooleanValue: boolean;
+	defaultNumberValue: number;
 }>;
 
 export type { Brand, Prettify, ValidConstraints };

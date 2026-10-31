@@ -11,6 +11,14 @@ const rawConfig = {
 	serverBindHost: env["SERVER_BIND_HOST"],
 	serverPort: env["SERVER_PORT"],
 
+	dbMode: env["DB_MODE"],
+	sqliteDbPath: env["SQLITE_DB_PATH"],
+	sqliteJournalModes: env["SQLITE_JOURNAL_MODES"],
+
+	sqliteSynchronousModes: env["SQLITE_SYNCHRONOUS_MODES"],
+	sqliteBusyTimeoutMs: env["SQLITE_BUSY_TIMEOUT_MS"],
+	sqliteCacheSizeMb: env["SQLITE_CACHE_SIZE_MB"],
+	sqlitePageSize: env["SQLITE_PAGE_SIZE"],
 	logLevel: env["LOG_LEVEL"],
 	logStdoutEnabled: env["LOG_STDOUT_ENABLED"],
 	logStdoutFormat: env["LOG_STDOUT_FORMAT"],
