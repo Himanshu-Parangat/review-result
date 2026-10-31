@@ -6,12 +6,14 @@
 	"scripts": {
 		"check": "bunx biome check && tsc --noEmit",
 		"check:fix": "bunx biome check --write && tsc --noEmit",
-		"dev": "bun --env-file=.env.development --hot src/index.ts",
+		"db:sqlite:generate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit generate --config='./src/db/adapters/sqlite/sqliteMigration.ts'",
+		"db:sqlite:migrate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit migrate --config='./src/db/adapters/sqlite/sqliteMigration.ts'",
 		"format": "bunx biome format",
 		"format:fix": "bunx biome format --write",
 		"lint": "bunx biome lint",
 		"lint:fix": "bunx biome lint --write",
-		"start": "bun --env-file=.env.production src/index.ts",
+		"start": "bun src/index.ts",
+		"start:hot": "bun --hot src/index.ts",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

@@ -5,5 +5,10 @@ node_modules/
 .env*
 !.env.example
 
+# SQLite database
+*.db
+*.db-shm
+*.db-wal
+
 # logs.
 log/
