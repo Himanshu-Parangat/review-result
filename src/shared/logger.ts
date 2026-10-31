@@ -1,17 +1,21 @@
 // biome-ignore lint/correctness/noNodejsModules: running on Bun
 import path from "node:path";
 import { config } from "@src/config";
+import { ensureWritableParentDirectory } from "@src/shared/filesystem";
 import { generateLabel } from "@src/shared/generator";
 import pino from "pino";
 
 const filenameSemantic = generateLabel(`${config.name}-${config.version}-${config.env}`, "label");
 
 function prepareFileTransport() {
+	const file = path.join(config.logFilePath, filenameSemantic);
+	ensureWritableParentDirectory(file);
+
 	return {
 		target: "pino-roll",
 		level: config.logLevel,
 		options: {
-			file: path.join(config.logFilePath, filenameSemantic),
+			file,
 			extension: ".log",
 			dateFormat: "yyyy-MM-dd_HH-mm-ss",
 			frequency: "daily",
