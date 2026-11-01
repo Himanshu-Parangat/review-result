@@ -3,6 +3,8 @@ import path from "node:path";
 import { config } from "@src/config";
 import { ensureWritableParentDirectory } from "@src/shared/filesystem";
 import { generateLabel } from "@src/shared/generator";
+import type { Logger as DrizzleLogger } from "drizzle-orm";
+import type { Logger as PinoLogger } from "pino";
 import pino from "pino";
 
 const filenameSemantic = generateLabel(`${config.name}-${config.version}-${config.env}`, "label");
@@ -98,4 +100,18 @@ function prepareLogger(): pino.LoggerOptions {
 
 const logger = pino(prepareLogger());
 
-export { logger };
+class PinnoDrizzleLogger implements DrizzleLogger {
+	private readonly log: PinoLogger;
+
+	constructor(parent: PinoLogger) {
+		this.log = parent.child({ component: "drizzle" });
+	}
+
+	logQuery(query: string, params: unknown[]): void {
+		this.log.debug({ query, params }, "SQL query");
+	}
+}
+
+const drizzleLogger = new PinnoDrizzleLogger(logger);
+
+export { drizzleLogger, logger };
