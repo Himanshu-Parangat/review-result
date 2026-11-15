@@ -21,6 +21,7 @@
 		"@scalar/hono-api-reference": "^0.12.13",
 		"drizzle-orm": "^1.0.0-rc.5",
 		"hono": "^4.13.13",
+		"mssql": "^12.7.13",
 		"nanoid": "^6.0.2",
 		"pino": "^10.4.0",
 		"pino-pretty": "^13.2.0",
@@ -30,6 +31,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.15",
 		"@types/bun": "latest",
+		"@types/mssql": "^12.3.0",
 		"drizzle-kit": "^1.0.0-rc.5",
 		"typescript": "^7.0.2"
 	}
