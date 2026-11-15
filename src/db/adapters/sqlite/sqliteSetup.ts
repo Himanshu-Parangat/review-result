@@ -1,8 +1,10 @@
 import { Database } from "bun:sqlite";
 import { config } from "@src/config";
+import { safeSync } from "@src/shared/errorHelper";
 import { ensureWritableParentDirectory } from "@src/shared/filesystem";
 import { drizzleLogger } from "@src/shared/logger";
 import { drizzle } from "drizzle-orm/bun-sqlite";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 
 const KIB_PER_MIB = 1024;
 
@@ -29,9 +31,19 @@ function setupSqliteConnstion() {
 
 	sqlite.run("PRAGMA foreign_keys = ON;");
 
-	return drizzle({ client: sqlite, logger: drizzleLogger });
+	const sqliteDb = drizzle({ client: sqlite, logger: drizzleLogger });
+
+	migrate(sqliteDb, { migrationsFolder: config.sqliteMigrationPath });
+
+	return sqliteDb;
 }
 
-const sqliteDb = setupSqliteConnstion();
+const sqliteSetup = safeSync(setupSqliteConnstion);
+
+if (!sqliteSetup.success) {
+	throw new Error("Sqlite Setup failed!", { cause: sqliteSetup.error });
+}
+
+const sqliteDb = sqliteSetup.data;
 
 export { buildSqliteConnectionString, sqliteDb };
