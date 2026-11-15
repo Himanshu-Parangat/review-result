@@ -20,6 +20,19 @@ const rawConfig = {
 	sqliteCacheSizeMb: env["SQLITE_CACHE_SIZE_MB"],
 	sqlitePageSize: env["SQLITE_PAGE_SIZE"],
 	sqliteMigrationPath: env["SQLITE_MIGRATION_PATH"],
+
+	mssqlHost: env["MSSQL_HOST"],
+	mssqlPort: env["MSSQL_PORT"],
+	mssqlUser: env["MSSQL_USER"],
+	mssqlPassword: env["MSSQL_PASSWORD"],
+	mssqlDatabase: env["MSSQL_DB_USE"],
+	mssqlEncrypt: env["MSSQL_ENCRYPT_STATUS"],
+	mssqlTrustServerCertificate: env["MSSQL_TRUSTED_SERVER"],
+	mssqlMigrationPath: env["MSSQL_MIGRATION_PATH"],
+
+	mssqlConnectionTimeoutMs: env["MSSQL_CONNECTION_TIMEOUT_MS"],
+	mssqlRequestTimeoutMs: env["MSSQL_REQUEST_TIMEOUT_MS"],
+
 	logLevel: env["LOG_LEVEL"],
 	logStdoutEnabled: env["LOG_STDOUT_ENABLED"],
 	logStdoutFormat: env["LOG_STDOUT_FORMAT"],
@@ -28,6 +41,7 @@ const rawConfig = {
 	logFileMaxFiles: env["LOG_FILE_MAX_FILES"],
 	logFilePath: env["LOG_FILE_PATH"],
 } as const satisfies Record<keyof Config, string | undefined>;
+
 const result = configSchema.safeParse(rawConfig);
 
 if (!result.success) {

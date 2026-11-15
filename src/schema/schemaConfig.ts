@@ -1,9 +1,9 @@
 import { z } from "@hono/zod-openapi";
 import type { ValidConstraints } from "@src/shared/types";
 
-const SEMVER_REGEX = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+const SEMVER_REGEX = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 
-const LOG_FILE_SIZE_REGEX = /^[1-9]\d*[kmg]$/i;
+const LOG_FILE_SIZE_REGEX = /^[1-9]\d*[kmg]$/iu;
 
 const isPowerOfTwo = (n: number) => n > 0 && Number.isInteger(Math.log2(n));
 
@@ -25,7 +25,7 @@ const configConstraints = {
 	},
 
 	dbMode: {
-		allowedLiteralValue: ["memory", "sqlite"],
+		allowedLiteralValue: ["memory", "sqlite", "mssql"],
 	},
 
 	sqliteJournalModes: {
@@ -52,6 +52,18 @@ const configConstraints = {
 		minValue: 512,
 		maxValue: 65_536,
 		defaultNumberValue: 4096,
+	},
+
+	mssqlConnectionTimeoutMs: {
+		minValue: 1000,
+		maxValue: 120_000,
+		defaultNumberValue: 15_000,
+	},
+
+	mssqlRequestTimeoutMs: {
+		minValue: 1000,
+		maxValue: 300_000,
+		defaultNumberValue: 15_000,
 	},
 
 	logLevel: {
@@ -121,6 +133,37 @@ const configSchema = z.object({
 		.default(configConstraints.sqlitePageSize.defaultNumberValue),
 
 	sqliteMigrationPath: z.string().trim().min(1).default("migrations/migrationsSqlite"),
+
+	mssqlHost: hostSchema,
+
+	mssqlPort: portSchema,
+
+	mssqlUser: z.string().trim().min(1),
+
+	mssqlPassword: z.string().min(1),
+
+	mssqlDatabase: z.string().trim().min(1),
+
+	mssqlEncrypt: z.stringbool(),
+
+	mssqlTrustServerCertificate: z.stringbool(),
+
+	mssqlConnectionTimeoutMs: z.coerce
+		.number()
+		.int()
+		.min(configConstraints.mssqlConnectionTimeoutMs.minValue)
+		.max(configConstraints.mssqlConnectionTimeoutMs.maxValue)
+		.default(configConstraints.mssqlConnectionTimeoutMs.defaultNumberValue),
+
+	mssqlRequestTimeoutMs: z.coerce
+		.number()
+		.int()
+		.min(configConstraints.mssqlRequestTimeoutMs.minValue)
+		.max(configConstraints.mssqlRequestTimeoutMs.maxValue)
+		.default(configConstraints.mssqlRequestTimeoutMs.defaultNumberValue),
+
+	mssqlMigrationPath: z.string().trim().min(1).default("migrations/migrationsMssql"),
+
 	logLevel: z.enum(configConstraints.logLevel.allowedLiteralValue),
 
 	logStdoutEnabled: z.stringbool(),
