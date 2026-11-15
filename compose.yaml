@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+services:
+  bun:
+    container_name: bun-runtime
+    image: docker.io/oven/bun:latest
+    working_dir: /workspace
+    secrets: [mssql_password, valkey_password]
+    environment:
+      SERVER_BIND_HOST: 0.0.0.0
+      MSSQL_HOST: mssql
+      VALKEY_HOST: valkey
+    volumes:
+      - ./:/workspace
+    ports:
+      - "127.0.0.1:${SERVER_PORT}:${SERVER_PORT}"
+      - "127.0.0.1:4983:4983"
+    networks: [app-network]
+    stdin_open: true
+    tty: true
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        grep -qs '# compose-secrets' /root/.bashrc || cat >> /root/.bashrc <<'EOF'
+        # compose-secrets
+        export MSSQL_PASSWORD="$$(cat /run/secrets/mssql_password)"
+        export VALKEY_PASSWORD="$$(cat /run/secrets/valkey_password)"
+        EOF
+        export MSSQL_PASSWORD="$$(cat /run/secrets/mssql_password)"
+        export VALKEY_PASSWORD="$$(cat /run/secrets/valkey_password)"
+        exec "$$@"
+      - --
+    command: bash
+    profiles: [bun] 
+
+  mssql:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_TCP_PORT: ${MSSQL_PORT}
+    secrets: [mssql_password]
+    entrypoint:
+      - /bin/bash
+      - -c
+      - export MSSQL_SA_PASSWORD="$$(cat /run/secrets/mssql_password)" && exec /opt/mssql/bin/sqlservr
+    ports:
+      - "127.0.0.1:${MSSQL_PORT}:${MSSQL_PORT}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks: [app-network]
+    profiles: [mssql] 
+
+  valkey:
+    container_name: valkey
+    image: docker.io/valkey/valkey:latest
+    secrets: [valkey_password]
+    command:
+      - sh
+      - -c
+      - exec valkey-server --port ${VALKEY_PORT} --appendonly yes --requirepass "$$(cat /run/secrets/valkey_password)"
+    ports:
+      - "127.0.0.1:${VALKEY_PORT}:${VALKEY_PORT}"
+    volumes:
+      - valkey-data:/data
+    networks: [app-network]
+    profiles: [valkey] 
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  mssql-data:
+    name: mssql-data
+  valkey-data:
+    name: valkey-data
+
+secrets:
+  mssql_password:
+    external: true
+  valkey_password:
+    external: true
