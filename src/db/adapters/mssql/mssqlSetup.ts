@@ -29,19 +29,19 @@ async function setupMssqlConnstion() {
 		pool: { min: 1, max: 1 },
 	});
 
-  const mssqlDb = drizzle({ client: pool, logger: drizzleLogger });
+	const mssqlDb = drizzle({ client: pool, logger: drizzleLogger });
 
-  await migrate(mssqlDb, {migrationsFolder: config.mssqlMigrationPath })
+	await migrate(mssqlDb, { migrationsFolder: config.mssqlMigrationPath });
 
-  return mssqlDb
+	return mssqlDb;
 }
 
 const mssqlSetup = await safe(setupMssqlConnstion);
 
-if (!mssqlSetup.success){
+if (!mssqlSetup.success) {
 	throw new Error("Mssql Setup failed!", { cause: mssqlSetup.error });
 }
 
-const mssqlDb = mssqlSetup.data
+const mssqlDb = mssqlSetup.data;
 
 export { mssqlConnectionConfig, mssqlDb };

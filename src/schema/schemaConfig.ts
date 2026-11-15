@@ -24,6 +24,11 @@ const configConstraints = {
 		maxValue: 455,
 	},
 
+	valkeyDb: {
+		minValue: 0,
+		maxValue: 15,
+	},
+
 	dbMode: {
 		allowedLiteralValue: ["memory", "sqlite", "mssql"],
 	},
@@ -92,15 +97,35 @@ const configSchema = z.object({
 	env: z.enum(configConstraints.env.allowedLiteralValue),
 
 	serverBindHost: hostSchema,
+
 	serverPort: portSchema,
 
 	name: z.string().min(configConstraints.name.minValue).max(configConstraints.name.maxValue),
+
 	description: z
 		.string()
 		.min(configConstraints.description.minValue)
 		.max(configConstraints.description.maxValue),
 
 	version: z.string().regex(SEMVER_REGEX, "version must be valid semver"),
+
+	valkeyEnabled: z.stringbool(),
+
+	valkeyHost: hostSchema,
+
+	valkeyPort: portSchema,
+
+	valkeyUsername: z.string().trim().min(1),
+
+	valkeyPassword: z.string().min(1),
+
+	valkeyDb: z.coerce
+		.number()
+		.int()
+		.min(configConstraints.valkeyDb.minValue)
+		.max(configConstraints.valkeyDb.maxValue),
+
+	valkeyTls: z.stringbool(),
 
 	dbMode: z.enum(configConstraints.dbMode.allowedLiteralValue),
 

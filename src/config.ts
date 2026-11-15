@@ -11,6 +11,14 @@ const rawConfig = {
 	serverBindHost: env["SERVER_BIND_HOST"],
 	serverPort: env["SERVER_PORT"],
 
+	valkeyEnabled: env["VALKEY_ENABLED"],
+	valkeyHost: env["VALKEY_HOST"],
+	valkeyPort: env["VALKEY_PORT"],
+	valkeyUsername: env["VALKEY_USERNAME"],
+	valkeyPassword: env["VALKEY_PASSWORD"],
+	valkeyDb: env["VALKEY_DB"],
+	valkeyTls: env["VALKEY_TLS"],
+
 	dbMode: env["DB_MODE"],
 
 	sqliteDbPath: env["SQLITE_DB_PATH"],
@@ -28,10 +36,9 @@ const rawConfig = {
 	mssqlDatabase: env["MSSQL_DB_USE"],
 	mssqlEncrypt: env["MSSQL_ENCRYPT_STATUS"],
 	mssqlTrustServerCertificate: env["MSSQL_TRUSTED_SERVER"],
-	mssqlMigrationPath: env["MSSQL_MIGRATION_PATH"],
-
 	mssqlConnectionTimeoutMs: env["MSSQL_CONNECTION_TIMEOUT_MS"],
 	mssqlRequestTimeoutMs: env["MSSQL_REQUEST_TIMEOUT_MS"],
+	mssqlMigrationPath: env["MSSQL_MIGRATION_PATH"],
 
 	logLevel: env["LOG_LEVEL"],
 	logStdoutEnabled: env["LOG_STDOUT_ENABLED"],
