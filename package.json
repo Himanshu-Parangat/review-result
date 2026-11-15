@@ -8,6 +8,8 @@
 		"check:fix": "bunx biome check --write && tsc --noEmit",
 		"db:sqlite:generate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit generate --config='./src/db/adapters/sqlite/sqliteConfig.ts'",
 		"db:sqlite:migrate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit migrate --config='./src/db/adapters/sqlite/sqliteConfig.ts'",
+		"db:mssql:generate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit generate --config='./src/db/adapters/mssql/mssqlConfig.ts'",
+		"db:mssql:migrate": "bun --env-file=.env.${NODE_ENV:?NODE_ENV is required} drizzle-kit migrate --config='./src/db/adapters/mssql/mssqlConfig.ts'",
 		"format": "bunx biome format",
 		"format:fix": "bunx biome format --write",
 		"lint": "bunx biome lint",
