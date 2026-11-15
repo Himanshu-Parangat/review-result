@@ -120,6 +120,7 @@ const configSchema = z.object({
 		.refine(isPowerOfTwo, "sqlitePageSize must be a power of two between 512–65536")
 		.default(configConstraints.sqlitePageSize.defaultNumberValue),
 
+	sqliteMigrationPath: z.string().trim().min(1).default("migrations/migrationsSqlite"),
 	logLevel: z.enum(configConstraints.logLevel.allowedLiteralValue),
 
 	logStdoutEnabled: z.stringbool(),

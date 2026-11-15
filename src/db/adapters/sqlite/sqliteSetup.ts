@@ -1,7 +1,10 @@
 import { Database } from "bun:sqlite";
 import { config } from "@src/config";
 import { ensureWritableParentDirectory } from "@src/shared/filesystem";
+import { drizzleLogger } from "@src/shared/logger";
 import { drizzle } from "drizzle-orm/bun-sqlite";
+
+const KIB_PER_MIB = 1024;
 
 function buildSqliteConnectionString() {
 	if (config.dbMode === "memory") {
@@ -12,20 +15,23 @@ function buildSqliteConnectionString() {
 	return config.sqliteDbPath;
 }
 
-const KIB_PER_MIB = 1024;
+function setupSqliteConnstion() {
+	const sqlite = new Database(buildSqliteConnectionString(), { create: true, strict: true });
 
-const sqlite = new Database(buildSqliteConnectionString(), { create: true, strict: true });
-if (config.dbMode === "sqlite") {
-	// Do not change the order page_size must come before journal_mode (WAL).
-	sqlite.run(`PRAGMA page_size = ${config.sqlitePageSize};`);
-	sqlite.run(`PRAGMA journal_mode = ${config.sqliteJournalModes.toUpperCase()};`);
-	sqlite.run(`PRAGMA synchronous = ${config.sqliteSynchronousModes.toUpperCase()};`);
-	sqlite.run(`PRAGMA busy_timeout = ${config.sqliteBusyTimeoutMs};`);
-	sqlite.run(`PRAGMA cache_size = ${-config.sqliteCacheSizeMb * KIB_PER_MIB};`);
+	if (config.dbMode === "sqlite") {
+		// Do not change the order page_size must come before journal_mode (WAL).
+		sqlite.run(`PRAGMA page_size = ${config.sqlitePageSize};`);
+		sqlite.run(`PRAGMA journal_mode = ${config.sqliteJournalModes.toUpperCase()};`);
+		sqlite.run(`PRAGMA synchronous = ${config.sqliteSynchronousModes.toUpperCase()};`);
+		sqlite.run(`PRAGMA busy_timeout = ${config.sqliteBusyTimeoutMs};`);
+		sqlite.run(`PRAGMA cache_size = ${-config.sqliteCacheSizeMb * KIB_PER_MIB};`);
+	}
+
+	sqlite.run("PRAGMA foreign_keys = ON;");
+
+	return drizzle({ client: sqlite, logger: drizzleLogger });
 }
 
-sqlite.run("PRAGMA foreign_keys = ON;");
-
-const sqliteDb = drizzle({ client: sqlite, logger: config.env === "development" });
+const sqliteDb = setupSqliteConnstion();
 
 export { buildSqliteConnectionString, sqliteDb };
