@@ -10,8 +10,7 @@ import pino from "pino";
 const filenameSemantic = generateLabel(`${config.name}-${config.version}-${config.env}`, "label");
 
 function prepareFileTransport() {
-	const file = path.join(config.logFilePath, filenameSemantic);
-	ensureWritableParentDirectory(file);
+	const file = ensureWritableParentDirectory(path.join(config.logFilePath, filenameSemantic));
 
 	return {
 		target: "pino-roll",

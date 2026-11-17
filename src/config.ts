@@ -53,7 +53,7 @@ const result = configSchema.safeParse(rawConfig);
 
 if (!result.success) {
 	const message = result.error.issues
-		.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
+		.map((issue) => `• ${issue.path.join(".")}: ${issue.message}, input ${issue.input}`)
 		.join("\n");
 
 	throw new Error(`Invalid environment configuration:\n${message}`);
