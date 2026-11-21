@@ -2,7 +2,6 @@
 import { accessSync, constants, mkdirSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { safeSync } from "@src/shared/errorHelper";
 
 function expandUnixLinuxHome(filePath: string): string {
 	if (filePath === "~") {
@@ -31,14 +30,12 @@ function resolvePath(filePath: string) {
 }
 
 function ensureDirectoryIsWritable(directoryPath: string) {
-	const fileOperation = safeSync(() => {
+	try {
 		mkdirSync(directoryPath, { recursive: true });
 		accessSync(directoryPath, constants.W_OK);
-	});
-
-	if (!fileOperation.success) {
-		throw new Error(`Directory "${directoryPath}" is missing or not writable`, {
-			cause: fileOperation.error,
+	} catch (error) {
+		throw new Error(`Directory "${directoryPath}" is missing or not writable: ${error}`, {
+			cause: error,
 		});
 	}
 }

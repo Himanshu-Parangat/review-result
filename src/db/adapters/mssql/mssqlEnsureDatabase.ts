@@ -1,6 +1,4 @@
-import { config } from "@src/config";
 import { mssqlConnectionConfig } from "@src/db/adapters/mssql/mssqlConnection";
-import { safe } from "@src/shared/errorHelper";
 import { drizzleLogger, logger } from "@src/shared/logger";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-mssql";
@@ -33,35 +31,29 @@ If sqlcmd is not installed, run this SQL in any SQL client instead
 }
 
 async function ensureDatabase() {
+	const { database } = mssqlConnectionConfig;
+
 	const pool = new mssql.ConnectionPool({
 		...mssqlConnectionConfig,
 		password: Bun.env["MSSQL_MASTER_PASSWORD"] ?? mssqlConnectionConfig.password,
 		database: "master",
 	});
 
-	const dbSetup = await safe(async () => {
+	try {
 		await pool.connect();
 		const db = drizzle({ client: pool, logger: drizzleLogger });
 		await db.execute(sql.raw(ensureDbSql));
-	});
-
-	const dbClosed = await safe(pool.close());
-
-	if (!dbClosed.success) {
-		logger.warn({ err: dbClosed.error }, "Failed to close MSSQL master pool");
+		logger.info({ db: database }, "MSSQL database ensured");
+	} catch (error) {
+		throw new Error(`MSSQL precondition failed for "${database}" DB creation`, {
+			cause: error,
+		});
+	} finally {
+		await pool.close().catch((error) => {
+			logger.warn({ err: error }, "Failed to close MSSQL master pool");
+		});
 	}
-
-	if (!dbSetup.success) {
-		logger.error({ err: dbSetup.error, db: config.mssqlDatabase }, "MSSQL precondition failed");
-		throw new Error(
-			`MSSQL precondition failed for ${config.mssqlDatabase} DB creation: ${dbSetup.error}`,
-			{
-				cause: dbSetup.error,
-			},
-		);
-	}
-
-	logger.info({ db: config.mssqlDatabase }, "MSSQL database ensured");
+	logger.info({ db: database }, "MSSQL database ensured");
 }
 
 if (Bun.argv.includes("--print")) {

@@ -1,6 +1,5 @@
 import { config } from "@src/config";
 import { mssqlConnectionConfig } from "@src/db/adapters/mssql/mssqlConnection";
-import { safe } from "@src/shared/errorHelper";
 import { ensureWritableDirectory } from "@src/shared/filesystem";
 import { drizzleLogger } from "@src/shared/logger";
 import { drizzle } from "drizzle-orm/node-mssql";
@@ -19,21 +18,22 @@ async function setupMssqlConnection() {
 		pool: { min: 1, max: 1 },
 	});
 
-	await pool.connect();
+	try {
+		await pool.connect();
 
-	const mssqlDb = drizzle({ client: pool, logger: drizzleLogger });
+		const mssqlDb = drizzle({ client: pool, logger: drizzleLogger });
 
-	await migrate(mssqlDb, { migrationsFolder: ensureWritableDirectory(config.mssqlMigrationPath) });
+		await migrate(mssqlDb, {
+			migrationsFolder: ensureWritableDirectory(config.mssqlMigrationPath),
+		});
 
-	return mssqlDb;
+		return mssqlDb;
+	} catch (error) {
+		pool.close();
+		throw new Error(`Mssql Setup failed! ${error}`, { cause: error });
+	}
 }
 
-const mssqlSetup = await safe(setupMssqlConnection);
-
-if (!mssqlSetup.success) {
-	throw new Error(`Mssql Setup failed! ${mssqlSetup.error} `, { cause: mssqlSetup.error });
-}
-
-const mssqlDb = mssqlSetup.data;
+const mssqlDb = await setupMssqlConnection();
 
 export { mssqlDb };
